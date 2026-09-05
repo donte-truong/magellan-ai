@@ -1,0 +1,1699 @@
+openapi: 3.1.0
+info:
+  title: Supply Chain OSINT AI API
+  version: 1.0.0-draft
+  description: |
+    Contract between the frontend demo site and the backend. See API_SPEC.md for
+    semantics, SSE event schemas, and the agent protocol. Field names and types
+    here are authoritative.
+servers:
+  - url: /v1
+security:
+  - bearerAuth: []
+
+tags:
+  - name: uploads
+  - name: runs
+  - name: graphs
+  - name: claims
+  - name: enrichments
+  - name: geography
+  - name: market
+  - name: portfolios
+  - name: backtests
+  - name: scenarios
+  - name: agent
+
+paths:
+  # ------------------------------------------------------------ uploads
+  /uploads:
+    post:
+      tags: [uploads]
+      operationId: createUpload
+      summary: Upload a CSV bill of materials
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file: { type: string, format: binary }
+      responses:
+        '201': { description: Created, content: { application/json: { schema: { $ref: '#/components/schemas/Upload' } } } }
+        '400': { $ref: '#/components/responses/Error' }
+  /uploads/{upload_id}:
+    get:
+      tags: [uploads]
+      operationId: getUpload
+      parameters: [{ $ref: '#/components/parameters/UploadId' }]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Upload' } } } }
+        '404': { $ref: '#/components/responses/Error' }
+
+  # ------------------------------------------------------------ runs
+  /runs:
+    post:
+      tags: [runs]
+      operationId: createRun
+      summary: Start a research run (or replay a cached one)
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RunCreate' }
+      responses:
+        '202': { description: Accepted, content: { application/json: { schema: { $ref: '#/components/schemas/Run' } } } }
+        '400': { $ref: '#/components/responses/Error' }
+        '429': { $ref: '#/components/responses/Error' }
+    get:
+      tags: [runs]
+      operationId: listRuns
+      parameters:
+        - { $ref: '#/components/parameters/Cursor' }
+        - { $ref: '#/components/parameters/Limit' }
+        - name: status
+          in: query
+          schema: { $ref: '#/components/schemas/RunStatus' }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items, next_cursor]
+                properties:
+                  items: { type: array, items: { $ref: '#/components/schemas/Run' } }
+                  next_cursor: { type: [string, 'null'] }
+  /runs/{run_id}:
+    get:
+      tags: [runs]
+      operationId: getRun
+      parameters: [{ $ref: '#/components/parameters/RunId' }]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Run' } } } }
+        '404': { $ref: '#/components/responses/Error' }
+  /runs/{run_id}/answers:
+    post:
+      tags: [runs]
+      operationId: answerRunQuestion
+      parameters: [{ $ref: '#/components/parameters/RunId' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [question_id, choice]
+              properties:
+                question_id: { type: string }
+                choice: { type: string }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Run' } } } }
+        '404': { $ref: '#/components/responses/Error' }
+        '409': { $ref: '#/components/responses/Error' }
+  /runs/{run_id}/cancel:
+    post:
+      tags: [runs]
+      operationId: cancelRun
+      parameters: [{ $ref: '#/components/parameters/RunId' }]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Run' } } } }
+  /runs/{run_id}/events:
+    get:
+      tags: [runs]
+      operationId: streamRunEvents
+      summary: Server-sent events for a run (see API_SPEC.md §3.1)
+      parameters:
+        - { $ref: '#/components/parameters/RunId' }
+        - name: Last-Event-ID
+          in: header
+          schema: { type: string }
+      responses:
+        '200':
+          description: SSE stream
+          content:
+            text/event-stream:
+              schema: { $ref: '#/components/schemas/RunEvent' }
+
+  # ------------------------------------------------------------ graphs
+  /graphs:
+    get:
+      tags: [graphs]
+      operationId: listGraphs
+      parameters:
+        - { $ref: '#/components/parameters/Cursor' }
+        - { $ref: '#/components/parameters/Limit' }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items, next_cursor]
+                properties:
+                  items: { type: array, items: { $ref: '#/components/schemas/GraphMeta' } }
+                  next_cursor: { type: [string, 'null'] }
+  /graphs/{graph_id}:
+    get:
+      tags: [graphs]
+      operationId: getGraph
+      parameters:
+        - { $ref: '#/components/parameters/GraphId' }
+        - { $ref: '#/components/parameters/Revision' }
+        - name: include
+          in: query
+          description: 'Comma-separated. Supported: claims'
+          schema: { type: string }
+        - name: tier_max
+          in: query
+          schema: { type: integer, minimum: 0 }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Graph' } } } }
+        '404': { $ref: '#/components/responses/Error' }
+  /graphs/{graph_id}/nodes/{node_id}:
+    get:
+      tags: [graphs]
+      operationId: getNode
+      parameters:
+        - { $ref: '#/components/parameters/GraphId' }
+        - { $ref: '#/components/parameters/NodeId' }
+        - { $ref: '#/components/parameters/Revision' }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/NodeDetail' } } } }
+        '404': { $ref: '#/components/responses/Error' }
+  /graphs/{graph_id}/edges/{edge_id}:
+    get:
+      tags: [graphs]
+      operationId: getEdge
+      summary: Full edge with claims and evidence (edge inspector)
+      parameters:
+        - { $ref: '#/components/parameters/GraphId' }
+        - { $ref: '#/components/parameters/EdgeId' }
+        - { $ref: '#/components/parameters/Revision' }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/EdgeDetail' } } } }
+        '404': { $ref: '#/components/responses/Error' }
+  /graphs/{graph_id}/fork:
+    post:
+      tags: [graphs]
+      operationId: forkGraph
+      parameters:
+        - { $ref: '#/components/parameters/GraphId' }
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string }
+                revision: { type: integer }
+      responses:
+        '201': { description: Created, content: { application/json: { schema: { $ref: '#/components/schemas/GraphMeta' } } } }
+  /graphs/{graph_id}/mutations:
+    post:
+      tags: [graphs]
+      operationId: applyMutations
+      summary: Apply an atomic mutation batch
+      parameters:
+        - { $ref: '#/components/parameters/GraphId' }
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+        - name: If-Match
+          in: header
+          required: true
+          description: 'Current graph revision'
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/MutationBatch' }
+      responses:
+        '200': { description: Applied, content: { application/json: { schema: { $ref: '#/components/schemas/MutationResult' } } } }
+        '400': { $ref: '#/components/responses/Error' }
+        '409': { $ref: '#/components/responses/Error' }
+    get:
+      tags: [graphs]
+      operationId: listMutations
+      parameters:
+        - { $ref: '#/components/parameters/GraphId' }
+        - { $ref: '#/components/parameters/Cursor' }
+        - { $ref: '#/components/parameters/Limit' }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items, next_cursor]
+                properties:
+                  items: { type: array, items: { $ref: '#/components/schemas/MutationRecord' } }
+                  next_cursor: { type: [string, 'null'] }
+  /graphs/{graph_id}/export:
+    get:
+      tags: [graphs]
+      operationId: exportGraph
+      parameters:
+        - { $ref: '#/components/parameters/GraphId' }
+        - { $ref: '#/components/parameters/Revision' }
+      responses:
+        '200': { description: 'Full JSON export', content: { application/json: { schema: { $ref: '#/components/schemas/GraphExport' } } } }
+  /graphs/{graph_id}/diff:
+    get:
+      tags: [graphs]
+      operationId: diffGraph
+      parameters:
+        - { $ref: '#/components/parameters/GraphId' }
+        - { name: from, in: query, required: true, schema: { type: integer } }
+        - { name: to, in: query, required: true, schema: { type: integer } }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/GraphDiff' } } } }
+
+  # ------------------------------------------------------------ claims / sources
+  /claims/{claim_id}:
+    get:
+      tags: [claims]
+      operationId: getClaim
+      parameters: [{ $ref: '#/components/parameters/ClaimId' }]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Claim' } } } }
+        '404': { $ref: '#/components/responses/Error' }
+  /claims/{claim_id}/review:
+    post:
+      tags: [claims]
+      operationId: reviewClaim
+      parameters: [{ $ref: '#/components/parameters/ClaimId' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [verdict]
+              properties:
+                verdict: { type: string, enum: [accept, reject, dispute] }
+                note: { type: string }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Claim' } } } }
+  /sources/{source_id}:
+    get:
+      tags: [claims]
+      operationId: getSource
+      parameters: [{ name: source_id, in: path, required: true, schema: { type: string } }]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Source' } } } }
+
+  # ------------------------------------------------------------ enrichments
+  /graphs/{graph_id}/enrichments:
+    post:
+      tags: [enrichments]
+      operationId: createEnrichment
+      parameters:
+        - { $ref: '#/components/parameters/GraphId' }
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [kinds]
+              properties:
+                kinds:
+                  type: array
+                  minItems: 1
+                  items: { type: string, enum: [geography, concentration, market_exposure] }
+                node_ids: { type: array, items: { type: string } }
+      responses:
+        '202': { description: Accepted, content: { application/json: { schema: { $ref: '#/components/schemas/Enrichment' } } } }
+  /graphs/{graph_id}/enrichments/{enrichment_id}:
+    get:
+      tags: [enrichments]
+      operationId: getEnrichment
+      parameters:
+        - { $ref: '#/components/parameters/GraphId' }
+        - { name: enrichment_id, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Enrichment' } } } }
+
+  # ------------------------------------------------------------ geography
+  /graphs/{graph_id}/geography:
+    get:
+      tags: [geography]
+      operationId: getGraphGeography
+      summary: GeoJSON FeatureCollection of facilities and material-producing countries
+      parameters:
+        - { $ref: '#/components/parameters/GraphId' }
+        - { $ref: '#/components/parameters/Revision' }
+      responses:
+        '200': { description: OK, content: { application/geo+json: { schema: { $ref: '#/components/schemas/GeoFeatureCollection' } } } }
+  /materials/{material_node_id}/production:
+    get:
+      tags: [geography]
+      operationId: getMaterialProduction
+      parameters:
+        - { name: material_node_id, in: path, required: true, schema: { type: string } }
+        - { name: year, in: query, schema: { type: integer } }
+        - { name: stage, in: query, schema: { type: string, enum: [mine, refinery, export] } }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/ProductionShares' } } } }
+        '404': { $ref: '#/components/responses/Error' }
+  /reference/commodities:
+    get:
+      tags: [geography]
+      operationId: listCommodities
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    items:
+                      type: object
+                      required: [commodity, years, stages]
+                      properties:
+                        commodity: { type: string }
+                        years: { type: array, items: { type: integer } }
+                        stages: { type: array, items: { type: string } }
+
+  # ------------------------------------------------------------ market
+  /market/instruments:
+    get:
+      tags: [market]
+      operationId: searchInstruments
+      parameters:
+        - { name: q, in: query, schema: { type: string } }
+        - { name: kind, in: query, schema: { $ref: '#/components/schemas/InstrumentKind' } }
+        - { $ref: '#/components/parameters/Cursor' }
+        - { $ref: '#/components/parameters/Limit' }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items, next_cursor]
+                properties:
+                  items: { type: array, items: { $ref: '#/components/schemas/Instrument' } }
+                  next_cursor: { type: [string, 'null'] }
+  /market/instruments/{instrument_id}:
+    get:
+      tags: [market]
+      operationId: getInstrument
+      parameters: [{ $ref: '#/components/parameters/InstrumentId' }]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Instrument' } } } }
+  /market/instruments/{instrument_id}/prices:
+    get:
+      tags: [market]
+      operationId: getInstrumentPrices
+      parameters:
+        - { $ref: '#/components/parameters/InstrumentId' }
+        - { name: from, in: query, required: true, schema: { type: string, format: date } }
+        - { name: to, in: query, required: true, schema: { type: string, format: date } }
+        - { name: interval, in: query, schema: { type: string, enum: [1d, 1w], default: 1d } }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/PriceSeries' } } } }
+        '503': { $ref: '#/components/responses/Error' }
+  /graphs/{graph_id}/market-exposure:
+    get:
+      tags: [market]
+      operationId: getGraphMarketExposure
+      parameters:
+        - { $ref: '#/components/parameters/GraphId' }
+        - { $ref: '#/components/parameters/Revision' }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/MarketExposure' } } } }
+  /graphs/{graph_id}/market-summary:
+    get:
+      tags: [market]
+      operationId: getGraphMarketSummary
+      parameters:
+        - { $ref: '#/components/parameters/GraphId' }
+        - { $ref: '#/components/parameters/Revision' }
+        - { name: window_days, in: query, schema: { type: integer, default: 90, minimum: 5, maximum: 750 } }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/MarketSummary' } } } }
+
+  # ------------------------------------------------------------ portfolios
+  /portfolios:
+    post:
+      tags: [portfolios]
+      operationId: createPortfolio
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PortfolioCreate' }
+      responses:
+        '201': { description: Created, content: { application/json: { schema: { $ref: '#/components/schemas/Portfolio' } } } }
+    get:
+      tags: [portfolios]
+      operationId: listPortfolios
+      parameters:
+        - { $ref: '#/components/parameters/Cursor' }
+        - { $ref: '#/components/parameters/Limit' }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items, next_cursor]
+                properties:
+                  items: { type: array, items: { $ref: '#/components/schemas/Portfolio' } }
+                  next_cursor: { type: [string, 'null'] }
+  /portfolios/{portfolio_id}:
+    get:
+      tags: [portfolios]
+      operationId: getPortfolio
+      parameters: [{ $ref: '#/components/parameters/PortfolioId' }]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Portfolio' } } } }
+  /portfolios/{portfolio_id}/members:
+    put:
+      tags: [portfolios]
+      operationId: replacePortfolioMembers
+      parameters: [{ $ref: '#/components/parameters/PortfolioId' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [members]
+              properties:
+                members: { type: array, items: { $ref: '#/components/schemas/PortfolioMemberInput' } }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Portfolio' } } } }
+  /portfolios/{portfolio_id}/exposure:
+    get:
+      tags: [portfolios]
+      operationId: getPortfolioExposure
+      parameters: [{ $ref: '#/components/parameters/PortfolioId' }]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/PortfolioExposure' } } } }
+  /portfolios/{portfolio_id}/volatility:
+    get:
+      tags: [portfolios]
+      operationId: getPortfolioVolatility
+      parameters:
+        - { $ref: '#/components/parameters/PortfolioId' }
+        - { name: from, in: query, required: true, schema: { type: string, format: date } }
+        - { name: to, in: query, required: true, schema: { type: string, format: date } }
+        - { name: window_days, in: query, schema: { type: integer, default: 30, minimum: 5, maximum: 365 } }
+        - { name: interval, in: query, schema: { type: string, enum: [1d, 1w], default: 1d } }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/VolatilitySeries' } } } }
+        '422': { $ref: '#/components/responses/Error' }
+  /portfolios/{portfolio_id}/backtests:
+    post:
+      tags: [backtests]
+      operationId: createBacktest
+      parameters:
+        - { $ref: '#/components/parameters/PortfolioId' }
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/BacktestCreate' }
+      responses:
+        '202': { description: Accepted, content: { application/json: { schema: { $ref: '#/components/schemas/Backtest' } } } }
+  /backtests:
+    get:
+      tags: [backtests]
+      operationId: listBacktests
+      parameters:
+        - { $ref: '#/components/parameters/Cursor' }
+        - { $ref: '#/components/parameters/Limit' }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items, next_cursor]
+                properties:
+                  items: { type: array, items: { $ref: '#/components/schemas/Backtest' } }
+                  next_cursor: { type: [string, 'null'] }
+  /backtests/{backtest_id}:
+    get:
+      tags: [backtests]
+      operationId: getBacktest
+      parameters: [{ name: backtest_id, in: path, required: true, schema: { type: string } }]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Backtest' } } } }
+
+  # ------------------------------------------------------------ scenarios
+  /graphs/{graph_id}/scenarios:
+    post:
+      tags: [scenarios]
+      operationId: createScenario
+      parameters:
+        - { $ref: '#/components/parameters/GraphId' }
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ScenarioCreate' }
+      responses:
+        '202': { description: Accepted, content: { application/json: { schema: { $ref: '#/components/schemas/Scenario' } } } }
+    get:
+      tags: [scenarios]
+      operationId: listGraphScenarios
+      parameters:
+        - { $ref: '#/components/parameters/GraphId' }
+        - { $ref: '#/components/parameters/Cursor' }
+        - { $ref: '#/components/parameters/Limit' }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items, next_cursor]
+                properties:
+                  items: { type: array, items: { $ref: '#/components/schemas/Scenario' } }
+                  next_cursor: { type: [string, 'null'] }
+  /scenarios/{scenario_id}:
+    get:
+      tags: [scenarios]
+      operationId: getScenario
+      parameters: [{ name: scenario_id, in: path, required: true, schema: { type: string } }]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Scenario' } } } }
+  /scenarios/compare:
+    post:
+      tags: [scenarios]
+      operationId: compareScenarios
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [scenario_ids]
+              properties:
+                scenario_ids: { type: array, minItems: 2, maxItems: 4, items: { type: string } }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/ScenarioComparison' } } } }
+
+  # ------------------------------------------------------------ agent
+  /agent/sessions:
+    post:
+      tags: [agent]
+      operationId: createAgentSession
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                graph_id: { type: string }
+                portfolio_id: { type: string }
+                context: { type: string, maxLength: 4000 }
+                auto_approve:
+                  type: array
+                  description: 'Proposal kinds executed without user approval. Only "scenario" is permitted in v1.'
+                  items: { type: string, enum: [scenario] }
+      responses:
+        '201': { description: Created, content: { application/json: { schema: { $ref: '#/components/schemas/AgentSession' } } } }
+  /agent/sessions/{session_id}:
+    get:
+      tags: [agent]
+      operationId: getAgentSession
+      parameters: [{ $ref: '#/components/parameters/SessionId' }]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/AgentSession' } } } }
+  /agent/sessions/{session_id}/messages:
+    post:
+      tags: [agent]
+      operationId: sendAgentMessage
+      parameters:
+        - { $ref: '#/components/parameters/SessionId' }
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [content]
+              properties:
+                content: { type: string, maxLength: 8000 }
+                selection:
+                  type: object
+                  properties:
+                    node_ids: { type: array, items: { type: string } }
+                    edge_ids: { type: array, items: { type: string } }
+      responses:
+        '202': { description: Accepted, content: { application/json: { schema: { $ref: '#/components/schemas/AgentMessage' } } } }
+  /agent/sessions/{session_id}/messages/{message_id}/events:
+    get:
+      tags: [agent]
+      operationId: streamAgentMessageEvents
+      summary: SSE for one agent turn (see API_SPEC.md §3.2)
+      parameters:
+        - { $ref: '#/components/parameters/SessionId' }
+        - { name: message_id, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: SSE stream
+          content:
+            text/event-stream:
+              schema: { $ref: '#/components/schemas/AgentEvent' }
+  /agent/sessions/{session_id}/proposals:
+    get:
+      tags: [agent]
+      operationId: listProposals
+      parameters:
+        - { $ref: '#/components/parameters/SessionId' }
+        - { name: status, in: query, schema: { $ref: '#/components/schemas/ProposalStatus' } }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items: { type: array, items: { $ref: '#/components/schemas/Proposal' } }
+  /agent/sessions/{session_id}/proposals/{proposal_id}/decision:
+    post:
+      tags: [agent]
+      operationId: decideProposal
+      parameters:
+        - { $ref: '#/components/parameters/SessionId' }
+        - { name: proposal_id, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [decision]
+              properties:
+                decision: { type: string, enum: [approve, reject] }
+                note: { type: string }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Proposal' } } } }
+        '409': { $ref: '#/components/responses/Error' }
+
+# ================================================================== components
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer }
+
+  parameters:
+    IdempotencyKey: { name: Idempotency-Key, in: header, required: false, schema: { type: string, maxLength: 128 } }
+    Cursor: { name: cursor, in: query, schema: { type: string } }
+    Limit: { name: limit, in: query, schema: { type: integer, default: 50, minimum: 1, maximum: 200 } }
+    Revision: { name: revision, in: query, description: 'Graph revision; omit for latest', schema: { type: integer, minimum: 0 } }
+    UploadId: { name: upload_id, in: path, required: true, schema: { type: string } }
+    RunId: { name: run_id, in: path, required: true, schema: { type: string } }
+    GraphId: { name: graph_id, in: path, required: true, schema: { type: string } }
+    NodeId: { name: node_id, in: path, required: true, schema: { type: string } }
+    EdgeId: { name: edge_id, in: path, required: true, schema: { type: string } }
+    ClaimId: { name: claim_id, in: path, required: true, schema: { type: string } }
+    InstrumentId: { name: instrument_id, in: path, required: true, schema: { type: string } }
+    PortfolioId: { name: portfolio_id, in: path, required: true, schema: { type: string } }
+    SessionId: { name: session_id, in: path, required: true, schema: { type: string } }
+
+  responses:
+    Error:
+      description: Error
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }
+
+  schemas:
+    # ---------------- shared
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message, request_id]
+          properties:
+            code:
+              type: string
+              enum: [invalid_input, not_found, idempotency_conflict, revision_conflict, budget_exhausted,
+                     source_unavailable, provider_timeout, market_data_unavailable, unmapped_exposure,
+                     approval_required, rate_limited, internal]
+            message: { type: string }
+            details: { type: object, additionalProperties: true }
+            request_id: { type: string }
+
+    Method:
+      type: object
+      description: 'Names the computation behind any derived number. Frontend labels output using `name`.'
+      required: [name, version]
+      properties:
+        name: { type: string }
+        version: { type: string }
+        params: { type: object, additionalProperties: true }
+        assumptions: { type: array, items: { type: string } }
+
+    DataQuality:
+      type: object
+      required: [coverage_pct]
+      properties:
+        coverage_pct: { type: number, minimum: 0, maximum: 100 }
+        unmapped_node_ids: { type: array, items: { type: string } }
+        equal_weight_fallback: { type: boolean }
+        notes: { type: array, items: { type: string } }
+        as_of: { type: string, format: date-time }
+
+    SupportLabel:
+      type: string
+      enum: [directly_supported, strongly_inferred, weakly_inferred, disputed, user_asserted, unresolved]
+
+    Predicate:
+      type: string
+      enum: [INPUT_TO, PART_OF, MANUFACTURES, PRODUCES, OPERATES, LOCATED_IN, SUPPLIES, OWNED_BY, PROCESSED_BY]
+
+    NodeKind:
+      type: string
+      enum: [product, component, material, organization, facility, geography]
+
+    Scope:
+      type: object
+      required: [type]
+      properties:
+        type: { type: string, enum: [product, company, generic] }
+        product_node_id: { type: [string, 'null'] }
+        organization_node_id: { type: [string, 'null'] }
+
+    # ---------------- uploads
+    Upload:
+      type: object
+      required: [id, filename, row_count, columns, created_at]
+      properties:
+        id: { type: string }
+        filename: { type: string }
+        row_count: { type: integer }
+        columns: { type: array, items: { type: string } }
+        preview: { type: array, items: { type: object, additionalProperties: true }, maxItems: 10 }
+        warnings: { type: array, items: { type: string } }
+        content_hash: { type: string }
+        created_at: { type: string, format: date-time }
+
+    # ---------------- runs
+    RunStatus:
+      type: string
+      enum: [queued, awaiting_input, running, completed, partial, failed, cancelled]
+    RunLimits:
+      type: object
+      properties:
+        max_hops: { type: integer, default: 3, minimum: 1, maximum: 4 }
+        max_nodes: { type: integer, default: 50, maximum: 150 }
+        max_claims: { type: integer, default: 80, maximum: 300 }
+        max_searches: { type: integer, default: 25, maximum: 60 }
+        max_documents: { type: integer, default: 40, maximum: 100 }
+        max_input_tokens: { type: integer, default: 400000 }
+        max_output_tokens: { type: integer, default: 30000 }
+        max_seconds: { type: integer, default: 480, maximum: 900 }
+    RunCreate:
+      type: object
+      required: [product]
+      properties:
+        product: { type: string, minLength: 1, maxLength: 200 }
+        company: { type: string, maxLength: 200 }
+        upload_id: { type: string }
+        limits: { $ref: '#/components/schemas/RunLimits' }
+        replay_of_run_id: { type: string, description: 'Replay a cached run for demo fallback' }
+    RunUsage:
+      type: object
+      properties:
+        searches: { type: integer }
+        documents: { type: integer }
+        input_tokens: { type: integer }
+        output_tokens: { type: integer }
+        cost_minor: { type: integer }
+        currency: { type: string, default: USD }
+        elapsed_seconds: { type: number }
+        binding_limit: { type: [string, 'null'] }
+    RunQuestion:
+      type: object
+      required: [question_id, kind, prompt, choices]
+      properties:
+        question_id: { type: string }
+        kind: { type: string, enum: [product_ambiguity, company_ambiguity] }
+        prompt: { type: string }
+        choices:
+          type: array
+          items:
+            type: object
+            required: [id, label]
+            properties:
+              id: { type: string }
+              label: { type: string }
+              detail: { type: string }
+    Run:
+      type: object
+      required: [id, status, mode, product, graph_id, limits, usage, created_at]
+      properties:
+        id: { type: string }
+        status: { $ref: '#/components/schemas/RunStatus' }
+        mode: { type: string, enum: [live, replay] }
+        product: { type: string }
+        company: { type: [string, 'null'] }
+        upload_id: { type: [string, 'null'] }
+        graph_id: { type: string }
+        limits: { $ref: '#/components/schemas/RunLimits' }
+        usage: { $ref: '#/components/schemas/RunUsage' }
+        progress:
+          type: object
+          properties:
+            tasks_done: { type: integer }
+            tasks_total: { type: integer }
+        pending_questions: { type: array, items: { $ref: '#/components/schemas/RunQuestion' } }
+        stop_reason: { type: [string, 'null'] }
+        open_questions: { type: array, items: { type: string } }
+        events_url: { type: string }
+        created_at: { type: string, format: date-time }
+        completed_at: { type: [string, 'null'], format: date-time }
+
+    RunEvent:
+      type: object
+      required: [type, seq, run_id, graph_id, revision, at, payload]
+      properties:
+        type:
+          type: string
+          enum: [run.status, run.question, task.started, task.finished, source.retrieved, source.failed,
+                 claim.proposed, claim.rejected, claim.committed, node.added, node.updated, edge.added,
+                 edge.updated, entity.merged, entity.review_needed, budget.updated, snapshot.required, run.completed]
+        seq: { type: integer }
+        run_id: { type: string }
+        graph_id: { type: string }
+        revision: { type: integer }
+        at: { type: string, format: date-time }
+        payload: { type: object, additionalProperties: true }
+
+    # ---------------- graph
+    GeographyLayer:
+      type: [object, 'null']
+      properties:
+        country_iso2: { type: string, minLength: 2, maxLength: 2 }
+        admin1: { type: [string, 'null'] }
+        lat: { type: [number, 'null'] }
+        lon: { type: [number, 'null'] }
+        address: { type: [string, 'null'] }
+        precision: { type: string, enum: [address, city, region, country] }
+        claim_ids: { type: array, items: { type: string } }
+    ShareEntry:
+      type: object
+      required: [country_iso2, share]
+      properties:
+        country_iso2: { type: string }
+        share: { type: number, minimum: 0, maximum: 1 }
+        organization_node_id: { type: [string, 'null'] }
+    ConcentrationLayer:
+      type: [object, 'null']
+      properties:
+        commodity: { type: string }
+        year: { type: integer }
+        stage: { type: string, enum: [mine, refinery, export] }
+        hhi: { type: number, minimum: 0, maximum: 1 }
+        top_share: { type: number, minimum: 0, maximum: 1 }
+        shares: { type: array, items: { $ref: '#/components/schemas/ShareEntry' } }
+        source_id: { type: string }
+        method: { $ref: '#/components/schemas/Method' }
+    InstrumentMapping:
+      type: object
+      required: [instrument_id, role, mapping_confidence]
+      properties:
+        instrument_id: { type: string }
+        role: { type: string, enum: [commodity_price, supplier_equity, supplier_credit, fx, freight] }
+        mapping_confidence: { type: string, enum: [strong, plausible, weak] }
+        rationale: { type: string }
+    MarketLayer:
+      type: [object, 'null']
+      properties:
+        instruments: { type: array, items: { $ref: '#/components/schemas/InstrumentMapping' } }
+        exposure_weight: { type: [number, 'null'], minimum: 0, maximum: 1 }
+    OperationalLayer:
+      type: [object, 'null']
+      properties:
+        quantity: { type: [number, 'null'] }
+        unit: { type: [string, 'null'] }
+        lead_time_days: { type: [integer, 'null'] }
+        inventory_days: { type: [integer, 'null'] }
+        weight: { type: [number, 'null'], description: 'Relative dependency weight 0..1' }
+        substitutability: { type: [string, 'null'], enum: [none, low, medium, high, null] }
+    DataLayers:
+      type: object
+      properties:
+        geography: { $ref: '#/components/schemas/GeographyLayer' }
+        concentration: { $ref: '#/components/schemas/ConcentrationLayer' }
+        market: { $ref: '#/components/schemas/MarketLayer' }
+        operational: { $ref: '#/components/schemas/OperationalLayer' }
+        custom: { type: object, additionalProperties: true }
+
+    Node:
+      type: object
+      required: [id, kind, label, tier, status, data]
+      properties:
+        id: { type: string }
+        kind: { $ref: '#/components/schemas/NodeKind' }
+        label: { type: string }
+        canonical_name: { type: string }
+        aliases: { type: array, items: { type: string } }
+        external_ids: { type: object, additionalProperties: { type: string }, description: 'e.g. {lei, cik, mpn}' }
+        tier: { type: [integer, 'null'], description: 'Upstream dependency hops from root; null for non-dependency nodes' }
+        status: { $ref: '#/components/schemas/SupportLabel' }
+        flags: { type: array, items: { type: string, enum: [single_supplier_observed, labor_risk_context, screening_candidate, disputed] } }
+        data: { $ref: '#/components/schemas/DataLayers' }
+    NodeDetail:
+      allOf:
+        - { $ref: '#/components/schemas/Node' }
+        - type: object
+          properties:
+            in_edge_ids: { type: array, items: { type: string } }
+            out_edge_ids: { type: array, items: { type: string } }
+            claims: { type: array, items: { $ref: '#/components/schemas/ClaimSummary' } }
+            production: { $ref: '#/components/schemas/ProductionShares' }
+
+    EvidenceSummary:
+      type: object
+      properties:
+        source_count: { type: integer }
+        independent_family_count: { type: integer }
+        latest_published_at: { type: [string, 'null'], format: date-time }
+        has_contradiction: { type: boolean }
+    Edge:
+      type: object
+      required: [id, source_node_id, target_node_id, predicate, scope, support_label, claim_ids, data]
+      properties:
+        id: { type: string }
+        source_node_id: { type: string }
+        target_node_id: { type: string }
+        predicate: { $ref: '#/components/schemas/Predicate' }
+        scope: { $ref: '#/components/schemas/Scope' }
+        support_label: { $ref: '#/components/schemas/SupportLabel' }
+        claim_ids: { type: array, items: { type: string } }
+        evidence_summary: { $ref: '#/components/schemas/EvidenceSummary' }
+        valid_from: { type: [string, 'null'], format: date }
+        valid_to: { type: [string, 'null'], format: date }
+        data: { $ref: '#/components/schemas/DataLayers' }
+    EdgeDetail:
+      allOf:
+        - { $ref: '#/components/schemas/Edge' }
+        - type: object
+          properties:
+            claims: { type: array, items: { $ref: '#/components/schemas/Claim' } }
+            contradictions: { type: array, items: { $ref: '#/components/schemas/Claim' } }
+            rationale: { type: string }
+            caveats: { type: array, items: { type: string } }
+
+    GraphMeta:
+      type: object
+      required: [id, revision, name, created_at]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        revision: { type: integer }
+        run_id: { type: [string, 'null'] }
+        parent_graph_id: { type: [string, 'null'] }
+        root_node_id: { type: [string, 'null'] }
+        mode: { type: string, enum: [live, replay] }
+        stats:
+          type: object
+          properties:
+            node_count: { type: integer }
+            edge_count: { type: integer }
+            max_tier: { type: integer }
+            by_support_label: { type: object, additionalProperties: { type: integer } }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+    Graph:
+      allOf:
+        - { $ref: '#/components/schemas/GraphMeta' }
+        - type: object
+          required: [nodes, edges]
+          properties:
+            nodes: { type: array, items: { $ref: '#/components/schemas/Node' } }
+            edges: { type: array, items: { $ref: '#/components/schemas/Edge' } }
+            claims: { type: array, items: { $ref: '#/components/schemas/ClaimSummary' } }
+    GraphExport:
+      allOf:
+        - { $ref: '#/components/schemas/Graph' }
+        - type: object
+          required: [claims, evidence, sources, exported_at]
+          properties:
+            claims: { type: array, items: { $ref: '#/components/schemas/Claim' } }
+            evidence: { type: array, items: { $ref: '#/components/schemas/Evidence' } }
+            sources: { type: array, items: { $ref: '#/components/schemas/Source' } }
+            exported_at: { type: string, format: date-time }
+    GraphDiff:
+      type: object
+      required: [graph_id, from, to]
+      properties:
+        graph_id: { type: string }
+        from: { type: integer }
+        to: { type: integer }
+        nodes_added: { type: array, items: { $ref: '#/components/schemas/Node' } }
+        nodes_removed: { type: array, items: { type: string } }
+        nodes_changed: { type: array, items: { $ref: '#/components/schemas/Node' } }
+        edges_added: { type: array, items: { $ref: '#/components/schemas/Edge' } }
+        edges_removed: { type: array, items: { type: string } }
+        edges_changed: { type: array, items: { $ref: '#/components/schemas/Edge' } }
+
+    MutationOp:
+      type: object
+      required: [op]
+      properties:
+        op: { type: string, enum: [add_node, add_edge, update_node, update_edge, remove_node, remove_edge, annotate] }
+        temp_id: { type: string, description: 'For add_node; referenced by later ops in the same batch' }
+        node: { type: object, additionalProperties: true }
+        edge: { type: object, additionalProperties: true }
+        node_id: { type: string }
+        edge_id: { type: string }
+        target_id: { type: string }
+        patch: { type: object, additionalProperties: true }
+        key: { type: string }
+        value: {}
+        reason: { type: string }
+    MutationBatch:
+      type: object
+      required: [ops]
+      properties:
+        ops: { type: array, minItems: 1, maxItems: 200, items: { $ref: '#/components/schemas/MutationOp' } }
+        message: { type: string, maxLength: 2000 }
+    MutationResult:
+      type: object
+      required: [graph_id, revision, delta, temp_id_map]
+      properties:
+        graph_id: { type: string }
+        revision: { type: integer }
+        delta: { $ref: '#/components/schemas/GraphDiff' }
+        temp_id_map: { type: object, additionalProperties: { type: string } }
+    MutationRecord:
+      type: object
+      required: [id, graph_id, revision_before, revision_after, actor, ops, created_at]
+      properties:
+        id: { type: string }
+        graph_id: { type: string }
+        revision_before: { type: integer }
+        revision_after: { type: integer }
+        actor: { type: string, description: 'user or agent:<session_id>' }
+        proposal_id: { type: [string, 'null'] }
+        message: { type: string }
+        ops: { type: array, items: { $ref: '#/components/schemas/MutationOp' } }
+        created_at: { type: string, format: date-time }
+
+    # ---------------- claims
+    ClaimSummary:
+      type: object
+      required: [id, subject_id, predicate, object_id, status, support_label]
+      properties:
+        id: { type: string }
+        subject_id: { type: string }
+        predicate: { $ref: '#/components/schemas/Predicate' }
+        object_id: { type: string }
+        scope: { $ref: '#/components/schemas/Scope' }
+        status: { type: string, enum: [proposed, accepted, rejected, disputed, under_review] }
+        support_label: { $ref: '#/components/schemas/SupportLabel' }
+    Evidence:
+      type: object
+      required: [id, source_id, span, support_type]
+      properties:
+        id: { type: string }
+        source_id: { type: string }
+        span: { type: string, maxLength: 600 }
+        locator: { type: string, description: 'CSS path, page number, byte offsets, or BOM row ref' }
+        support_type: { type: string, enum: [supports, contradicts, context] }
+        extracted_at: { type: string, format: date-time }
+        source: { $ref: '#/components/schemas/Source' }
+    Claim:
+      allOf:
+        - { $ref: '#/components/schemas/ClaimSummary' }
+        - type: object
+          properties:
+            rationale: { type: string }
+            observed_at: { type: [string, 'null'], format: date-time }
+            valid_from: { type: [string, 'null'], format: date }
+            valid_to: { type: [string, 'null'], format: date }
+            evidence: { type: array, items: { $ref: '#/components/schemas/Evidence' } }
+            contradiction_claim_ids: { type: array, items: { type: string } }
+            resolution_notes: { type: array, items: { type: string } }
+            confidence_features:
+              type: object
+              properties:
+                identity_match: { type: string }
+                source_directness: { type: string }
+                independence_count: { type: integer }
+                scope_match: { type: boolean }
+                temporal_status: { type: string }
+    Source:
+      type: object
+      required: [id, url, retrieved_at, content_hash]
+      properties:
+        id: { type: string }
+        url: { type: string }
+        title: { type: [string, 'null'] }
+        publisher: { type: [string, 'null'] }
+        published_at: { type: [string, 'null'], format: date-time }
+        retrieved_at: { type: string, format: date-time }
+        content_hash: { type: string }
+        source_family_id: { type: string }
+        kind: { type: string, enum: [filing, supplier_list, teardown, datasheet, press, government_dataset, upload, other] }
+        license_notes: { type: [string, 'null'] }
+
+    # ---------------- enrichments
+    Enrichment:
+      type: object
+      required: [id, graph_id, kinds, status, created_at]
+      properties:
+        id: { type: string }
+        graph_id: { type: string }
+        kinds: { type: array, items: { type: string } }
+        status: { type: string, enum: [queued, running, completed, partial, failed] }
+        progress:
+          type: object
+          properties:
+            nodes_done: { type: integer }
+            nodes_total: { type: integer }
+        results:
+          type: array
+          items:
+            type: object
+            properties:
+              node_id: { type: string }
+              kind: { type: string }
+              outcome: { type: string, enum: [filled, unresolved, skipped] }
+              reason: { type: [string, 'null'] }
+        revision_after: { type: [integer, 'null'] }
+        events_url: { type: string }
+        created_at: { type: string, format: date-time }
+
+    # ---------------- geography
+    GeoFeatureCollection:
+      type: object
+      required: [type, features]
+      properties:
+        type: { type: string, const: FeatureCollection }
+        features:
+          type: array
+          items:
+            type: object
+            required: [type, geometry, properties]
+            properties:
+              type: { type: string, const: Feature }
+              geometry:
+                type: [object, 'null']
+                description: 'Point for facilities; null for country features (join on properties.country_iso2 client-side)'
+              properties:
+                type: object
+                properties:
+                  feature_kind: { type: string, enum: [facility, country] }
+                  node_id: { type: string }
+                  node_kind: { $ref: '#/components/schemas/NodeKind' }
+                  label: { type: string }
+                  country_iso2: { type: string }
+                  support_label: { $ref: '#/components/schemas/SupportLabel' }
+                  claim_ids: { type: array, items: { type: string } }
+                  shares:
+                    type: array
+                    description: 'For country features - each material node touching this country and its share'
+                    items:
+                      type: object
+                      properties:
+                        material_node_id: { type: string }
+                        commodity: { type: string }
+                        share: { type: number }
+                        year: { type: integer }
+    ProductionShares:
+      type: [object, 'null']
+      properties:
+        material_node_id: { type: string }
+        commodity: { type: string }
+        year: { type: integer }
+        stage: { type: string, enum: [mine, refinery, export] }
+        unit: { type: string }
+        shares: { type: array, items: { $ref: '#/components/schemas/ShareEntry' } }
+        hhi: { type: number }
+        top_share: { type: number }
+        source_id: { type: string }
+        method: { $ref: '#/components/schemas/Method' }
+        data_quality: { $ref: '#/components/schemas/DataQuality' }
+
+    # ---------------- market
+    InstrumentKind:
+      type: string
+      enum: [commodity_future, equity, fx, freight_index, credit]
+    Instrument:
+      type: object
+      required: [id, kind, symbol, name, provider, currency]
+      properties:
+        id: { type: string }
+        kind: { $ref: '#/components/schemas/InstrumentKind' }
+        symbol: { type: string }
+        name: { type: string }
+        provider: { type: string, description: 'e.g. fixture, stooq, yahoo, lme' }
+        currency: { type: string }
+        exchange: { type: [string, 'null'] }
+        coverage:
+          type: object
+          properties:
+            from: { type: string, format: date }
+            to: { type: string, format: date }
+        metadata: { type: object, additionalProperties: true }
+    PricePoint:
+      type: object
+      required: [t, close]
+      properties:
+        t: { type: string, format: date }
+        open: { type: [number, 'null'] }
+        high: { type: [number, 'null'] }
+        low: { type: [number, 'null'] }
+        close: { type: number }
+        volume: { type: [number, 'null'] }
+    PriceSeries:
+      type: object
+      required: [instrument_id, interval, provider, as_of, series]
+      properties:
+        instrument_id: { type: string }
+        interval: { type: string, enum: [1d, 1w] }
+        provider: { type: string }
+        as_of: { type: string, format: date-time }
+        currency: { type: string }
+        series: { type: array, items: { $ref: '#/components/schemas/PricePoint' } }
+    MarketExposure:
+      type: object
+      required: [graph_id, revision, mappings, data_quality]
+      properties:
+        graph_id: { type: string }
+        revision: { type: integer }
+        mappings:
+          type: array
+          items:
+            type: object
+            required: [node_id, instrument_id, role, mapping_confidence]
+            properties:
+              node_id: { type: string }
+              instrument_id: { type: string }
+              role: { type: string }
+              mapping_confidence: { type: string, enum: [strong, plausible, weak] }
+              exposure_weight: { type: [number, 'null'] }
+              rationale: { type: string }
+        method: { $ref: '#/components/schemas/Method' }
+        data_quality: { $ref: '#/components/schemas/DataQuality' }
+    MarketSummary:
+      type: object
+      required: [graph_id, revision, window_days, as_of, items]
+      properties:
+        graph_id: { type: string }
+        revision: { type: integer }
+        window_days: { type: integer }
+        as_of: { type: string, format: date-time }
+        items:
+          type: array
+          items:
+            type: object
+            required: [instrument, node_ids, last_close, return_pct, realized_vol_annualized, zscore, flagged]
+            properties:
+              instrument: { $ref: '#/components/schemas/Instrument' }
+              node_ids: { type: array, items: { type: string } }
+              last_close: { type: number }
+              return_pct: { type: number }
+              realized_vol_annualized: { type: number }
+              zscore: { type: [number, 'null'] }
+              flagged: { type: boolean }
+              flag_reason: { type: [string, 'null'] }
+        method: { $ref: '#/components/schemas/Method' }
+        data_quality: { $ref: '#/components/schemas/DataQuality' }
+
+    # ---------------- portfolios
+    PortfolioMemberInput:
+      type: object
+      required: [graph_id, weight]
+      properties:
+        graph_id: { type: string }
+        revision: { type: [integer, 'null'], description: 'Pins a revision; null means pin latest at save time' }
+        weight: { type: number, exclusiveMinimum: 0 }
+    PortfolioMember:
+      allOf:
+        - { $ref: '#/components/schemas/PortfolioMemberInput' }
+        - type: object
+          required: [normalized_weight, graph]
+          properties:
+            normalized_weight: { type: number, minimum: 0, maximum: 1 }
+            graph: { $ref: '#/components/schemas/GraphMeta' }
+    PortfolioCreate:
+      type: object
+      required: [name, members]
+      properties:
+        name: { type: string, maxLength: 200 }
+        description: { type: string }
+        members: { type: array, minItems: 1, items: { $ref: '#/components/schemas/PortfolioMemberInput' } }
+    Portfolio:
+      type: object
+      required: [id, name, members, created_at]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        description: { type: [string, 'null'] }
+        members: { type: array, items: { $ref: '#/components/schemas/PortfolioMember' } }
+        exposure_summary:
+          type: object
+          properties:
+            instrument_count: { type: integer }
+            by_kind: { type: object, additionalProperties: { type: number } }
+            coverage_pct: { type: number }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+    PortfolioExposure:
+      type: object
+      required: [portfolio_id, exposures, data_quality]
+      properties:
+        portfolio_id: { type: string }
+        exposures:
+          type: array
+          items:
+            type: object
+            required: [instrument, weight, contributions]
+            properties:
+              instrument: { $ref: '#/components/schemas/Instrument' }
+              weight: { type: number }
+              contributions:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    graph_id: { type: string }
+                    node_id: { type: string }
+                    weight: { type: number }
+        method: { $ref: '#/components/schemas/Method' }
+        data_quality: { $ref: '#/components/schemas/DataQuality' }
+    VolatilityPoint:
+      type: object
+      required: [t, vol]
+      properties:
+        t: { type: string, format: date }
+        vol: { type: number, description: 'Annualized, as a fraction' }
+        components:
+          type: object
+          properties:
+            commodity: { type: number }
+            fx: { type: number }
+            equity: { type: number }
+            freight: { type: number }
+            credit: { type: number }
+    VolatilitySeries:
+      type: object
+      required: [portfolio_id, from, to, window_days, interval, series, method, data_quality]
+      properties:
+        portfolio_id: { type: string }
+        from: { type: string, format: date }
+        to: { type: string, format: date }
+        window_days: { type: integer }
+        interval: { type: string }
+        series: { type: array, items: { $ref: '#/components/schemas/VolatilityPoint' } }
+        top_contributors:
+          type: array
+          items:
+            type: object
+            properties:
+              graph_id: { type: string }
+              node_id: { type: [string, 'null'] }
+              instrument_id: { type: string }
+              share_of_variance: { type: number }
+        method: { $ref: '#/components/schemas/Method' }
+        data_quality: { $ref: '#/components/schemas/DataQuality' }
+
+    # ---------------- backtests
+    BacktestEvent:
+      type: object
+      required: [label, date]
+      properties:
+        label: { type: string }
+        date: { type: string, format: date }
+        end_date: { type: [string, 'null'], format: date }
+        affected_node_ids: { type: array, items: { type: string } }
+        affected_instrument_ids: { type: array, items: { type: string } }
+        notes: { type: string }
+    BacktestCreate:
+      type: object
+      required: [from, to, model]
+      properties:
+        name: { type: string }
+        from: { type: string, format: date }
+        to: { type: string, format: date }
+        model: { type: string, enum: [exposure_weighted_realized_vol, early_warning] }
+        params:
+          type: object
+          additionalProperties: true
+          description: |
+            exposure_weighted_realized_vol: { window_days }
+            early_warning: { zscore_threshold (default 2.0), lead_days (default 20), lookback_days (default 250) }
+        events: { type: array, items: { $ref: '#/components/schemas/BacktestEvent' } }
+    Backtest:
+      type: object
+      required: [id, portfolio_id, status, model, from, to, created_at]
+      properties:
+        id: { type: string }
+        name: { type: [string, 'null'] }
+        portfolio_id: { type: string }
+        status: { type: string, enum: [queued, running, completed, failed] }
+        model: { type: string }
+        params: { type: object, additionalProperties: true }
+        from: { type: string, format: date }
+        to: { type: string, format: date }
+        series: { type: array, items: { $ref: '#/components/schemas/VolatilityPoint' } }
+        metrics:
+          type: object
+          additionalProperties: true
+          description: |
+            Both models: mean_vol, max_vol, max_drawdown_proxy.
+            early_warning adds: hit_rate, false_alert_rate, median_lead_days, events_evaluated.
+        event_evaluation:
+          type: array
+          items:
+            type: object
+            properties:
+              event: { $ref: '#/components/schemas/BacktestEvent' }
+              detected: { type: boolean }
+              lead_days: { type: [integer, 'null'] }
+              triggering_instrument_ids: { type: array, items: { type: string } }
+              vol_before: { type: [number, 'null'] }
+              vol_after: { type: [number, 'null'] }
+        method: { $ref: '#/components/schemas/Method' }
+        data_quality: { $ref: '#/components/schemas/DataQuality' }
+        events_url: { type: string }
+        error: { type: [string, 'null'] }
+        created_at: { type: string, format: date-time }
+        completed_at: { type: [string, 'null'], format: date-time }
+
+    # ---------------- scenarios
+    Shock:
+      type: object
+      required: [kind, start]
+      properties:
+        kind: { type: string, enum: [outage, price_shock, export_restriction, route_disruption] }
+        start: { type: string, format: date }
+        duration_days: { type: integer, minimum: 1 }
+        severity: { type: number, minimum: 0, maximum: 1, default: 1 }
+        target_node_id: { type: string, description: 'outage' }
+        instrument_id: { type: string, description: 'price_shock' }
+        magnitude_pct: { type: number, description: 'price_shock' }
+        decay_days: { type: integer, description: 'price_shock' }
+        country_iso2: { type: string, description: 'export_restriction' }
+        commodity: { type: string, description: 'export_restriction' }
+        edge_ids: { type: array, items: { type: string }, description: 'route_disruption' }
+        added_lead_time_days: { type: integer, description: 'route_disruption' }
+    ScenarioAssumptions:
+      type: object
+      properties:
+        inventory_days_default: { type: integer, default: 10 }
+        substitution_allowed: { type: boolean, default: false }
+        propagate_through:
+          type: array
+          items: { $ref: '#/components/schemas/Predicate' }
+          default: [INPUT_TO, PART_OF, MANUFACTURES, PRODUCES, PROCESSED_BY, SUPPLIES]
+        horizon_days: { type: integer, default: 180 }
+    ScenarioCreate:
+      type: object
+      required: [shocks]
+      properties:
+        name: { type: string }
+        revision: { type: integer, description: 'Defaults to latest' }
+        shocks: { type: array, minItems: 1, maxItems: 10, items: { $ref: '#/components/schemas/Shock' } }
+        assumptions: { $ref: '#/components/schemas/ScenarioAssumptions' }
+        include_inferred: { type: boolean, default: true }
+    AffectedPath:
+      type: object
+      required: [edge_ids, node_ids, weakest_support_label]
+      properties:
+        edge_ids: { type: array, items: { type: string } }
+        node_ids: { type: array, items: { type: string } }
+        weakest_support_label: { $ref: '#/components/schemas/SupportLabel' }
+        includes_user_asserted: { type: boolean }
+        assumptions_used: { type: array, items: { type: string } }
+        narrative: { type: string }
+    Scenario:
+      type: object
+      required: [id, graph_id, revision, status, shocks, assumptions, created_at]
+      properties:
+        id: { type: string }
+        name: { type: [string, 'null'] }
+        graph_id: { type: string }
+        revision: { type: integer }
+        status: { type: string, enum: [queued, running, completed, failed] }
+        shocks: { type: array, items: { $ref: '#/components/schemas/Shock' } }
+        assumptions: { $ref: '#/components/schemas/ScenarioAssumptions' }
+        include_inferred: { type: boolean }
+        affected_paths: { type: array, items: { $ref: '#/components/schemas/AffectedPath' } }
+        affected_paths_direct_only: { type: array, items: { $ref: '#/components/schemas/AffectedPath' } }
+        affected_node_ids: { type: array, items: { type: string } }
+        timeline:
+          type: array
+          description: 'Day-indexed availability per affected component under stated assumptions'
+          items:
+            type: object
+            properties:
+              day: { type: integer }
+              node_id: { type: string }
+              availability: { type: number, minimum: 0, maximum: 1 }
+              state: { type: string, enum: [normal, drawing_inventory, uncovered, recovering] }
+        cost_impact:
+          type: [object, 'null']
+          properties:
+            currency: { type: string }
+            low_minor: { type: integer }
+            high_minor: { type: integer }
+            basis: { type: string }
+        method: { $ref: '#/components/schemas/Method' }
+        data_quality: { $ref: '#/components/schemas/DataQuality' }
+        created_by: { type: string, description: 'user or agent:<session_id>' }
+        created_at: { type: string, format: date-time }
+    ScenarioComparison:
+      type: object
+      required: [scenarios, shared_affected_node_ids, unique_affected_node_ids]
+      properties:
+        scenarios: { type: array, items: { $ref: '#/components/schemas/Scenario' } }
+        shared_affected_node_ids: { type: array, items: { type: string } }
+        unique_affected_node_ids: { type: object, additionalProperties: { type: array, items: { type: string } } }
+        deltas: { type: object, additionalProperties: true }
+
+    # ---------------- agent
+    AgentSession:
+      type: object
+      required: [id, capabilities, created_at]
+      properties:
+        id: { type: string }
+        graph_id: { type: [string, 'null'] }
+        portfolio_id: { type: [string, 'null'] }
+        capabilities:
+          type: array
+          items:
+            type: string
+            enum: [graph.query, graph.evidence, graph.explain_path, geography.lookup, market.summary, market.prices,
+                   portfolio.volatility, scenario.run, graph.propose_mutations, research.propose_task, portfolio.propose_change]
+        auto_approve: { type: array, items: { type: string } }
+        messages: { type: array, items: { $ref: '#/components/schemas/AgentMessage' } }
+        proposals: { type: array, items: { $ref: '#/components/schemas/Proposal' } }
+        created_at: { type: string, format: date-time }
+    Citation:
+      type: object
+      required: [kind, id]
+      properties:
+        kind: { type: string, enum: [claim, source, scenario, computation, node, edge] }
+        id: { type: string }
+        label: { type: string }
+    AgentMessage:
+      type: object
+      required: [id, session_id, role, status, created_at]
+      properties:
+        id: { type: string }
+        session_id: { type: string }
+        role: { type: string, enum: [user, assistant] }
+        status: { type: string, enum: [queued, streaming, completed, failed] }
+        content: { type: string }
+        citations:
+          type: array
+          items:
+            type: object
+            properties:
+              span_start: { type: integer }
+              span_end: { type: integer }
+              citations: { type: array, items: { $ref: '#/components/schemas/Citation' } }
+        unsupported_spans:
+          type: array
+          items:
+            type: object
+            properties:
+              span_start: { type: integer }
+              span_end: { type: integer }
+        tool_calls:
+          type: array
+          items:
+            type: object
+            properties:
+              call_id: { type: string }
+              tool: { type: string }
+              args: { type: object, additionalProperties: true }
+              summary: { type: string }
+              resource_ref: { type: object, properties: { kind: { type: string }, id: { type: string } } }
+        proposal_ids: { type: array, items: { type: string } }
+        events_url: { type: string }
+        created_at: { type: string, format: date-time }
+    ProposalStatus:
+      type: string
+      enum: [pending, approved, rejected, executed, failed]
+    Proposal:
+      type: object
+      required: [id, session_id, kind, title, rationale, preview, status, created_at]
+      properties:
+        id: { type: string }
+        session_id: { type: string }
+        message_id: { type: string }
+        kind: { type: string, enum: [mutations, research_task, scenario, portfolio_change] }
+        title: { type: string }
+        rationale: { type: string }
+        preview:
+          type: object
+          additionalProperties: true
+          description: 'Exact request body that will be sent to the underlying endpoint on approval'
+        target: { type: object, properties: { kind: { type: string }, id: { type: string }, revision: { type: integer } } }
+        status: { $ref: '#/components/schemas/ProposalStatus' }
+        decision_note: { type: [string, 'null'] }
+        created_resource: { type: [object, 'null'], properties: { kind: { type: string }, id: { type: string } } }
+        error: { type: [string, 'null'] }
+        created_at: { type: string, format: date-time }
+        decided_at: { type: [string, 'null'], format: date-time }
+    AgentEvent:
+      type: object
+      required: [type, seq, session_id, message_id, at, payload]
+      properties:
+        type:
+          type: string
+          enum: [message.delta, message.citation, tool.call, tool.result, proposal.created, ui.focus, message.completed, error]
+        seq: { type: integer }
+        session_id: { type: string }
+        message_id: { type: string }
+        at: { type: string, format: date-time }
+        payload: { type: object, additionalProperties: true }
