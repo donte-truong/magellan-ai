@@ -71,6 +71,8 @@ class RunState:
         self.invalid_documents = []  # pages whose model output was unusable
         self.stale = {}  # branch id -> consecutive tasks without a verified finding
         self.paused = set()  # branches paused by the stagnation rule
+        self.analysis_slots = None  # asyncio.Semaphore bounding concurrent document analyses
+        self.running = {}  # asyncio task -> branch id, for fair concurrent scheduling
 
     def record(self, entry):
         if len(self.trace) >= MAX_TRACE_ENTRIES:
@@ -357,13 +359,8 @@ class Worker:
                     self.ingest_estimate(workspace, identifier, budget)
                 if run.get("_seed_urls") and hasattr(self.provider, "fetch_page"):
                     await self.research_seeds(workspace, identifier, run, budget, questions, state)
-                while True:
-                    task_node = self.next_task(workspace, identifier, run, state)
-                    if task_node is None:
-                        break
-                    await self.research_task(
-                        workspace, identifier, run, task_node, budget, questions, state
-                    )
+                state.analysis_slots = asyncio.Semaphore(self.settings.research_concurrency)
+                await self.research_all(workspace, identifier, run, budget, questions, state)
                 if self.provider.name == "curated_fixture":
                     entry = self.provider.lookup(run["product"], run["company"])
                     questions.extend(
@@ -466,8 +463,9 @@ class Worker:
         return counts
 
     def next_task(self, workspace, identifier, run, state):
-        """Fair opportunity: the branch that has consumed the fewest documents per completed task
-        goes first; ties go to the lower tier, then to targets with more unanswered relation types."""
+        """Fair opportunity: branches with no task in flight first, then the branch that has
+        consumed the fewest documents per completed task; ties go to the lower tier, then to
+        targets with more unanswered relation types. Returns (node, branch) or None."""
         with self.db.transaction(workspace) as repo:
             graph = repo.graph(run["graph_id"])
         pending = self.pending_tasks(graph, run, state)
@@ -476,13 +474,52 @@ class Worker:
         for node in pending:
             if node["id"] not in state.branch_of and node["tier"] == 1:
                 state.branch_of[node["id"]] = node["id"]
+        busy = set(state.running.values())
 
         def key(node):
             branch = state.branch(node, graph)
             fairness = state.spend.get(branch, 0) / (1 + state.done.get(branch, 0))
-            return (fairness, node["tier"], -len(unanswered_relations(graph, node)), node["label"])
+            return (
+                branch in busy,
+                fairness,
+                node["tier"],
+                -len(unanswered_relations(graph, node)),
+                node["label"],
+            )
 
-        return min(pending, key=key)
+        node = min(pending, key=key)
+        return node, state.branch(node, graph)
+
+    async def research_all(self, workspace, identifier, run, budget, questions, state):
+        """Run research tasks as a bounded pool. Model calls overlap across tasks; every graph
+        commit and budget charge is a synchronous step, so ordering rules are unchanged. The
+        first budget stop or provider failure cancels the other tasks."""
+        running = state.running
+        try:
+            while True:
+                while len(running) < self.settings.task_concurrency:
+                    chosen = self.next_task(workspace, identifier, run, state)
+                    if chosen is None:
+                        break
+                    node, branch = chosen
+                    state.visited.add(node["id"])
+                    task = asyncio.create_task(
+                        self.research_task(
+                            workspace, identifier, run, node, budget, questions, state
+                        )
+                    )
+                    running[task] = branch
+                if not running:
+                    return
+                done, _ = await asyncio.wait(running, return_when=asyncio.FIRST_COMPLETED)
+                for task in done:
+                    running.pop(task)
+                    task.result()
+        finally:
+            for task in running:
+                task.cancel()
+            await asyncio.gather(*running, return_exceptions=True)
+            running.clear()
 
     async def plan_task(self, run, graph, node, budget, questions, state, failed=None):
         hints = self.provider.query_hints(node) if hasattr(self.provider, "query_hints") else ""
@@ -733,7 +770,9 @@ class Worker:
                 chosen.append(page)
             # Model calls run concurrently (bounded); commits stay sequential through the
             # single-writer transaction, so ordering and budgets are unchanged.
-            semaphore = asyncio.Semaphore(self.settings.research_concurrency)
+            semaphore = state.analysis_slots or asyncio.Semaphore(
+                self.settings.research_concurrency
+            )
 
             async def analyze(page):
                 async with semaphore:

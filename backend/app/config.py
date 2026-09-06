@@ -33,6 +33,11 @@ class Settings(BaseSettings):
     # "off" disables thinking, or an effort level (minimal/low/medium/high) with reasoning tokens
     # excluded from the response. Hidden reasoning otherwise competes with the JSON for max_tokens.
     openrouter_reasoning: Literal["", "off", "minimal", "low", "medium", "high"] = ""
+    # Per-role reasoning overrides, for mixed-model runs (a reasoning planner/verifier beside a
+    # non-reasoning extraction model). Empty falls back to the shared setting.
+    openrouter_reasoning_planner: Literal["", "off", "minimal", "low", "medium", "high"] = ""
+    openrouter_reasoning_verifier: Literal["", "off", "minimal", "low", "medium", "high"] = ""
+    openrouter_reasoning_extraction: Literal["", "off", "minimal", "low", "medium", "high"] = ""
     # Reasoning token budget for models whose thinking cannot be disabled (takes precedence
     # over the effort level). Hidden reasoning otherwise competes with the JSON for max_tokens.
     openrouter_reasoning_max_tokens: int | None = Field(default=None, ge=1, le=32000)
@@ -42,8 +47,10 @@ class Settings(BaseSettings):
     openrouter_reasoning_max_tokens_extraction: int | None = Field(default=None, ge=1, le=32000)
     # Hard wall-clock deadline per provider call; keep-alive bytes can defeat the read timeout.
     provider_call_deadline_seconds: int = Field(default=180, ge=10, le=900)
-    # Documents analyzed concurrently within one research task.
-    research_concurrency: int = Field(default=3, ge=1, le=8)
+    # Research tasks (targets) researched concurrently, chosen fairly across branches, and the
+    # total number of documents analyzed concurrently across those tasks. Commits stay serialized.
+    task_concurrency: int = Field(default=3, ge=1, le=6)
+    research_concurrency: int = Field(default=4, ge=1, le=8)
     # Pause a tier-1 branch after this many consecutive tasks without a verified finding (0 = never).
     branch_stagnation_tasks: int = Field(default=2, ge=0, le=10)
     # Model-assisted entity resolution for paraphrase duplicates the deterministic rules cannot
@@ -114,6 +121,13 @@ class Settings(BaseSettings):
                             "and OUTPUT_TOKEN_COST_PER_MILLION_MINOR"
                         )
         return self
+
+    def reasoning_for(self, role):
+        return {
+            "planner": self.openrouter_reasoning_planner,
+            "verifier": self.openrouter_reasoning_verifier,
+            "extraction": self.openrouter_reasoning_extraction,
+        }.get(role) or self.openrouter_reasoning
 
     def reasoning_budget_for(self, role):
         return {

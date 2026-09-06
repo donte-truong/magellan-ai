@@ -32,6 +32,8 @@ async def api(tmp_path):
         database_url=database_url,
         embedded_worker=False,
         workspace_tokens={"alpha-token": "alpha", "beta-token": "beta"},
+        # Sequential tasks keep fixture ordering deterministic; the pool has its own test.
+        task_concurrency=1,
     )
     app = create_app(settings)
     try:

@@ -796,12 +796,13 @@ class LiveProvider:
         # (USD cents per million). Without rates only free routes are permitted.
         reasoning = None
         budget_tokens = self.settings.reasoning_budget_for(role or "extraction")
+        effort = self.settings.reasoning_for(role or "extraction")
         if budget_tokens:
             reasoning = {"max_tokens": budget_tokens, "exclude": True}
-        elif self.settings.openrouter_reasoning == "off":
+        elif effort == "off":
             reasoning = {"enabled": False}
-        elif self.settings.openrouter_reasoning:
-            reasoning = {"effort": self.settings.openrouter_reasoning, "exclude": True}
+        elif effort:
+            reasoning = {"effort": effort, "exclude": True}
         max_price = {"prompt": 0, "completion": 0, "request": 0}
         if self.settings.openrouter_paid_allowed:
             max_price = {

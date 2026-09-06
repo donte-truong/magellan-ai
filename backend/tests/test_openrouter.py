@@ -198,3 +198,22 @@ async def test_reasoning_budgets_are_applied_per_role():
         await provider.structured(Extraction, "x", {}, budget(), role="planner")
     assert bodies[0]["reasoning"] == {"max_tokens": 256, "exclude": True}
     assert bodies[1]["reasoning"] == {"max_tokens": 2048, "exclude": True}
+
+
+async def test_reasoning_effort_can_differ_per_role_for_mixed_model_runs():
+    bodies = []
+
+    def handle(request):
+        bodies.append(json.loads(request.content))
+        return httpx.Response(200, json=response_data({"findings": []}, "openrouter"))
+
+    async with httpx.AsyncClient(transport=httpx.MockTransport(handle)) as client:
+        provider = LiveProvider(
+            config(openrouter_reasoning="off", openrouter_reasoning_verifier="low"), client
+        )
+        await provider.structured(Extraction, "x", {}, budget())
+        await provider.structured(Extraction, "x", {}, budget(), role="verifier")
+        await provider.structured(Extraction, "x", {}, budget(), role="planner")
+    assert bodies[0]["reasoning"] == {"enabled": False}
+    assert bodies[1]["reasoning"] == {"effort": "low", "exclude": True}
+    assert bodies[2]["reasoning"] == {"enabled": False}

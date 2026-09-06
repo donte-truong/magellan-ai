@@ -737,3 +737,76 @@ async def test_model_resolution_merges_or_flags_paraphrase_duplicates(api, mode)
         reasons = [e["payload"]["reason"] for e in events if e["type"] == "entity.review_needed"]
         assert any(r.startswith("model_unsure") for r in reasons)
         assert not any(e["type"] == "entity.merged" for e in events)
+
+
+class OverlappingProvider(PageProvider):
+    """Records how many analyses are in flight at once; each tier-1 task blocks until released."""
+
+    name = "test_overlap"
+
+    def __init__(self):
+        super().__init__()
+        self.in_flight = 0
+        self.peak = 0
+        self.gate = None
+
+    async def analyze(self, target, product, company, url, title, body, budget):
+        import asyncio
+
+        self.analyzed.append(target["label"])
+        findings = []
+        if target["kind"] == "product":
+            findings = [
+                Finding(label, "material", "INPUT_TO", "Widget contains tin", "stated")
+                for label in ("tin", "cobalt", "nickel")
+            ]
+        else:
+            self.in_flight += 1
+            self.peak = max(self.peak, self.in_flight)
+            # Wait until every pool slot has arrived, then let all through together.
+            if self.in_flight >= 3:
+                self.gate.set()
+            await asyncio.wait_for(self.gate.wait(), 5)
+            self.in_flight -= 1
+        return Document(url, title, "example.org", body, findings=findings)
+
+
+async def test_task_pool_overlaps_branches_and_serializes_commits(api):
+    import asyncio
+
+    client, app = api
+    app.state.worker.settings = app.state.worker.settings.model_copy(update={"task_concurrency": 3})
+    provider = OverlappingProvider()
+    provider.gate = asyncio.Event()
+    app.state.worker.provider = provider
+    run, graph = await researched(api, "Widget")
+    assert provider.peak == 3  # three tier-1 branches were researched at the same time
+    assert run["status"] == "partial" and run["stop_reason"] == "research_exhausted"
+    assert run["progress"] == {"tasks_done": 4, "tasks_total": 4}
+    events = sse_events(await client.get(run["events_url"]))
+    started = [e["payload"]["depth"] for e in events if e["type"] == "task.started"]
+    assert started == [0, 1, 1, 1]
+    # Fair start: the three concurrent tasks came from three different branches.
+    targets = {e["payload"]["target_node_id"] for e in events if e["type"] == "task.started"}
+    assert len(targets) == 4
+
+
+async def test_budget_stop_in_one_pooled_task_ends_the_run_cleanly(api):
+    import asyncio
+    import time
+
+    client, app = api
+    app.state.worker.settings = app.state.worker.settings.model_copy(update={"task_concurrency": 3})
+    provider = OverlappingProvider()
+    provider.gate = asyncio.Event()
+    app.state.worker.provider = provider
+    started = time.monotonic()
+    # The root reads one document; of the three concurrent tier-1 tasks only one can charge the
+    # second. The others hit the cap, and the task still waiting on its gate is cancelled rather
+    # than left to time out.
+    run, graph = await researched(api, "Widget", limits={"max_documents": 2})
+    assert time.monotonic() - started < 3
+    assert run["status"] == "partial" and run["stop_reason"] == "budget_exhausted"
+    assert run["usage"]["binding_limit"] == "max_documents"
+    assert run["usage"]["documents"] == 2
+    assert provider.in_flight == 1  # the cancelled analysis never returned
