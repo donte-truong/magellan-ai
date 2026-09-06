@@ -1047,3 +1047,69 @@ def test_spec_tokens_and_slug_labels():
     )
     assert tidy_label("kioxia-256gb-nand-flash-memory") == "kioxia 256gb nand flash memory"
     assert tidy_label("Ti-6Al-4V") == "Ti-6Al-4V" and tidy_label("Cortex-A76") == "Cortex-A76"
+
+
+def test_locate_span_tolerates_whitespace_citations_and_typographic_punctuation():
+    from app.resolution import locate_span
+
+    body = (
+        "The iPhone 15 Pro is powered by the A17 Pro,[12] a 3‑nm chip.\n"
+        "Apple’s Taptic Engine uses   100% recycled\ntungsten. Raw Materials Supply\n\n"
+        "Major Suppliers: GlobalWafers, SUMCO."
+    )
+    assert locate_span(body, "Taptic Engine uses") == "Taptic Engine uses"
+    assert locate_span(body, "uses 100% recycled tungsten") == "uses   100% recycled\ntungsten"
+    assert locate_span(body, "the A17 Pro, a 3-nm chip") == "the A17 Pro,[12] a 3‑nm chip"
+    assert locate_span(body, "Apple's Taptic Engine") == "Apple’s Taptic Engine"
+    assert (
+        locate_span(body, "Raw Materials Supply Major Suppliers: GlobalWafers")
+        == "Raw Materials Supply\n\nMajor Suppliers: GlobalWafers"
+    )
+    assert locate_span(body, "the A18 Pro") is None
+    assert locate_span(body, "") is None
+
+
+class SelfLoopProvider(PageProvider):
+    """A part number and its maker-prefixed name resolve to one node; a relation between the
+    two names is a relation from the node to itself."""
+
+    name = "test_selfloop"
+
+    async def analyze(self, target, product, company, url, title, body, budget):
+        findings = []
+        if target["kind"] == "product":
+            findings = [
+                Finding(
+                    "Broadcom BCM2712",
+                    "component",
+                    "PART_OF",
+                    "Widget contains tin",
+                    "a",
+                    part_number="BCM2712",
+                    manufacturer="Broadcom",
+                ),
+                Finding(
+                    "BCM2712",
+                    "component",
+                    "PART_OF",
+                    "Widget contains tin and a battery",
+                    "self loop through the recorded part number",
+                    object_label="Broadcom BCM2712",
+                    object_kind="component",
+                ),
+            ]
+        return Document(url, title, "example.org", body, findings=findings)
+
+
+async def test_a_relation_between_two_names_of_one_node_is_rejected(api):
+    client, app = api
+    app.state.worker.provider = SelfLoopProvider()
+    run, graph = await researched(api, "Widget")
+    assert {n["label"] for n in graph["nodes"]} == {"Widget", "Broadcom BCM2712"}
+    assert len(graph["edges"]) == 1
+    events = sse_events(await client.get(run["events_url"]))
+    # Rejected for the product task and again when the BCM2712 task reused the analysis.
+    assert [e["payload"]["reason"] for e in events if e["type"] == "claim.rejected"] == [
+        "predicate_invalid",
+        "predicate_invalid",
+    ]

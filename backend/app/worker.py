@@ -1451,6 +1451,12 @@ class Worker:
                                     f"may be '{match['label']}': {hint['rationale']}",
                                 },
                             )
+                    if subject is not None and obj is not None and subject["id"] == obj["id"]:
+                        # Two names for one node (an alias, a part number): no relation to itself.
+                        reject(finding, "predicate_invalid")
+                        eligible.remove(item)
+                        progress = True
+                        continue
                     review = s_review or o_review
                     if review:
                         self.emit(

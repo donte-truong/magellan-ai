@@ -186,6 +186,44 @@ def part_tokens(key):
     }
 
 
+QUOTE_CHARS = "'\u2018\u2019\u201a\u2032\"\u201c\u201d\u201e\u2033"
+DASH_CHARS = "-\u2010\u2011\u2012\u2013\u2014\u2212"
+
+
+def locate_span(body, quote):
+    """Return the verbatim body substring the quote refers to, or None.
+
+    Exact match first. Otherwise the quote is matched with whitespace runs, line breaks, and
+    bracketed citation markers ("[12]") allowed between words and with straight or typographic
+    quotes and dashes treated alike, so a quote copied from a PDF or a wiki still resolves to a
+    verbatim span of the stored text. The returned span is always text of the body itself.
+    """
+    if not quote or not body:
+        return None
+    if quote in body:
+        return quote
+    words = quote.split()
+    if not words or len(quote) > 1200:
+        return None
+    parts = []
+    for word in words:
+        chunk = []
+        for ch in word:
+            if ch in QUOTE_CHARS:
+                chunk.append(f"[{re.escape(QUOTE_CHARS)}]")
+            elif ch in DASH_CHARS:
+                chunk.append(f"[{re.escape(DASH_CHARS)}]")
+            else:
+                chunk.append(re.escape(ch))
+        parts.append("".join(chunk))
+    pattern = r"(?:\s|\[\d{1,3}\])+".join(parts)
+    try:
+        match = re.search(pattern, body)
+    except re.error:
+        return None
+    return match.group(0) if match else None
+
+
 def tidy_label(label):
     """Slug-like labels lifted from URLs or alt text ("kioxia-256gb-nand-flash-memory") become
     words; everything else is returned untouched."""

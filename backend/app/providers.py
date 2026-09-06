@@ -14,7 +14,13 @@ import httpx
 from pydantic import Field
 
 from app.config import Settings
-from app.resolution import normalized_predicate, select_passages, static_rejection, tidy_label
+from app.resolution import (
+    locate_span,
+    normalized_predicate,
+    select_passages,
+    static_rejection,
+    tidy_label,
+)
 from app.schemas import GeographyLayer, Model, NodeKind, Predicate
 
 # Conservative flat reservation per image; observed usage is reconciled after the response.
@@ -985,6 +991,11 @@ class LiveProvider:
         )
         findings = []
         for entry in extraction.findings:
+            # A quote that differs from the page only in whitespace, line breaks, citation
+            # markers, or typographic punctuation is replaced by the page's own verbatim text.
+            located = locate_span(body, entry.quote)
+            if located:
+                entry.quote = located
             findings.append(
                 Finding(
                     tidy_label(entry.label),
