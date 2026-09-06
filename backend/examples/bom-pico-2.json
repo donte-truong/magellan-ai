@@ -1,0 +1,12 @@
+{
+  "description": "Raspberry Pi Pico 2, non-wireless board without soldered headers. Estimate its physical board-level components; exclude accessories and software.",
+  "url": "https://www.raspberrypi.com/products/raspberry-pi-pico-2/",
+  "company": "Raspberry Pi",
+  "limits": {
+    "max_searches": 3,
+    "max_documents": 4,
+    "max_items": 25,
+    "max_seconds": 180,
+    "max_cost_minor": 100
+  }
+}

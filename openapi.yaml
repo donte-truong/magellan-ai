@@ -839,9 +839,29 @@ components:
     RunCreate:
       type: object
       required: [product]
+      description: 'Local MVP accepts bom (simple rows) or bom_estimate (full completed/partial BOM response), never both. Product must match the estimate. Request body limit is 2 MB.'
       properties:
         product: { type: string, minLength: 1, maxLength: 200 }
         company: { type: string, maxLength: 200 }
+        mode: { type: string, enum: [live, replay], default: live }
+        seed_urls:
+          type: array
+          maxItems: 10
+          items: { type: string, format: uri, maxLength: 2000 }
+        bom:
+          type: array
+          maxItems: 100
+          items:
+            type: object
+            required: [component]
+            additionalProperties: false
+            properties:
+              component: { type: string, minLength: 1, maxLength: 200 }
+              kind: { type: string, enum: [component, material], default: component }
+              quantity: { type: number, exclusiveMinimum: 0 }
+              unit: { type: string, maxLength: 40 }
+        bom_estimate:
+          $ref: './backend/docs/bom-estimate.schema.json'
         upload_id: { type: string }
         limits: { $ref: '#/components/schemas/RunLimits' }
         replay_of_run_id: { type: string, description: 'Replay a cached run for demo fallback' }
@@ -1004,9 +1024,48 @@ components:
         independent_family_count: { type: integer }
         latest_published_at: { type: [string, 'null'], format: date-time }
         has_contradiction: { type: boolean }
+    EdgeSource:
+      allOf:
+        - { $ref: '#/components/schemas/Source' }
+        - type: object
+          required: [support_types]
+          properties:
+            support_types:
+              type: array
+              uniqueItems: true
+              items: { type: string, enum: [supports, contradicts, context] }
+    EdgeConfidenceDetails:
+      type: object
+      required: [method, factors, data_quality, evaluated_at]
+      properties:
+        method:
+          type: object
+          required: [name, params]
+          properties:
+            name: { type: string, enum: [edge_evidence_v1] }
+            params: { type: object, additionalProperties: true }
+        factors:
+          type: object
+          required: [base, corroboration, freshness, contradiction]
+          properties:
+            base: { type: number }
+            corroboration: { type: number }
+            freshness: { type: number }
+            contradiction: { type: number }
+        data_quality:
+          type: object
+          required: [calibrated, replay, supporting_families, missing_claim_ids, missing_source_ids, notes]
+          properties:
+            calibrated: { type: boolean, const: false }
+            replay: { type: boolean }
+            supporting_families: { type: integer, minimum: 0 }
+            missing_claim_ids: { type: array, items: { type: string } }
+            missing_source_ids: { type: array, items: { type: string } }
+            notes: { type: array, items: { type: string } }
+        evaluated_at: { type: [string, 'null'], format: date-time }
     Edge:
       type: object
-      required: [id, source_node_id, target_node_id, predicate, scope, support_label, claim_ids, data]
+      required: [id, source_node_id, target_node_id, predicate, scope, support_label, claim_ids, data, source, date, time, confidence, confidence_details]
       properties:
         id: { type: string }
         source_node_id: { type: string }
@@ -1016,6 +1075,14 @@ components:
         support_label: { $ref: '#/components/schemas/SupportLabel' }
         claim_ids: { type: array, items: { type: string } }
         evidence_summary: { $ref: '#/components/schemas/EvidenceSummary' }
+        source:
+          type: array
+          description: All cited sources, deduplicated by ID, including supporting and contrary evidence.
+          items: { $ref: '#/components/schemas/EdgeSource' }
+        date: { type: [string, 'null'], format: date, description: 'UTC date of latest recorded evidence observation; not publication date.' }
+        time: { type: [string, 'null'], pattern: '^\d{2}:\d{2}:\d{2}\.\d{3}Z$', description: 'UTC time of that observation, e.g. 21:35:04.123Z.' }
+        confidence: { type: number, minimum: 0, maximum: 1, description: 'Deterministic evidence score, not a calibrated probability. See confidence_details.' }
+        confidence_details: { $ref: '#/components/schemas/EdgeConfidenceDetails' }
         valid_from: { type: [string, 'null'], format: date }
         valid_to: { type: [string, 'null'], format: date }
         data: { $ref: '#/components/schemas/DataLayers' }

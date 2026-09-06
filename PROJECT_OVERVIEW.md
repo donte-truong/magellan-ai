@@ -28,7 +28,7 @@ Existing supply-chain platforms (Altana, Everstream, Sourcemap, Prewave) are exc
 
 1. **No edge without evidence.** A claim needs a stored source span (or a BOM row, labelled user-asserted). Search snippets are hints, not evidence.
 2. **Scope is part of the claim.** A company-level supplier list does not prove a specific product uses a specific factory. Label it company scope.
-3. **Labels, not probabilities.** Support labels say what sources state. Never display a model-generated percentage as confidence.
+3. **Explain confidence.** Support labels say what sources state. Edges also carry a deterministic 0–1 evidence confidence score with its method and factors; this is a heuristic, not a model-generated percentage or calibrated probability.
 4. **Every number ships with its method.** Volatility, concentration, exposure, and scenario impact are returned with `method` and `data_quality`; the UI labels them accordingly.
 5. **Agents propose; people approve.** Writes to graphs and new research go through proposals. Scenarios are the only thing an agent may run unprompted, because they don't change the graph.
 6. **Untrusted text stays data.** Web pages and uploads never become instructions to the system.

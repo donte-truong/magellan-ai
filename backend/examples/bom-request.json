@@ -1,0 +1,6 @@
+{
+  "description": "Raspberry Pi 5 8GB single-board computer",
+  "url": "https://www.raspberrypi.com/products/raspberry-pi-5/",
+  "company": "Raspberry Pi",
+  "limits": { "max_searches": 5, "max_documents": 6, "max_items": 40, "max_seconds": 180 }
+}

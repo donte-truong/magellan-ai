@@ -61,6 +61,8 @@ Layers are `null` until an enrichment fills them. The frontend must handle any l
 
 **Support labels** (edges and claims): `directly_supported` · `strongly_inferred` · `weakly_inferred` · `disputed` · `user_asserted` · `unresolved`. Render solid/dashed/dimmed per the design doc; never as a percentage.
 
+**Top-level edge metadata:** `source` is a deduplicated array of all cited Source objects plus `support_types` (`supports`, `contradicts`, `context`). `date` (`YYYY-MM-DD`) and `time` (`HH:mm:ss.sssZ`) split the latest recorded evidence observation into UTC fields; they are not publication dates. `confidence` is a numeric 0–1 heuristic evidence score, with version, factors, and data quality in `confidence_details`. It supplements support labels and is not a calibrated probability. See `backend/docs/EDGE_METADATA.md` for the initial scoring rule. Metadata updates on accepted evidence, is included in edge SSE events and exports, and is derived on read for older saved graphs.
+
 **Predicates:** `INPUT_TO`, `PART_OF`, `MANUFACTURES`, `PRODUCES`, `OPERATES`, `LOCATED_IN`, `SUPPLIES`, `OWNED_BY`, `PROCESSED_BY`. Dependency traversal (tiers, scenarios) uses only `INPUT_TO`, `PART_OF`, `MANUFACTURES`, `PRODUCES`, `PROCESSED_BY`, `SUPPLIES`.
 
 **Scope** on edges/claims: `{ "type": "product" | "company" | "generic", "product_node_id"?: "nd_…", "organization_node_id"?: "nd_…" }`.
@@ -285,3 +287,7 @@ Envelope: `{ "type", "seq", "session_id", "message_id", "at", "payload" }`
 3. **Exposure weights.** Without BOM quantities or user weights, `exposure_weight` is null and volatility falls back to equal weighting per graph; the frontend must show the coverage/weighting caveat from `data_quality`.
 4. **Agent write path.** All writes go through proposals in v1. If the demo needs a faster loop, we can add a per-session `auto_approve: ["scenario"]` flag; mutations and research tasks stay approval-gated.
 5. **Replay mode.** Runs with `replay_of_run_id` set are flagged `mode: "replay"` in every response and event; the UI must show a replay banner.
+
+### Full BOM import (implemented local backend)
+
+`POST /v1/runs` accepts a complete completed/partial BOM response in `bom_estimate`, with a matching `product`. The existing simple `bom` array remains supported, but the two forms are mutually exclusive. Rich imports preserve item IDs, hierarchy, citations, part numbers, manufacturer hints, and original confidence in `data.custom` and the original input snapshot. Imported edges remain `user_asserted`; original URLs seed new verification. Request limit: 2 MB. See [graph BOM import contract](backend/docs/GRAPH_BOM_IMPORT.md).

@@ -1,0 +1,31 @@
+{
+  "name": "supply-chain-research-backend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22.6" },
+  "scripts": {
+    "dev": "next dev --hostname 127.0.0.1 --port 3001",
+    "build": "next build",
+    "start": "next start --hostname 127.0.0.1 --port 3001",
+    "research": "node --import tsx src/cli.ts",
+    "demo": "node --import tsx src/cli.ts --input examples/raspberry-pi-5.json --mode replay",
+    "bom": "node --import tsx src/bom-cli.ts",
+    "test": "node --import tsx --test tests/*.test.ts",
+    "smoke:http": "node scripts/smoke-http.mjs",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "next": "16.2.10",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "zod": "4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "tsx": "4.23.1",
+    "typescript": "^5.9.0"
+  }
+}

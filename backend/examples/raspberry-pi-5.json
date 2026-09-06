@@ -1,0 +1,6 @@
+{
+  "product": "Raspberry Pi 5",
+  "company": "Raspberry Pi",
+  "seed_urls": ["https://www.raspberrypi.com/products/raspberry-pi-5/"],
+  "limits": { "max_hops": 2, "max_searches": 6, "max_documents": 6, "max_tasks": 5, "max_seconds": 240 }
+}
