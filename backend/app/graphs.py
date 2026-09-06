@@ -218,6 +218,9 @@ def refresh_edge_support(graph, edge):
     }
 
 
+SCOPE_STRENGTH = {"generic": 0, "company": 1, "product": 2}
+
+
 def add_claim_edge(
     repo,
     graph,
@@ -267,6 +270,8 @@ def add_claim_edge(
     ).model_dump()
     repo.put("claim", claim)
     graph["_claims"][claim["id"]] = claim
+    # One edge per relation: a claim under another scope corroborates the same edge (each claim
+    # keeps its own scope), and the edge takes the strongest scope any claim establishes.
     existing = next(
         (
             e
@@ -274,12 +279,13 @@ def add_claim_edge(
             if e["source_node_id"] == subject
             and e["target_node_id"] == target
             and e["predicate"] == predicate
-            and e["scope"] == scope
         ),
         None,
     )
     if existing:
         existing["claim_ids"].append(claim["id"])
+        if SCOPE_STRENGTH[scope["type"]] > SCOPE_STRENGTH[existing["scope"]["type"]]:
+            existing["scope"] = scope
         refresh_edge_support(graph, existing)
         return existing, claim
     edge = Edge(

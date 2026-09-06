@@ -635,12 +635,26 @@ def test_resolution_candidates_and_preferred_label():
         ],
     }
     # Siblings under the same anchor of the same kind, plus token near-duplicates anywhere.
-    labels = {
+    labels = [
         n["label"]
         for n in resolution_candidates(graph, "component", "eight-channel DMA controller", "rp1")
-    }
-    assert labels == {"8-channel DMA controller", "PLL"}
+    ]
+    # Siblings under the anchor, best shared-word match first; the anchor itself is never a
+    # candidate, and cousins under the anchor's own whole (here none) come after siblings.
+    assert labels == ["8-channel DMA controller", "PLL"]
     assert resolution_candidates(graph, "component", "eight-channel DMA controller") == []
+    graph["nodes"].append(
+        {"id": "cam", "kind": "component", "label": "48MP Main camera", "aliases": []}
+    )
+    graph["nodes"].append({"id": "cams", "kind": "component", "label": "cameras", "aliases": []})
+    graph["edges"] += [
+        {"source_node_id": "cam", "target_node_id": "p", "predicate": "PART_OF"},
+        {"source_node_id": "cams", "target_node_id": "p", "predicate": "PART_OF"},
+    ]
+    cousins = [
+        n["label"] for n in resolution_candidates(graph, "component", "rear wide camera", "cams")
+    ]
+    assert cousins[0] == "48MP Main camera" and "cameras" not in cousins
     assert preferred_label("D0 stepping of the BCM2712 application processor", "BCM2712")
     assert not preferred_label("Broadcom BCM2712", "BCM2712")  # short names are kept
     assert preferred_label("Dialog/Renesas power chip", "Renesas DA9091")
@@ -1112,4 +1126,58 @@ async def test_a_relation_between_two_names_of_one_node_is_rejected(api):
     assert [e["payload"]["reason"] for e in events if e["type"] == "claim.rejected"] == [
         "predicate_invalid",
         "predicate_invalid",
+    ]
+
+
+class ScopedProvider(PageProvider):
+    """The same relation is stated once generically and once for the product."""
+
+    name = "test_scoped"
+
+    async def analyze(self, target, product, company, url, title, body, budget):
+        findings = []
+        if target["kind"] == "product":
+            findings = [
+                Finding(
+                    "tin",
+                    "material",
+                    "INPUT_TO",
+                    "Widget contains tin",
+                    "generic first",
+                    scope_type="generic",
+                    object_label="Acme Smelting",
+                    object_kind="component",
+                ),
+                Finding(
+                    "Acme Smelting",
+                    "component",
+                    "PART_OF",
+                    "Tin is refined by Acme Smelting",
+                    "connects",
+                ),
+                Finding(
+                    "tin",
+                    "material",
+                    "INPUT_TO",
+                    "Widget contains tin and a battery",
+                    "then product scope",
+                    object_label="Acme Smelting",
+                    object_kind="component",
+                ),
+            ]
+        return Document(url, title, "example.org", body, findings=findings)
+
+
+async def test_one_edge_per_relation_takes_the_strongest_scope(api):
+    client, app = api
+    app.state.worker.provider = ScopedProvider()
+    run, graph = await researched(api, "Widget")
+    labels = {n["label"]: n for n in graph["nodes"]}
+    tin_edges = [e for e in graph["edges"] if e["source_node_id"] == labels["tin"]["id"]]
+    assert len(tin_edges) == 1
+    assert tin_edges[0]["scope"]["type"] == "product" and len(tin_edges[0]["claim_ids"]) == 2
+    claims = {c["id"]: c for c in graph["claims"]}
+    assert sorted(claims[i]["scope"]["type"] for i in tin_edges[0]["claim_ids"]) == [
+        "generic",
+        "product",
     ]

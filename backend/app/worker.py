@@ -48,14 +48,17 @@ ROOT_MIN_FINDINGS = 3  # the product task replans once if it yields fewer verifi
 
 
 def corroborated(graph, subject_id, object_id, predicate, scope_type):
-    """Distinct source URLs already supporting this exact relation."""
+    """Distinct source URLs already supporting this relation under this scope or a stronger one
+    (a generic claim adds nothing to a relation already established for the product)."""
+    from app.graphs import SCOPE_STRENGTH
+
     urls = set()
     for claim in graph["_claims"].values():
         if (
             claim["subject_id"] == subject_id
             and claim["object_id"] == object_id
             and claim["predicate"] == predicate
-            and claim["scope"]["type"] == scope_type
+            and SCOPE_STRENGTH[claim["scope"]["type"]] >= SCOPE_STRENGTH[scope_type]
         ):
             urls.update(e.get("source", {}).get("url") for e in claim["evidence"])
     return len(urls - {None})
@@ -653,11 +656,17 @@ class Worker:
             repo.put("run", current)
         found, failure = 0, None
         if not plan["skip"]:
-            # Everything descends from the product task, so it gets twice the per-task allowance.
-            scale = 2 if target.get("tier") == 0 else 1
+            # Everything descends from the product task, so it gets twice the per-task allowance;
+            # deep targets (tier 2 and below) get one search fewer, since the search cap is what
+            # binds long before the document cap and their questions are narrower.
+            tier = target.get("tier") or 0
+            scale = 2 if tier == 0 else 1
+            searches_cap = run["limits"]["max_searches_per_task"] * scale
+            if tier >= 2:
+                searches_cap = max(1, searches_cap - 1)
             limits = {
                 **run["limits"],
-                "max_searches_per_task": run["limits"]["max_searches_per_task"] * scale,
+                "max_searches_per_task": searches_cap,
                 "max_documents_per_task": run["limits"]["max_documents_per_task"] * scale,
             }
             searches_used = documents_used = 0

@@ -258,24 +258,45 @@ def near_duplicates(graph, kind, label, exclude_id=None):
 MAX_RESOLUTION_CANDIDATES = 12
 
 
+STOPWORDS = {"the", "and", "for", "with", "of", "a", "an", "in", "on", "to"}
+
+
+def word_tokens(label):
+    return {t for t in re.findall(r"[a-z0-9]+", normalize_label(label)) if t not in STOPWORDS}
+
+
 def resolution_candidates(graph, kind, label, anchor_id=None):
-    """Existing same-kind nodes a new label might paraphrase: token near-duplicates anywhere in
-    the graph, plus siblings that already relate to the same anchor (other parts of the same
-    whole, other makers of the same part). Bounded so the model sees a short list, not the graph."""
+    """Existing same-kind nodes a new label might paraphrase, best first: token near-duplicates
+    anywhere in the graph, siblings that already relate to the same anchor (other parts of the
+    same whole, other makers of the same part), and cousins under the anchor's own wholes
+    ("rear wide-angle camera" under "cameras" beside "48MP Main camera" under the phone).
+    Ranked by shared words and bounded, so the model sees a short list, not the graph."""
     key = normalize_label(label)
-    found = {n["id"]: n for n in near_duplicates(graph, kind, label)}
+    nodes = {n["id"]: n for n in graph["nodes"]}
+    ranked = {}  # node id -> (priority, shared words)
+    words = word_tokens(label)
+
+    def consider(node, priority):
+        if node is None or node["id"] == anchor_id or node["kind"] != kind:
+            return
+        if normalize_label(node["label"]) == key:
+            return
+        shared = len(words & word_tokens(node["label"]))
+        current = ranked.get(node["id"])
+        if current is None or (priority, shared) > current:
+            ranked[node["id"]] = (priority, shared)
+
+    for node in near_duplicates(graph, kind, label):
+        consider(node, 3)
     if anchor_id:
-        nodes = {n["id"]: n for n in graph["nodes"]}
+        parents = {e["target_node_id"] for e in graph["edges"] if e["source_node_id"] == anchor_id}
         for edge in graph["edges"]:
-            sibling = nodes.get(edge["source_node_id"])
-            if (
-                edge["target_node_id"] == anchor_id
-                and sibling is not None
-                and sibling["kind"] == kind
-                and normalize_label(sibling["label"]) != key
-            ):
-                found.setdefault(sibling["id"], sibling)
-    return list(found.values())[:MAX_RESOLUTION_CANDIDATES]
+            if edge["target_node_id"] == anchor_id:
+                consider(nodes.get(edge["source_node_id"]), 2)
+            elif edge["target_node_id"] in parents:
+                consider(nodes.get(edge["source_node_id"]), 1)
+    order = sorted(ranked, key=lambda i: ranked[i], reverse=True)
+    return [nodes[i] for i in order[:MAX_RESOLUTION_CANDIDATES]]
 
 
 def preferred_label(current, candidate):
