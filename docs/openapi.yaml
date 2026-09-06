@@ -1055,7 +1055,21 @@ components:
         graph_id: { type: string }
         revision: { type: integer }
         at: { type: string, format: date-time }
-        payload: { type: object, additionalProperties: true }
+        payload:
+          type: object
+          additionalProperties: true
+          description: >-
+            Event-specific. claim.rejected carries reason (span_not_found, scope_mismatch,
+            entailment_failed, predicate_invalid, duplicate, disconnected, max_hops,
+            identifier_conflict, ambiguous_match) and detail (the extraction rationale, with the
+            verifier's reason appended after "verifier:" when it rejected the claim). duplicate means
+            the relation already has four independent sources; disconnected means the claim's whole
+            never joined the product's tiered graph by the end of the run. entity.review_needed carries
+            candidate_ids and a reason prefixed identifier_conflict, ambiguous_match, near_duplicate
+            (label containment or a shared part-number token within a kind), or model_unsure.
+            entity.merged carries node_id, alias, resolver ("model"), and rationale when bounded
+            model-assisted resolution recorded a paraphrase as an alias of an existing node; the
+            deterministic identifier rules are never overridden by it.
 
     # ---------------- graph
     GeographyLayer:
