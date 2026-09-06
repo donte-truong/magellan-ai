@@ -348,3 +348,65 @@ async def test_provider_calls_have_a_hard_deadline(monkeypatch):
         with pytest.raises(ProviderFailure) as caught:
             await provider.search_pages("Widget", 3, budget())
     assert caught.value.code == "provider_timeout"
+
+
+async def test_static_gates_skip_verification_for_claims_that_can_never_commit():
+    calls = []
+
+    def handle(request):
+        if request.url.host == "api.tavily.com":
+            return httpx.Response(
+                200,
+                json={
+                    "results": [
+                        {
+                            "url": "https://example.org/spec",
+                            "title": "Widget",
+                            "raw_content": "Widget Pro has a USB 3.0 port. Gadget contains tin.",
+                        }
+                    ]
+                },
+            )
+        data = json.loads(request.content)
+        calls.append(data["text"]["format"]["name"])
+        base = {
+            "object_label": None,
+            "object_kind": None,
+            "part_number": None,
+            "manufacturer": None,
+            "rationale": "stated",
+            "quantity": None,
+            "unit": None,
+            "scope_type": "product",
+        }
+        findings = [
+            # An interface feature and a claim about another product: rejected before verification.
+            {
+                **base,
+                "label": "USB 3.0 port",
+                "kind": "component",
+                "predicate": "PART_OF",
+                "quote": "Widget Pro has a USB 3.0 port",
+            },
+            {
+                **base,
+                "label": "tin",
+                "kind": "material",
+                "predicate": "INPUT_TO",
+                "object_label": "Gadget",
+                "object_kind": "product",
+                "quote": "Gadget contains tin",
+            },
+        ]
+        return httpx.Response(200, json=response_data({"findings": findings}))
+
+    async with httpx.AsyncClient(transport=httpx.MockTransport(handle)) as client:
+        provider = LiveProvider(settings(), client)
+        docs = [
+            d
+            async for d in provider.research(
+                {"label": "Widget", "kind": "product", "tier": 0}, "Widget", None, budget()
+            )
+        ]
+    assert calls == ["extraction"]  # no verification call was paid for
+    assert [f.rejection for f in docs[0].findings] == ["predicate_invalid", "scope_mismatch"]

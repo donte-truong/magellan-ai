@@ -135,7 +135,8 @@ async def test_pages_are_reused_per_question_and_harvested_relations_attach_to_n
     run, graph = await researched(api, "Widget")
     # Two planner queries returned the same page: analyzed once for the root's question.
     assert provider.analyzed.count("Widget") == 1
-    assert provider.analyzed.count("tin") == 1  # a different question re-analyzes the same page
+    # A different target reuses the stored analysis: harvested findings are target-independent.
+    assert provider.analyzed.count("tin") == 0
     labels = {n["label"]: n for n in graph["nodes"]}
     assert set(labels) == {"Widget", "tin", "Acme Smelting"}
     edges = {(e["source_node_id"], e["target_node_id"], e["predicate"]) for e in graph["edges"]}
@@ -634,6 +635,8 @@ def test_resolution_candidates_and_preferred_label():
     assert resolution_candidates(graph, "component", "eight-channel DMA controller") == []
     assert preferred_label("D0 stepping of the BCM2712 application processor", "BCM2712")
     assert not preferred_label("Broadcom BCM2712", "BCM2712")  # short names are kept
+    assert preferred_label("Dialog/Renesas power chip", "Renesas DA9091")
+    assert not preferred_label("RP1 chip", "RP1")
     assert not preferred_label("D0 stepping of the BCM2712 application processor", "the chip")
 
 
@@ -675,24 +678,23 @@ class ResolvingProvider(PageProvider):
         return out
 
     async def analyze(self, target, product, company, url, title, body, budget):
+        # Harvesting: every stated relation on the page, whatever the target.
         self.analyzed.append(target["label"])
-        findings = []
-        if target["kind"] == "product" and url.endswith("one"):
+        rp1 = {"object_label": "RP1", "object_kind": "component", "scope_type": "generic"}
+        if url.endswith("one"):
             findings = [
-                Finding("RP1", "component", "PART_OF", "Widget uses the RP1 chip", "stated")
-            ]
-        elif target["label"] == "RP1" and url.endswith("one"):
-            findings = [
+                Finding("RP1", "component", "PART_OF", "Widget uses the RP1 chip", "stated"),
                 Finding(
                     "8-channel DMA controller",
                     "component",
                     "PART_OF",
                     "RP1 has an 8-channel DMA controller",
                     "a",
+                    **rp1,
                 ),
-                Finding("PLL", "component", "PART_OF", "RP1 contains a PLL", "b"),
+                Finding("PLL", "component", "PART_OF", "RP1 contains a PLL", "b", **rp1),
             ]
-        elif target["label"] == "RP1":
+        else:
             findings = [
                 Finding(
                     "eight-channel direct memory access (DMA) controller",
@@ -700,6 +702,7 @@ class ResolvingProvider(PageProvider):
                     "PART_OF",
                     "eight-channel direct memory access (DMA) controller inside",
                     "paraphrase",
+                    **rp1,
                 ),
             ]
         return Document(url, title, "example.org", body, findings=findings)
@@ -716,10 +719,12 @@ async def test_model_resolution_merges_or_flags_paraphrase_duplicates(api, mode)
     run, graph = await researched(api, "Widget", limits={"max_hops": 3})
     labels = {n["label"]: n for n in graph["nodes"]}
     events = sse_events(await client.get(run["events_url"]))
-    # One resolution call, for the second RP1 page: the paraphrase had siblings to compare with,
-    # and the model saw only that short sibling list. Cross-document paraphrases are the case
-    # this exists for; within one document the extraction prompt asks for consistent labels.
+    # One resolution call, for the second page: the paraphrase had siblings to compare with, and
+    # the model saw only that short sibling list. Cross-document paraphrases are the case this
+    # exists for; within one document the extraction prompt asks for consistent labels. The RP1
+    # task then reused both stored analyses without any further model call.
     assert len(provider.resolve_calls) == 1
+    assert provider.analyzed == ["Widget", "Widget"]
     item = provider.resolve_calls[0][0]
     assert item["label"].startswith("eight-channel")
     assert {c["label"] for c in item["candidates"]} <= {"8-channel DMA controller", "PLL"}
@@ -749,6 +754,11 @@ class OverlappingProvider(PageProvider):
         self.in_flight = 0
         self.peak = 0
         self.gate = None
+
+    async def search_pages(self, query, count, budget, **kwargs):
+        budget.charge("searches")
+        # A distinct page per query, so nothing is reused across the concurrent tasks.
+        return [Page(url=f"https://example.org/{query}", title=query, body=f"{self.body} {query}")]
 
     async def analyze(self, target, product, company, url, title, body, budget):
         import asyncio
@@ -801,12 +811,119 @@ async def test_budget_stop_in_one_pooled_task_ends_the_run_cleanly(api):
     provider.gate = asyncio.Event()
     app.state.worker.provider = provider
     started = time.monotonic()
-    # The root reads one document; of the three concurrent tier-1 tasks only one can charge the
-    # second. The others hit the cap, and the task still waiting on its gate is cancelled rather
+    # The root reads two documents; of the three concurrent tier-1 tasks only one can charge the
+    # third. The others hit the cap, and the task still waiting on its gate is cancelled rather
     # than left to time out.
-    run, graph = await researched(api, "Widget", limits={"max_documents": 2})
+    run, graph = await researched(api, "Widget", limits={"max_documents": 3})
     assert time.monotonic() - started < 3
     assert run["status"] == "partial" and run["stop_reason"] == "budget_exhausted"
     assert run["usage"]["binding_limit"] == "max_documents"
-    assert run["usage"]["documents"] == 2
+    assert run["usage"]["documents"] == 3
     assert provider.in_flight == 1  # the cancelled analysis never returned
+
+
+class CorroboratingProvider(PageProvider):
+    """Five distinct pages state the same relation."""
+
+    name = "test_corroboration"
+
+    async def search_pages(self, query, count, budget, **kwargs):
+        budget.charge("searches")
+        return [
+            Page(url=f"https://example{i}.org/widget", title="Widget", body=f"{self.body} {i}")
+            for i in range(5)
+        ]
+
+    async def analyze(self, target, product, company, url, title, body, budget):
+        findings = []
+        if target["kind"] == "product":
+            findings = [Finding("tin", "material", "INPUT_TO", "Widget contains tin", "stated")]
+        return Document(url, title, "example.org", body, findings=findings)
+
+
+async def test_corroboration_stops_at_four_sources_per_relation(api):
+    client, app = api
+    app.state.worker.provider = CorroboratingProvider()
+    run, graph = await researched(api, "Widget", limits={"max_documents_per_task": 6})
+    edge = next(e for e in graph["edges"] if e["predicate"] == "INPUT_TO")
+    assert len(edge["claim_ids"]) == 4 and len(edge["source"]) == 4
+    events = sse_events(await client.get(run["events_url"]))
+    # Two queries shared the six-document allowance: six pages read, four sources kept.
+    assert [e["payload"]["reason"] for e in events if e["type"] == "claim.rejected"] == [
+        "duplicate",
+        "duplicate",
+    ]
+
+
+class ConflictProvider(PageProvider):
+    """The same PMIC appears under its old and new maker; the model confirms the acquisition."""
+
+    name = "test_conflict"
+    bodies = {
+        "one": "Widget uses the Dialog DA9091 PMIC.",
+        "two": "The Renesas DA9091 powers Widget.",
+    }
+
+    def __init__(self):
+        super().__init__()
+        self.resolve_calls = []
+
+    async def search_pages(self, query, count, budget, **kwargs):
+        budget.charge("searches")
+        which = query.rsplit(" ", 1)[-1]
+        return [Page(url=f"https://example.org/{which}", title=which, body=self.bodies[which])]
+
+    async def resolve(self, product, items, budget):
+        from app.providers import ResolutionItem
+
+        self.resolve_calls.append(items)
+        return [
+            ResolutionItem(
+                index=i["index"], match=0, verdict="same", rationale="Renesas acquired Dialog"
+            )
+            for i in items
+        ]
+
+    async def analyze(self, target, product, company, url, title, body, budget):
+        if target["kind"] != "product":
+            return Document(url, title, "example.org", body, findings=[])
+        if url.endswith("one"):
+            finding = Finding(
+                "Dialog DA9091",
+                "component",
+                "PART_OF",
+                "Widget uses the Dialog DA9091 PMIC",
+                "stated",
+                part_number="DA9091",
+                manufacturer="Dialog",
+            )
+        else:
+            finding = Finding(
+                "Renesas DA9091",
+                "component",
+                "PART_OF",
+                "The Renesas DA9091 powers Widget",
+                "stated",
+                part_number="DA9091",
+                manufacturer="Renesas",
+            )
+        return Document(url, title, "example.org", body, findings=[finding])
+
+
+async def test_manufacturer_only_identifier_conflicts_can_be_resolved_by_the_model(api):
+    client, app = api
+    provider = ConflictProvider()
+    app.state.worker.provider = provider
+    run, graph = await researched(api, "Widget")
+    parts = [n for n in graph["nodes"] if n["kind"] == "component"]
+    assert len(parts) == 1
+    assert parts[0]["label"] == "Dialog DA9091" and "Renesas DA9091" in parts[0]["aliases"]
+    assert parts[0]["external_ids"] == {"mpn": "DA9091", "manufacturer": "Dialog"}
+    assert provider.resolve_calls[0][0]["candidates"][0]["label"] == "Dialog DA9091"
+    events = sse_events(await client.get(run["events_url"]))
+    assert not any(
+        e["type"] == "claim.rejected" and e["payload"]["reason"] == "identifier_conflict"
+        for e in events
+    )
+    merged = [e["payload"] for e in events if e["type"] == "entity.merged"]
+    assert merged and merged[0]["alias"] == "Renesas DA9091"

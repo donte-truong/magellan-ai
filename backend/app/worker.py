@@ -23,15 +23,13 @@ from app.providers import Budget, BudgetExceeded, ProviderFailure, build_provide
 from app.resolution import (
     NON_DEPENDENCY_KINDS,
     RELATION_TYPES,
-    interface_feature,
     near_duplicates,
     normalize_label,
     part_tokens,
     record_identity,
     resolution_candidates,
     resolve_entity,
-    software_artifact,
-    valid_relation,
+    static_rejection,
 )
 from app.schemas import RunLimits
 
@@ -43,6 +41,56 @@ class RunStopped(Exception):
 
 
 MAX_TRACE_ENTRIES = 200
+MAX_SOURCES_PER_EDGE = 4
+
+
+def corroborated(graph, subject_id, object_id, predicate, scope_type):
+    """Distinct source URLs already supporting this exact relation."""
+    urls = set()
+    for claim in graph["_claims"].values():
+        if (
+            claim["subject_id"] == subject_id
+            and claim["object_id"] == object_id
+            and claim["predicate"] == predicate
+            and claim["scope"]["type"] == scope_type
+        ):
+            urls.update(e.get("source", {}).get("url") for e in claim["evidence"])
+    return len(urls - {None})
+
+
+def manufacturer_conflicts(graph, kind, label, part_number, manufacturer):
+    """Same-kind nodes that carry this label or part number under a different maker."""
+    if not manufacturer:
+        return []
+    maker = normalize_label(manufacturer)
+    out = []
+    for node in graph["nodes"]:
+        ids = node.get("external_ids") or {}
+        if node["kind"] != kind or not ids.get("manufacturer"):
+            continue
+        if normalize_label(ids["manufacturer"]) == maker:
+            continue
+        same_mpn = part_number and ids.get("mpn") == part_number.strip()
+        same_name = normalize_label(label) in {
+            normalize_label(node["label"]),
+            *(normalize_label(a) for a in node.get("aliases", [])),
+        }
+        if same_mpn or same_name:
+            out.append(node)
+    return out
+
+
+def materialize(document, target):
+    """A copy of an analyzed document whose findings name their object explicitly, so the
+    findings can be committed later for a different target."""
+    copy = deepcopy(document)
+    for finding in copy.findings:
+        if finding.object_label is None:
+            finding.object_label, finding.object_kind = target["label"], target["kind"]
+        finding.resolved = {}
+    return copy
+
+
 MAX_TRACE_TEXT = 8000
 PLANNER_CONTEXT_CHARS = 6000
 RELATIONS_BY_KIND = {
@@ -61,6 +109,7 @@ class RunState:
     def __init__(self):
         self.sources = {}  # content hash -> stored source record
         self.analyzed = {}  # content hash -> set of (target id, relation sought)
+        self.documents = {}  # content hash -> analyzed Document, reusable for any later target
         self.spend = {}  # branch id -> documents consumed
         self.done = {}  # branch id -> tasks completed
         self.branch_of = {}  # node id -> branch id
@@ -727,7 +776,7 @@ class Worker:
                 product=run["product"],
                 company=run["company"],
             )
-            chosen, deferred = [], None
+            chosen, reused, deferred = [], [], None
             for page in pages:
                 if len(chosen) >= room:
                     break
@@ -759,6 +808,19 @@ class Worker:
                     )
                     continue
                 seen.add(question)
+                cached = state.documents.get(content_hash)
+                if cached is not None:
+                    # Harvested findings are target-independent: a page analyzed for one target
+                    # is committed for this one without another model call or document charge.
+                    state.record(
+                        {
+                            "stage": "reuse",
+                            "url": page.url,
+                            "skipped": "findings reused from an earlier analysis",
+                        }
+                    )
+                    reused.append(cached)
+                    continue
                 try:
                     budget.charge("documents")
                 except BudgetExceeded as exc:
@@ -795,12 +857,22 @@ class Worker:
                             raise
                         return page, None, exc.code
 
-            for page, document, failure in await asyncio.gather(*(analyze(p) for p in chosen)):
+            analyzed = await asyncio.gather(*(analyze(p) for p in chosen))
+            for document in reused:
+                found += len(
+                    await self.commit_reused(
+                        workspace, identifier, run, target, document, budget, state
+                    )
+                )
+            for page, document, failure in analyzed:
                 if failure:
                     # One unusable model output fails this document only; the task continues.
                     state.record({"stage": "document", "url": page.url, "failure": failure})
                     invalid.append(page.url)
                     continue
+                state.documents.setdefault(
+                    digest(page.body.encode()), materialize(document, target)
+                )
                 await self.resolve_findings(workspace, run, target, document, budget, state)
                 committed = len(
                     self.commit_document(workspace, identifier, target, document, budget, state)
@@ -831,6 +903,15 @@ class Worker:
             await asyncio.sleep(0)
         return found, docs
 
+    async def commit_reused(self, workspace, identifier, run, target, document, budget, state):
+        """Commit a copy of an earlier analysis for a new target; explicit objects keep the
+        findings anchored to the entities the original analysis named."""
+        document = deepcopy(document)
+        for finding in document.findings:
+            finding.resolved = {}
+        await self.resolve_findings(workspace, run, target, document, budget, state)
+        return self.commit_document(workspace, identifier, target, document, budget, state)
+
     async def resolve_findings(self, workspace, run, target, document, budget, state):
         """Ask the model whether labels about to become new nodes paraphrase existing ones.
 
@@ -859,8 +940,38 @@ class Worker:
                 obj, o_review = target_node, None
             else:
                 obj, o_review = resolve_entity(graph, object_kind, object_label)
-            if s_review or o_review:
-                continue  # identifier conflicts and ambiguity stay with the deterministic rules
+            if o_review or s_review == "ambiguous_match":
+                continue  # ambiguity and object conflicts stay with the deterministic rules
+            if s_review == "identifier_conflict":
+                # Same part number under another maker's name (an acquisition, a rebrand): the
+                # model may confirm the makers are one company; a different part number never
+                # reaches it.
+                conflicts = manufacturer_conflicts(
+                    graph, finding.kind, finding.label, finding.part_number, finding.manufacturer
+                )
+                if not conflicts:
+                    continue
+                items.append(
+                    {
+                        "index": len(items),
+                        "label": finding.label,
+                        "kind": finding.kind,
+                        "part_number": finding.part_number,
+                        "manufacturer": finding.manufacturer,
+                        "quote": finding.span[:300],
+                        "candidates": [
+                            {
+                                "index": i,
+                                "label": c["label"],
+                                "aliases": c.get("aliases", [])[:4],
+                                "external_ids": c.get("external_ids") or {},
+                            }
+                            for i, c in enumerate(conflicts)
+                        ],
+                    }
+                )
+                slots.append((finding, "subject", conflicts))
+                continue
             for role, node, kind, label, ids in (
                 (
                     "subject",
@@ -1186,38 +1297,18 @@ class Worker:
                 rejected = finding.rejection
                 if finding.span not in document.body:
                     rejected = "span_not_found"
-                elif not valid_relation(finding.predicate, finding.kind, object_kind):
-                    rejected = "predicate_invalid"
-                elif normalize_label(finding.label) == normalize_label(object_label):
-                    rejected = "predicate_invalid"
-                elif finding.predicate in {"PART_OF", "INPUT_TO"} and (
-                    software_artifact(finding.label) or software_artifact(object_label)
-                ):
-                    rejected = "predicate_invalid"  # firmware, drivers, software are not parts
-                elif finding.predicate in {"PART_OF", "INPUT_TO"} and (
-                    (
-                        finding.kind == "component"
-                        and interface_feature(
-                            finding.label, finding.part_number, finding.manufacturer
-                        )
+                elif not rejected:
+                    rejected = static_rejection(
+                        finding.kind,
+                        finding.label,
+                        finding.predicate,
+                        object_kind,
+                        object_label,
+                        finding.scope_type,
+                        root["label"],
+                        finding.part_number,
+                        finding.manufacturer,
                     )
-                    or (object_kind == "component" and interface_feature(object_label))
-                ):
-                    rejected = "predicate_invalid"  # ports, slots, and standards are interfaces
-                elif any(
-                    kind == "product" and normalize_label(label) != normalize_label(root["label"])
-                    for kind, label in ((finding.kind, finding.label), (object_kind, object_label))
-                ):
-                    rejected = "scope_mismatch"
-                elif finding.scope_type == "product" and finding.predicate == "LOCATED_IN":
-                    rejected = "scope_mismatch"
-                elif finding.scope_type != "product" and "product" in (finding.kind, object_kind):
-                    rejected = "scope_mismatch"
-                elif finding.scope_type == "company" and "organization" not in (
-                    finding.kind,
-                    object_kind,
-                ):
-                    rejected = "scope_mismatch"
                 if rejected:
                     reject(finding, rejected)
                     continue
@@ -1241,6 +1332,21 @@ class Worker:
                     else:
                         obj, o_review = resolve_entity(graph, object_kind, object_label)
                     hinted = []
+                    if s_review == "identifier_conflict" and finding.resolved.get("subject"):
+                        hint = finding.resolved["subject"]
+                        if hint["verdict"] == "same" and hint["node_id"] in {
+                            n["id"]
+                            for n in manufacturer_conflicts(
+                                graph,
+                                finding.kind,
+                                finding.label,
+                                finding.part_number,
+                                finding.manufacturer,
+                            )
+                        }:
+                            subject = next(n for n in graph["nodes"] if n["id"] == hint["node_id"])
+                            s_review = None
+                            hinted.append(("subject", subject, hint))
                     for role, node in (("subject", subject), ("object", obj)):
                         hint = finding.resolved.get(role)
                         if node is not None or not hint or s_review or o_review:
@@ -1329,6 +1435,19 @@ class Worker:
                             for c in graph["_claims"].values()
                         )
                     ):
+                        eligible.remove(item)
+                        progress = True
+                        continue
+                    if (
+                        subject
+                        and obj
+                        and corroborated(
+                            graph, subject["id"], obj["id"], finding.predicate, finding.scope_type
+                        )
+                        >= MAX_SOURCES_PER_EDGE
+                    ):
+                        # Enough independent sources already; more claims add events, not support.
+                        reject(finding, "duplicate")
                         eligible.remove(item)
                         progress = True
                         continue

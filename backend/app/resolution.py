@@ -197,14 +197,53 @@ def resolution_candidates(graph, kind, label, anchor_id=None):
 
 
 def preferred_label(current, candidate):
-    """Prefer a short identifier-bearing name ("BCM2712") over a long descriptive phrase
-    ("D0 stepping of the BCM2712 application processor") once both are evidenced."""
+    """Prefer a short identifier-bearing name ("BCM2712", "Renesas DA9091") over a description
+    ("D0 stepping of the BCM2712 application processor", "Dialog/Renesas power chip") once both
+    are evidenced."""
+    if not part_tokens(normalize_label(candidate)):
+        return False
     current_words, candidate_words = len(current.split()), len(candidate.split())
-    return (
-        current_words > 4
-        and candidate_words < current_words
-        and bool(part_tokens(normalize_label(candidate)))
-    )
+    if not part_tokens(normalize_label(current)):
+        return candidate_words <= 4
+    return current_words > 4 and candidate_words < current_words
+
+
+def static_rejection(
+    kind,
+    label,
+    predicate,
+    object_kind,
+    object_label,
+    scope_type,
+    root_label,
+    part_number=None,
+    manufacturer=None,
+):
+    """Deterministic gates that need no evidence reading. Applied before verification (so the
+    verifier is not paid for claims that can never commit) and again at commit time."""
+    if not valid_relation(predicate, kind, object_kind):
+        return "predicate_invalid"
+    if normalize_label(label) == normalize_label(object_label):
+        return "predicate_invalid"
+    if predicate in {"PART_OF", "INPUT_TO"}:
+        if software_artifact(label) or software_artifact(object_label):
+            return "predicate_invalid"  # firmware, drivers, software are not parts
+        if (kind == "component" and interface_feature(label, part_number, manufacturer)) or (
+            object_kind == "component" and interface_feature(object_label)
+        ):
+            return "predicate_invalid"  # ports, slots, and standards are interfaces
+    if any(
+        k == "product" and normalize_label(name) != normalize_label(root_label)
+        for k, name in ((kind, label), (object_kind, object_label))
+    ):
+        return "scope_mismatch"
+    if scope_type == "product" and predicate == "LOCATED_IN":
+        return "scope_mismatch"
+    if scope_type != "product" and "product" in (kind, object_kind):
+        return "scope_mismatch"
+    if scope_type == "company" and "organization" not in (kind, object_kind):
+        return "scope_mismatch"
+    return None
 
 
 def record_identity(node, label, part_number=None, manufacturer=None):

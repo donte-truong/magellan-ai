@@ -14,7 +14,7 @@ import httpx
 from pydantic import Field
 
 from app.config import Settings
-from app.resolution import select_passages
+from app.resolution import select_passages, static_rejection
 from app.schemas import GeographyLayer, Model, NodeKind, Predicate
 
 # Conservative flat reservation per image; observed usage is reconciled after the response.
@@ -945,7 +945,9 @@ class LiveProvider:
             "inputs; MANUFACTURES/PRODUCES/SUPPLIES only when explicitly established. Record part_number "
             "and manufacturer for the subject only when the document states them. A company supplier "
             "list cannot establish a product supplier. Generic composition is generic scope, never product "
-            "scope. Do not confuse a designer with a manufacturer. No quantities unless explicit. Use one "
+            "scope. A relationship between two components or materials (a core inside a chip, a metal in an "
+            "alloy) is generic scope unless the span ties it to the researched product. Do not confuse "
+            "a designer with a manufacturer. No quantities unless explicit. Use one "
             "consistent label for an entity throughout, preferring its part number or proper name to "
             "a description. Return an empty list if nothing is supported.",
             {
@@ -975,6 +977,22 @@ class LiveProvider:
                     manufacturer=entry.manufacturer,
                 )
             )
+        for i, entry in enumerate(extraction.findings):
+            if findings[i].rejection:
+                continue
+            reason = static_rejection(
+                entry.kind,
+                entry.label,
+                entry.predicate,
+                entry.object_kind or target.get("kind") or "product",
+                entry.object_label or target["label"],
+                entry.scope_type,
+                product,
+                entry.part_number,
+                entry.manufacturer,
+            )
+            if reason:
+                findings[i].rejection = reason  # not worth a verification call
         eligible = [i for i, f in enumerate(findings) if not f.rejection]
         if eligible:
             verified = await self.structured(
@@ -990,7 +1008,9 @@ class LiveProvider:
                 "and scope. Product scope must identify the exact product. Company lists cannot prove "
                 "product or factory scope. A mentioned material or supplier is not necessarily an input. "
                 "A designer is not necessarily a manufacturer. Mark quantity_supported false unless both "
-                "quantity and unit are stated. Return exactly one judgment for each supplied index.",
+                "quantity and unit are stated. Generic scope is satisfied when the context names both "
+                "entities; it does not require the product to be named. Return exactly one judgment "
+                "for each supplied index.",
                 {
                     "product": product,
                     "company": company,
