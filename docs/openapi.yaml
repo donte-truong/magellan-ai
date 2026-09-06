@@ -362,6 +362,33 @@ paths:
         '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Enrichment' } } } }
 
   # ------------------------------------------------------------ geography
+  /graphs/{graph_id}/sites:
+    get:
+      tags: [geography]
+      operationId: getGraphSites
+      summary: Map pins with what each site makes, shares as distributions, and provenance
+      description: >-
+        Every facility or organization with a resolved place: ISO country, region, city,
+        coordinates with their precision (city, region, or country centre from a reference
+        gazetteer; never a model guess), the LOCATED_IN claims and sources behind the place, its
+        operators, and what it makes or supplies for this graph. Shares are distributions over the
+        sources of each product, component, material, or organization: `share` with basis
+        `stated` comes from a verified claim; the remaining mass is `unassigned` and, separately,
+        spread as a labelled `uniform_prior` estimate over sources without a stated share and over
+        an operator's located plants (`*_over_plants`). Distributions may sum to less than one.
+      parameters:
+        - $ref: '#/components/parameters/GraphId'
+        - $ref: '#/components/parameters/Revision'
+      responses:
+        '200':
+          description: Sites and distributions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  sites: { type: array, items: { type: object, additionalProperties: true } }
+                  distributions: { type: array, items: { type: object, additionalProperties: true } }
   /graphs/{graph_id}/geography:
     get:
       tags: [geography]
@@ -1032,6 +1059,7 @@ components:
             tasks_done: { type: integer }
             tasks_total: { type: integer }
         frontier: { type: object, additionalProperties: { type: integer }, description: 'Pending research tasks per tier (tier 0 is the product root)' }
+        enrichment_ids: { type: array, items: { type: string }, description: 'Follow-up jobs the run queued when it finished (geography for facilities without an evidenced location)' }
         pending_questions: { type: array, items: { $ref: '#/components/schemas/RunQuestion' } }
         stop_reason: { type: [string, 'null'] }
         open_questions: { type: array, items: { type: string } }
