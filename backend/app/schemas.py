@@ -154,6 +154,12 @@ class Edge(Model):
     support_label: Support
     claim_ids: list[str]
     evidence_summary: EvidenceSummary = Field(default_factory=EvidenceSummary)
+    # Provenance and the deterministic edge_evidence_v1 score; filled by app.edge_metadata.
+    source: list["EdgeSource"] = Field(default_factory=list)
+    date: str | None = None
+    time: str | None = None
+    confidence: float = Field(default=0, ge=0, le=1)
+    confidence_details: "EdgeConfidenceDetails | None" = None
     valid_from: str | None = None
     valid_to: str | None = None
     data: DataLayers = Field(default_factory=DataLayers)
@@ -179,6 +185,33 @@ class Source(Model):
         "other",
     ] = "other"
     license_notes: str | None = None
+
+
+class EdgeSource(Source):
+    support_types: list[Literal["supports", "contradicts", "context"]]
+
+
+class EdgeConfidenceFactors(Model):
+    base: float
+    corroboration: float
+    freshness: float
+    contradiction: float
+
+
+class EdgeDataQuality(Model):
+    calibrated: Literal[False] = False
+    replay: bool
+    supporting_families: int = Field(ge=0)
+    missing_claim_ids: list[str]
+    missing_source_ids: list[str]
+    notes: list[str]
+
+
+class EdgeConfidenceDetails(Model):
+    method: Method
+    factors: EdgeConfidenceFactors
+    data_quality: EdgeDataQuality
+    evaluated_at: str | None = None
 
 
 class Evidence(Model):
@@ -763,3 +796,4 @@ class BomEstimateImport(Lenient):
 
 
 RunCreate.model_rebuild()
+Edge.model_rebuild()

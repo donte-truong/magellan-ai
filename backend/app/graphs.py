@@ -4,6 +4,7 @@ from copy import deepcopy
 from pydantic import ValidationError
 
 from app.db import digest, new_id, now, public
+from app.edge_metadata import annotate_edge, ensure_edge_metadata
 from app.errors import APIError, invalid, not_found
 from app.schemas import Claim, ClaimSummary, DataLayers, Edge, Node, Scope, Source
 
@@ -58,6 +59,8 @@ def refresh(graph):
                 queue.append(child)
     for node in graph["nodes"]:
         node["tier"] = tiers.get(node["id"])
+    for edge in graph["edges"]:
+        annotate_edge(edge, graph)
     graph["stats"] = {
         "node_count": len(graph["nodes"]),
         "edge_count": len(graph["edges"]),
@@ -89,7 +92,7 @@ def claims_for(graph, ids=None):
 
 
 def graph_view(graph, include=None, tier_max=None):
-    graph = deepcopy(graph)
+    graph = ensure_edge_metadata(deepcopy(graph))
     if tier_max is not None:
         graph["nodes"] = [
             n for n in graph["nodes"] if n["tier"] is not None and n["tier"] <= tier_max
@@ -128,7 +131,7 @@ def detail_node(graph, identifier):
 
 
 def detail_edge(graph, identifier):
-    edge = deepcopy(find_item(graph["edges"], identifier))
+    edge = annotate_edge(deepcopy(find_item(graph["edges"], identifier)), graph)
     edge["claims"] = claims_for(graph, edge["claim_ids"])
     contradiction_ids = {
         cid for claim in edge["claims"] for cid in claim["contradiction_claim_ids"]
@@ -140,7 +143,7 @@ def detail_edge(graph, identifier):
 
 
 def export_graph(repo, graph):
-    result = public(graph)
+    result = public(ensure_edge_metadata(deepcopy(graph)))
     result["claims"] = claims_for(graph)
     result["evidence"] = list(
         {e["id"]: e for c in result["claims"] for e in c["evidence"]}.values()
@@ -157,6 +160,7 @@ def export_graph(repo, graph):
 
 
 def diff(before, after):
+    before, after = (ensure_edge_metadata(deepcopy(g)) for g in (before, after))
     result = {"graph_id": after["id"], "from": before["revision"], "to": after["revision"]}
     for key in ("nodes", "edges"):
         old, new = ({v["id"]: v for v in graph[key]} for graph in (before, after))
