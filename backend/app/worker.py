@@ -175,7 +175,10 @@ class RunState:
         self.queries = {}  # node id -> queries tried
         self.failed = {}  # node id -> queries with no verified finding
         self.trace = []
-        self.visited = set()
+        self.in_flight = set()  # node ids with a task running
+        self.attempts = {}  # node id -> tasks run for it
+        self.attempted = {}  # node id -> relation types already sought
+        self.tasks_done = 0
         self.invalid_documents = []  # pages whose model output was unusable
         self.stale = {}  # branch id -> consecutive tasks without a verified finding
         self.paused = set()  # branches paused by the stagnation rule
@@ -212,8 +215,9 @@ def branch_label(graph, branch):
     return next((n["label"] for n in graph["nodes"] if n["id"] == branch), branch)
 
 
-def unanswered_relations(graph, node):
-    """Relation types with no directly supported inbound edge for this node."""
+def unanswered_relations(graph, node, attempted=()):
+    """Relation types with no directly supported inbound edge for this node, excluding those a
+    task already sought (a later pass asks a different question)."""
     supported = {
         e["predicate"]
         for e in graph["edges"]
@@ -222,7 +226,7 @@ def unanswered_relations(graph, node):
     return [
         relation
         for relation in RELATIONS_BY_KIND.get(node["kind"], [])
-        if not supported & RELATION_TYPES[relation]
+        if not supported & RELATION_TYPES[relation] and relation not in attempted
     ]
 
 
@@ -278,7 +282,7 @@ def planner_context(run, graph, node, state, budget, questions):
         },
         "triples": list(reversed(kept)),
         "triples_omitted": max(0, len(triples) - len(kept)),
-        "unanswered": unanswered_relations(graph, node),
+        "unanswered": unanswered_relations(graph, node, state.attempted.get(node["id"], ())),
         "previous_queries": state.queries.get(node["id"], [])[-6:],
         "failed_queries": state.failed.get(node["id"], [])[-6:],
         "open_questions": questions[-8:],
@@ -575,8 +579,13 @@ class Worker:
         pending = []
         for n in graph["nodes"]:
             depth = research_depth(n, graph)
-            if depth is None or n["id"] in state.visited:
+            if depth is None or n["id"] in state.in_flight:
                 continue
+            attempts = state.attempts.get(n["id"], 0)
+            if attempts >= self.settings.research_passes:
+                continue
+            if attempts and not unanswered_relations(graph, n, state.attempted.get(n["id"], ())):
+                continue  # every relation type is answered or already sought
             if state.focus is not None and n["id"] not in state.focus | state.created:
                 continue
             # A part at the last hop cannot have children; a maker or site at the last hop
@@ -613,11 +622,13 @@ class Worker:
             fairness = state.spend.get(branch, 0) / (1 + state.done.get(branch, 0))
             return (
                 branch in busy,
+                # The first wave completes before any target gets a second pass.
+                state.attempts.get(node["id"], 0),
                 fairness,
                 research_depth(node, graph),
                 # Parts before makers at the same depth: their findings open new branches.
                 node["kind"] in NON_DEPENDENCY_KINDS,
-                -len(unanswered_relations(graph, node)),
+                -len(unanswered_relations(graph, node, state.attempted.get(node["id"], ()))),
                 node["label"],
             )
 
@@ -636,7 +647,7 @@ class Worker:
                     if chosen is None:
                         break
                     node, branch = chosen
-                    state.visited.add(node["id"])
+                    state.in_flight.add(node["id"])
                     task = asyncio.create_task(
                         self.research_task(
                             workspace, identifier, run, node, budget, questions, state
@@ -658,7 +669,10 @@ class Worker:
     async def plan_task(self, run, graph, node, budget, questions, state, failed=None):
         hints = self.provider.query_hints(node) if hasattr(self.provider, "query_hints") else ""
         fallback = {
-            "relation_sought": (unanswered_relations(graph, node) or ["upstream_inputs"])[0],
+            "relation_sought": (
+                unanswered_relations(graph, node, state.attempted.get(node["id"], ()))
+                or ["upstream_inputs"]
+            )[0],
             "queries": template_queries(run["product"], run["company"], node, hints),
             "source_types": {},
             "skip": False,
@@ -692,7 +706,8 @@ class Worker:
         }
 
     async def research_task(self, workspace, identifier, run, target, budget, questions, state):
-        state.visited.add(target["id"])
+        state.in_flight.add(target["id"])
+        state.attempts[target["id"]] = state.attempts.get(target["id"], 0) + 1
         if state.instruction:
             target = {**target, "focus": state.instruction}
         with self.db.transaction(workspace) as repo:
@@ -706,7 +721,9 @@ class Worker:
             "target_node_id": target["id"],
             "relation_sought": plan["relation_sought"],
             "depth": depth,
+            "pass": state.attempts.get(target["id"], 1),
         }
+        state.attempted.setdefault(target["id"], set()).add(plan["relation_sought"])
         with self.db.transaction(workspace, write=True) as repo:
             current = self.owned(repo, identifier)
             self.emit(
@@ -803,14 +820,20 @@ class Worker:
                     )
                     tried = set(state.queries.get(target["id"], []))
                     queries = [q for q in again["queries"] if q not in tried]
+                    state.attempted.setdefault(target["id"], set()).add(again["relation_sought"])
                     if again["skip"]:
                         queries = []
             if found and state.orphans:
                 found += self.retry_orphans(workspace, identifier, budget, state)
         state.done[branch] = state.done.get(branch, 0) + 1
+        state.tasks_done += 1
+        state.in_flight.discard(target["id"])
         if not found and not plan["skip"] and not failure:
             questions.append(f"No further verified upstream inputs for {target['label']}.")
         state.stale[branch] = 0 if found else state.stale.get(branch, 0) + 1
+        if found:
+            # A branch that yields again is live again: its new discoveries must be scheduled.
+            state.paused.discard(branch)
         limit = self.settings.branch_stagnation_tasks
         if limit and branch != "root" and state.stale[branch] >= limit:
             with self.db.transaction(workspace) as repo:
@@ -830,8 +853,8 @@ class Worker:
             graph = repo.graph(run["graph_id"])
             pending = self.pending_tasks(graph, run, state)
             current["progress"] = {
-                "tasks_done": len(state.visited),
-                "tasks_total": len(state.visited) + len(pending),
+                "tasks_done": state.tasks_done,
+                "tasks_total": state.tasks_done + len(state.in_flight) + len(pending),
             }
             current["frontier"] = self.frontier_counts(graph, run, state)
             outcome = (

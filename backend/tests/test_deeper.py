@@ -1523,3 +1523,76 @@ async def test_a_null_object_takes_the_targets_kind_so_bad_relations_are_rejecte
     events = sse_events(await client.get(run["events_url"]))
     reasons = [e["payload"]["reason"] for e in events if e["type"] == "claim.rejected"]
     assert reasons.count("predicate_invalid") == 4  # two bad findings on each of two pages
+
+
+class TwoPassProvider(PageProvider):
+    """The first pass answers upstream inputs; a second pass asks the next unanswered relation
+    and finds the maker."""
+
+    name = "test_two_pass"
+
+    async def plan(self, context, budget):
+        relation = (context["unanswered"] or ["upstream_inputs"])[0]
+        return Plan.model_validate(
+            {
+                "relation_sought": relation,
+                "queries": [
+                    {
+                        "query": f"{context['target']['label']} {relation}",
+                        "source_types": ["other"],
+                        "reason": "a",
+                    }
+                ],
+                "skip": False,
+                "skip_reason": None,
+                "priority": "high",
+            }
+        )
+
+    async def search_pages(self, query, count, budget, **kwargs):
+        budget.charge("searches")
+        return [Page(url=f"https://example.org/{query}", title=query, body=f"{self.body} {query}")]
+
+    async def analyze(self, target, product, company, url, title, body, budget):
+        findings = []
+        if target["kind"] == "product" and url.endswith("upstream_inputs"):
+            # Three entities, so the product task does not replan within its first pass.
+            findings = [
+                Finding(label, "material", "INPUT_TO", "Widget contains tin", "stated")
+                for label in ("tin", "cobalt", "nickel")
+            ]
+        elif target["kind"] == "product" and url.endswith("manufacturer_or_facility"):
+            findings = [
+                Finding(
+                    "Acme Smelting",
+                    "organization",
+                    "MANUFACTURES",
+                    "Tin is refined by Acme Smelting",
+                    "maker",
+                )
+            ]
+        return Document(url, title, "example.org", body, findings=findings)
+
+
+async def test_second_pass_asks_the_next_unanswered_relation(api):
+    client, app = api
+    app.state.worker.settings = app.state.worker.settings.model_copy(update={"research_passes": 2})
+    app.state.worker.provider = TwoPassProvider()
+    run, graph = await researched(api, "Widget")
+    events = sse_events(await client.get(run["events_url"]))
+    root = graph["nodes"][0]["id"]
+    labels = {n["label"]: n for n in graph["nodes"]}
+    tasks = {}
+    for e in events:
+        if e["type"] == "task.planned":
+            tasks.setdefault(e["payload"]["target_node_id"], []).append(
+                (e["payload"]["pass"], e["payload"]["relation_sought"])
+            )
+    # The product's first pass found its inputs, so its second pass asked the maker question.
+    assert tasks[root] == [(1, "upstream_inputs"), (2, "manufacturer_or_facility")]
+    assert {e["predicate"] for e in graph["edges"]} >= {"INPUT_TO", "MANUFACTURES"}
+    # tin found nothing in pass one, so the replan inside that pass already asked its other
+    # relation type; nothing was left for a second pass.
+    assert tasks[labels["tin"]["id"]] == [(1, "material_origin")]
+    assert run["progress"]["tasks_done"] == run["progress"]["tasks_total"] == 6
+    assert run["stop_reason"] == "research_exhausted"

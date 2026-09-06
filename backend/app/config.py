@@ -53,6 +53,10 @@ class Settings(BaseSettings):
     research_concurrency: int = Field(default=4, ge=1, le=8)
     # Pause a tier-1 branch after this many consecutive tasks without a verified finding (0 = never).
     branch_stagnation_tasks: int = Field(default=2, ge=0, le=10)
+    # Passes per target: after the first wave, a target with relation types still unanswered
+    # and not yet attempted gets another task (a different question, failed queries on record),
+    # up to this many. 1 keeps the single-pass loop.
+    research_passes: int = Field(default=1, ge=1, le=5)
     # Model-assisted entity resolution for paraphrase duplicates the deterministic rules cannot
     # see: "merge" records a model-resolved alias (entity.merged), "flag" only emits
     # entity.review_needed, "off" skips the call. Identifier conflicts are never overridden.
