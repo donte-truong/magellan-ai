@@ -319,6 +319,20 @@ def create_followup(repo, graph_id, request, provider):
         if previous:
             last = previous[0]
             scheduling = last.get("_scheduling") or scheduling_from_events(repo, last["id"])
+            if request.retry_relations:
+                retry = set(request.retry_relations)
+                scheduling = {
+                    "attempts": {
+                        k: max(
+                            0, v - sum(1 for r in scheduling["attempted"].get(k, []) if r in retry)
+                        )
+                        for k, v in scheduling["attempts"].items()
+                    },
+                    "attempted": {
+                        k: [r for r in v if r not in retry]
+                        for k, v in scheduling["attempted"].items()
+                    },
+                }
     run = {
         "id": identifier,
         "product": root["label"],

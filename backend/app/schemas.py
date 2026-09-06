@@ -826,6 +826,13 @@ class FollowupCreate(Model):
     # per-node attempts and questions are inherited, so nothing is asked twice, and no
     # target restriction applies unless target_node_ids is given.
     resume: bool = False
+    # With resume: forget that these relation types were already sought, so every node gets
+    # asked them again (after a prompt or model change, for example).
+    retry_relations: list[
+        Literal[
+            "upstream_inputs", "manufacturer_or_facility", "material_origin", "supplier", "location"
+        ]
+    ] = Field(default_factory=list, max_length=5)
     limits: RunLimits = Field(default_factory=RunLimits)
 
     @model_validator(mode="after")

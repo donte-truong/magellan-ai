@@ -169,6 +169,8 @@ async def main(args):
                 body = {"resume": True, "limits": limits(args)}
                 if args.instruction:
                     body["instruction"] = args.instruction
+                if args.retry:
+                    body["retry_relations"] = args.retry.split(",")
                 r = await client.post(f"/v1/graphs/{args.graph}/research", json=body)
                 print("resume:", r.status_code, r.text[:200], flush=True)
                 r.raise_for_status()
@@ -201,6 +203,7 @@ if __name__ == "__main__":
     parser.add_argument("--graph")
     parser.add_argument("--instruction")
     parser.add_argument("--targets", help="labels separated by |")
+    parser.add_argument("--retry", help="resume: relation types to ask again, comma separated")
     parser.add_argument("--out", default="../frontend/public/assets/data/demo")
     parser.add_argument("--max-hops", type=int, default=4)
     parser.add_argument("--max-nodes", type=int, default=600)
