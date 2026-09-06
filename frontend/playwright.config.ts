@@ -28,7 +28,8 @@ export default defineConfig({
   ],
   webServer: [
     {
-      command: "../backend/.venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8100",
+      command: ".venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8100",
+      cwd: join(__dirname, "../backend"),
       url: "http://127.0.0.1:8100/healthz",
       timeout: 30_000,
       reuseExistingServer: false,

@@ -6,7 +6,7 @@ test.beforeEach(async ({ page }) => {
   const ready = page.waitForResponse((response) =>
     response.url().includes("/api/backend/runs?limit="),
   );
-  await page.goto("/");
+  await page.goto("/research");
   await ready;
 });
 

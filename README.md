@@ -17,4 +17,4 @@ Open **http://localhost:3000** to explore products. API docs are at **http://loc
 
 Stop the stack with `docker compose --env-file backend/.env down`; the database volume is preserved. On Windows, start Docker Desktop first and enable WSL integration, or run the same command using `docker.exe compose` from WSL.
 
-The Next.js frontend provides the MVP flow: **enter a product → review its sourced bill of materials → explore the supply network**. Start the backend, then run `bun install` and `bun run dev` in `frontend/`. Open http://127.0.0.1:3000 and try the Raspberry Pi 5 example. TypeScript, Zustand, React Flow, Vite/Vitest, and Playwright support the application.
+The Next.js frontend opens with a dark navy **iPhone 17 Pro demo: product input → animated 3D decomposition → supplier network on an interactive globe**. The featured exploration uses sourced, curated data and clearly labels headquarters and illustrative routes. The existing backend-driven workspace remains at **http://localhost:3000/research**. TypeScript, Three.js, Zustand, React Flow, Vite/Vitest, and Playwright support the application.

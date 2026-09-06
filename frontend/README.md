@@ -1,6 +1,6 @@
 # Magellan frontend
 
-A minimal supply-chain exploration workspace: **product name → decomposed bill of materials → interactive network overlay**.
+A dark navy product exploration experience: **iPhone 17 Pro → animated 3D decomposition → supplier connections on a 3D globe**. The existing API-backed research workspace is available at `/research`.
 
 ## Run locally
 
@@ -13,11 +13,20 @@ cp .env.example .env.local
 bun run dev
 ```
 
-Open **http://127.0.0.1:3000**. Select **Raspberry Pi 5**, then **Deconstruct product** for an immediately usable example. The backend's default curated provider returns three sourced components and explicit research gaps. Arbitrary-product research uses the backend's optional live provider; the frontend never substitutes fabricated components for missing research.
+Open **http://127.0.0.1:3000** and select **Deconstruct product**. The featured iPhone 17 Pro demo is deterministic and does not make model or search requests. It uses a curated selection of Apple specifications and iFixit teardown findings; component and supplier details link to their sources. Globe pins represent approximate company headquarters. Connections illustrate component relationships to Apple, not factories or shipping routes. Quantities and a complete manufacturing BOM remain unresolved.
+
+Open **http://127.0.0.1:3000/research** for backend-driven exploration, including the Raspberry Pi 5 fixture, saved runs, and the configured live research provider.
 
 To run the entire MVP in containers, use `docker compose --env-file backend/.env up --build -d` from the repository root, then open http://localhost:3000. Compose builds a standalone Next.js server with Bun and Node.js 22, includes `public/assets`, and connects it to the API over the internal Docker network. Environment files are excluded from the image; the backend workspace token is supplied at runtime. Omit the `--env-file` option for fixture-only defaults. Browser calls use the same-origin Next.js proxy, so a separate backend CORS setting is unnecessary for this frontend.
 
 ## What the MVP includes
+
+- A three-stage featured demo with a persistent, original Three.js phone model, six animated assemblies, source links, reassembly, and selection highlighting.
+- A draggable spherical world map with 7,015 land points, illuminated relationship arcs, moving particles, supplier selection, search, zoom, and view reset.
+- Supplier details, headquarters/source links, and JSON export with provenance and limitations.
+- Responsive mobile layouts, keyboard navigation, native modal focus handling, reduced motion, an animation pause control, and WebGL fallback illustrations.
+
+The live research workspace retains:
 
 - Product input with an optional company, request validation, idempotent retries, and error recovery.
 - Automatic research updates, clarification choices, cancellation, and visible incomplete results.
@@ -27,7 +36,7 @@ To run the entire MVP in containers, use `docker compose --env-file backend/.env
 - Recent explorations, direct `?run=run_…` URLs, and JSON export pinned to the displayed graph revision.
 - Responsive layouts, labeled controls, focus indicators, an Escape-dismissable evidence panel, and reduced-motion support.
 
-The overlay is a dependency network. A geographic basemap, uploads, graph editing, enrichment controls, portfolios, and agent chat remain outside this frontend MVP.
+The featured globe uses curated geography; automatic projection of arbitrary research graphs onto that globe remains future work. Uploads, graph editing, enrichment controls, portfolios, and agent chat remain outside this frontend MVP.
 
 ## Tooling and structure
 
@@ -38,6 +47,7 @@ The overlay is a dependency network. A geographic basemap, uploads, graph editin
 | Bun                              | Dependency installation, lockfile, and task scripts                                                                 |
 | Vite + Vitest + Testing Library  | Component and logic tests, following the [Next.js testing guide](https://nextjs.org/docs/app/guides/testing/vitest) |
 | Zustand                          | Exploration, graph snapshot, view, and selection state                                                              |
+| Three.js                         | Original procedural product model, globe geometry, lighting, and animation                                          |
 | React Flow + Dagre               | Interactive graph and directed layout                                                                               |
 | Playwright                       | Desktop/mobile browser tests against the real FastAPI backend                                                       |
 | ESLint + Prettier                | Static checks and consistent formatting                                                                             |
@@ -46,7 +56,9 @@ Next.js owns the application's build pipeline. Vite powers the test pipeline thr
 
 Project media lives in [public/assets](public/assets/README.md), with separate directories for 3D models, animations, videos, and images. Reference these files using `/assets/…` URLs.
 
-`src/components` contains the input, BOM, network, and evidence views. `src/lib/api.ts` is the typed browser client; `proxy.ts` implements the server boundary; `store.ts` owns exploration state; `use-research.ts` synchronizes API snapshots; `graph-layout.ts` keeps API edge direction intact while laying out dependencies.
+`src/components/experience` contains the featured demo, product renderer, and globe renderer. `src/lib/demo-data.ts` owns curated facts and source URLs; `demo-store.ts` owns demo navigation and selection; `scenes/phone.ts` creates the original six-part model. Each scene caps pixel ratio, stops updates when the page is hidden, handles failed WebGL initialization, and disposes geometry, materials, textures, observers, and animation frames on exit. The map geometry is served locally from `public/assets/models/world-points.json`.
+
+The existing research components remain in `src/components`. `src/lib/api.ts` is the typed browser client; `proxy.ts` implements the server boundary; `store.ts` owns research state; `use-research.ts` synchronizes API snapshots; `graph-layout.ts` keeps API edge direction intact while laying out dependencies.
 
 Research updates use sequential polling with bounded retry delays. Each refresh reads the run and graph, then requests the BOM at that graph revision. Inspections and exports pin the same revision. Navigation aborts outstanding reads; a generation counter prevents late responses from replacing another exploration. A graph revision change applies a fresh layout; manual node positions last for the current view and revision.
 
@@ -89,4 +101,4 @@ bun run test:e2e
 
 Use `bun run test` to invoke Vitest. The native `bun test` runner does not use this project's Vite configuration.
 
-Browser tests start their own Next.js instance on **3100**, a fixture-backed FastAPI instance on **8100**, and a disposable SQLite database in the system temporary directory. They exercise the complete flow, source inspection, export/resume, product ambiguity, and evidence gaps on desktop and mobile. Screenshots and failure traces go into ignored `test-results/`. No paid provider calls are made.
+Browser tests start their own Next.js instance on **3100**, a fixture-backed FastAPI instance on **8100**, and a disposable SQLite database in the system temporary directory. They exercise both the iPhone demo (assembly selection, reassembly, supplier filtering, sources, export, resume, reduced motion, and keyboard access) and the live workspace (source inspection, export/resume, ambiguity, and evidence gaps) on desktop and mobile. Screenshots and failure traces go into ignored `test-results/`. No paid provider calls are made.

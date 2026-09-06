@@ -1,5 +1,5 @@
-import { Workspace } from "@/components/workspace";
+import { Experience } from "@/components/experience/experience";
 
 export default function Home() {
-  return <Workspace />;
+  return <Experience />;
 }
