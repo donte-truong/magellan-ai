@@ -380,14 +380,16 @@ class Upload(Model):
 
 
 class RunLimits(Model):
-    max_hops: int = Field(default=3, ge=1, le=4)
-    max_nodes: int = Field(default=50, ge=1, le=150)
-    max_claims: int = Field(default=80, ge=0, le=300)
-    max_searches: int = Field(default=25, ge=0, le=120)
-    max_documents: int = Field(default=40, ge=0, le=200)
-    max_input_tokens: int = Field(default=400000, ge=0, le=2000000)
-    max_output_tokens: int = Field(default=30000, ge=0, le=200000)
-    max_seconds: int = Field(default=480, ge=1, le=900)
+    # Ceilings are sized for demo-scale graphs; defaults stay small. A run at the ceilings is
+    # bounded by its own caps, the per-call deadline, and the lease-renewing worker loop.
+    max_hops: int = Field(default=3, ge=1, le=6)
+    max_nodes: int = Field(default=50, ge=1, le=600)
+    max_claims: int = Field(default=80, ge=0, le=3000)
+    max_searches: int = Field(default=25, ge=0, le=750)
+    max_documents: int = Field(default=40, ge=0, le=1500)
+    max_input_tokens: int = Field(default=400000, ge=0, le=30000000)
+    max_output_tokens: int = Field(default=30000, ge=0, le=3000000)
+    max_seconds: int = Field(default=480, ge=1, le=7200)
     # Per-task caps (new): searches and documents one research task may consume.
     max_searches_per_task: int = Field(default=3, ge=1, le=10)
     max_documents_per_task: int = Field(default=4, ge=1, le=20)

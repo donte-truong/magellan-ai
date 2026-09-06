@@ -1107,14 +1107,14 @@ components:
     RunLimits:
       type: object
       properties:
-        max_hops: { type: integer, default: 3, minimum: 1, maximum: 4 }
-        max_nodes: { type: integer, default: 50, maximum: 150 }
-        max_claims: { type: integer, default: 80, maximum: 300 }
-        max_searches: { type: integer, default: 25, maximum: 120 }
-        max_documents: { type: integer, default: 40, maximum: 200 }
+        max_hops: { type: integer, default: 3, minimum: 1, maximum: 6 }
+        max_nodes: { type: integer, default: 50, maximum: 600 }
+        max_claims: { type: integer, default: 80, maximum: 3000 }
+        max_searches: { type: integer, default: 25, maximum: 750 }
+        max_documents: { type: integer, default: 40, maximum: 1500 }
         max_input_tokens: { type: integer, default: 400000 }
         max_output_tokens: { type: integer, default: 30000 }
-        max_seconds: { type: integer, default: 480, maximum: 900 }
+        max_seconds: { type: integer, default: 480, maximum: 7200 }
         max_searches_per_task: { type: integer, default: 3, minimum: 1, maximum: 10, description: 'Searches one research task may consume' }
         max_documents_per_task: { type: integer, default: 4, minimum: 1, maximum: 20, description: 'Documents one research task may consume' }
     RunCreate:
