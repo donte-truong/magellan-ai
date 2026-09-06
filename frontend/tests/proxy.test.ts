@@ -127,6 +127,8 @@ describe("workspace API boundary", () => {
     expect(allowedPath("runs/run_1/cancel", "POST")).toBe(true);
     expect(allowedPath("graphs/g_1/export", "GET")).toBe(true);
     expect(allowedPath("graphs/g_1/edges/e_1", "GET")).toBe(true);
+    expect(allowedPath("graphs/g_1/sites", "GET")).toBe(true);
+    expect(allowedPath("graphs/g_1/sites", "POST")).toBe(false);
     expect(allowedPath("runs/run_1", "DELETE")).toBe(false);
   });
 });

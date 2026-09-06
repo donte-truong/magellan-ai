@@ -2,7 +2,7 @@ const identifier = "[a-zA-Z0-9_-]+";
 const readPaths = [
   /^runs$/,
   new RegExp(`^runs/${identifier}(?:/bom)?$`),
-  new RegExp(`^graphs/${identifier}(?:/export|/edges/${identifier})?$`),
+  new RegExp(`^graphs/${identifier}(?:/export|/sites|/edges/${identifier})?$`),
 ];
 const writePaths = [/^bom\/decompose$/, new RegExp(`^runs/${identifier}/(?:cancel|answers)$`)];
 

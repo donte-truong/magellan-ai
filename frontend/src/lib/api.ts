@@ -1,4 +1,4 @@
-import type { BOM, EdgeDetail, Graph, Run } from "./types";
+import type { BOM, EdgeDetail, Graph, Run, Sites } from "./types";
 
 export class APIError extends Error {
   constructor(
@@ -59,6 +59,7 @@ export const api = {
   bom: (id: string, revision: number, signal?: AbortSignal) =>
     apiRequest<BOM>(`runs/${id}/bom?revision=${revision}`, { signal }),
   graph: (id: string, signal?: AbortSignal) => apiRequest<Graph>(`graphs/${id}`, { signal }),
+  sites: (id: string, signal?: AbortSignal) => apiRequest<Sites>(`graphs/${id}/sites`, { signal }),
   edge: (graph: string, edge: string, revision: number, signal?: AbortSignal) =>
     apiRequest<EdgeDetail>(`graphs/${graph}/edges/${edge}?revision=${revision}`, { signal }),
   recent: (signal?: AbortSignal) => apiRequest<{ items: Run[] }>("runs?limit=5", { signal }),

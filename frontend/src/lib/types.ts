@@ -152,3 +152,71 @@ export const supportLabels: Record<SupportLabel, string> = {
   user_asserted: "User provided",
   unresolved: "Unresolved",
 };
+
+
+/** One map pin from GET /graphs/{id}/sites: a located plant or organization office. */
+export interface SiteMake {
+  node_id: string;
+  label: string;
+  kind: NodeKind;
+  predicate: string;
+  scope: "product" | "company" | "generic";
+  /** Stated share from a verified claim, or a labelled prior; null when unknown. */
+  share: number | null;
+  share_basis:
+    | "stated"
+    | "uniform_prior"
+    | "stated_over_plants"
+    | "uniform_prior_over_plants"
+    | null;
+  claim_ids: string[];
+  sources: string[];
+  via_organization_id?: string;
+}
+
+export interface Site {
+  node_id: string;
+  kind: "facility" | "organization";
+  /** A located organization is its office or headquarters, never a plant. */
+  role: "plant" | "organization";
+  label: string;
+  country_iso2: string;
+  admin1: string | null;
+  city: string | null;
+  lat: number;
+  lon: number;
+  precision: "address" | "city" | "region" | "country";
+  geocoding: { method: string; precision: string; note?: string } | null;
+  location_claim_ids: string[];
+  location_sources: string[];
+  operators: { node_id: string; label: string }[];
+  makes: SiteMake[];
+}
+
+export interface DistributionEntry {
+  node_id: string;
+  label: string;
+  kind: NodeKind;
+  predicate: string;
+  scope: "product" | "company" | "generic";
+  share: number | null;
+  share_basis: "stated" | null;
+  share_estimate: number | null;
+  estimate_basis: "uniform_prior" | null;
+  claim_ids: string[];
+}
+
+/** Who makes or supplies a node, as a distribution that may sum to less than one. */
+export interface Distribution {
+  target_node_id: string;
+  target_label: string;
+  family: "makers" | "suppliers";
+  entries: DistributionEntry[];
+  stated_total: number;
+  unassigned: number;
+}
+
+export interface Sites {
+  sites: Site[];
+  distributions: Distribution[];
+}
