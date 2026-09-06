@@ -7,7 +7,7 @@ An initial Next.js backend and standalone TypeScript command for **product → p
 Requires Node.js 22.6+ (verified with Node 24.13). From the repository root:
 
 ```sh
-cd backend
+cd backend-node
 npm ci
 npm run demo
 ```

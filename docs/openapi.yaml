@@ -901,7 +901,7 @@ components:
               quantity: { type: number, exclusiveMinimum: 0 }
               unit: { type: string, maxLength: 40 }
         bom_estimate:
-          $ref: '../backend/docs/bom-estimate.schema.json'
+          $ref: '../backend-node/docs/bom-estimate.schema.json'
         upload_id: { type: string }
         limits: { $ref: '#/components/schemas/RunLimits' }
         replay_of_run_id: { type: string, description: 'Replay a cached run for demo fallback' }
@@ -1107,7 +1107,7 @@ components:
         evaluated_at: { type: [string, 'null'], format: date-time }
     Edge:
       type: object
-      required: [id, source_node_id, target_node_id, predicate, scope, support_label, claim_ids, data, source, date, time, confidence, confidence_details]
+      required: [id, source_node_id, target_node_id, predicate, scope, support_label, claim_ids, data]
       properties:
         id: { type: string }
         source_node_id: { type: string }

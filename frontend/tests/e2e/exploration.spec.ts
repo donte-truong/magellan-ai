@@ -1,10 +1,5 @@
 import { expect, test } from "@playwright/test";
 
-// These tests run against the Next.js backend's curated Raspberry Pi 5 replay (see
-// playwright.config.ts). The replay graph has four nodes (product,
-// BCM2712, Sony UK Technology Centre, Wales) and three edges; two of those edges are
-// upstream dependencies and therefore bill-of-materials rows.
-
 test.beforeEach(async ({ page }) => {
   // The initial workspace fetch runs after hydration. Wait before interacting or
   // taking screenshots (which temporarily modify caret styles).
@@ -25,8 +20,8 @@ test("product → sourced bill of materials → network overlay, export, and res
   await page.getByRole("button", { name: "Raspberry Pi 5", exact: true }).click();
   await page.getByRole("button", { name: "Deconstruct product" }).click();
   await expect(page.getByRole("heading", { name: "Raspberry Pi 5", exact: true })).toBeVisible();
-  await expect(page.locator("tbody tr")).toHaveCount(2);
-  await expect(page.locator("tbody").getByText("Unknown", { exact: true })).toHaveCount(2);
+  await expect(page.locator("tbody tr")).toHaveCount(3);
+  await expect(page.locator("tbody").getByText("Unknown", { exact: true })).toHaveCount(3);
   await expect(page.getByText("Curated example", { exact: true })).toBeVisible();
   await page.screenshot({ path: testInfo.outputPath("bill-of-materials.png"), fullPage: true });
 
@@ -66,7 +61,7 @@ test("product → sourced bill of materials → network overlay, export, and res
   const url = page.url();
   expect(url).toContain("?run=run_");
   await page.reload();
-  await expect(page.locator("tbody tr")).toHaveCount(2);
+  await expect(page.locator("tbody tr")).toHaveCount(3);
   expect(page.url()).toBe(url);
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(
     page.viewportSize()!.width,
@@ -74,14 +69,31 @@ test("product → sourced bill of materials → network overlay, export, and res
   expect(errors).toEqual([]);
 });
 
-test("an unfamiliar product is refused clearly when live research is not configured", async ({
-  page,
-}) => {
+test("an unfamiliar product leaves an explicit evidence gap", async ({ page }) => {
   await page.getByRole("textbox", { name: /Product name/ }).fill("Unlisted test product 314159");
   await page.getByRole("button", { name: "Deconstruct product" }).click();
-  await expect(page.locator(".error-notice")).toContainText("Raspberry Pi 5 curated example");
+  await expect(page.getByText("No verified components yet", { exact: true })).toBeVisible();
   await expect(page.locator("tbody tr")).toHaveCount(0);
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(
     page.viewportSize()!.width,
   );
+  await page.locator(".questions-card summary").click();
+  await expect(page.locator(".questions-card li").first()).toBeVisible();
+  await page.getByRole("button", { name: "Explore network", exact: true }).click();
+  await expect(page.locator(".react-flow__node")).toHaveCount(1);
+  await expect(page.getByText("No verified connections yet.", { exact: false })).toBeVisible();
+});
+
+test("ambiguous product names can be clarified without restarting", async ({ page }) => {
+  await page.getByRole("textbox", { name: /Product name/ }).fill("Raspberry Pi");
+  await page.getByRole("button", { name: "Deconstruct product" }).click();
+  await expect(
+    page.getByText("A quick clarification before we continue", { exact: true }),
+  ).toBeVisible();
+  await page
+    .locator(".clarification-card")
+    .getByRole("button", { name: "Raspberry Pi 5", exact: true })
+    .click();
+  await expect(page.locator("tbody tr")).toHaveCount(3);
+  await expect(page.getByRole("heading", { name: "Raspberry Pi 5", exact: true })).toBeVisible();
 });

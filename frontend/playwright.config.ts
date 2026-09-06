@@ -3,10 +3,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { defineConfig, devices } from "@playwright/test";
 
-// Browser tests run against the Next.js backend in curated replay mode. Provider keys are
-// blanked so no paid research can start; only the Raspberry Pi 5 example is served.
-// Requires a production build of the backend first: `cd ../backend && npm ci && npm run build`.
-const runs = mkdtempSync(join(tmpdir(), "magellan-e2e-"));
+const database = join(mkdtempSync(join(tmpdir(), "magellan-e2e-")), "research.db");
 
 export default defineConfig({
   testDir: "./tests/e2e",
@@ -31,18 +28,17 @@ export default defineConfig({
   ],
   webServer: [
     {
-      command: "node node_modules/next/dist/bin/next start --hostname 127.0.0.1 --port 8100",
-      cwd: "../backend",
-      url: "http://127.0.0.1:8100/",
+      command: "../backend/.venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8100",
+      url: "http://127.0.0.1:8100/healthz",
       timeout: 30_000,
       reuseExistingServer: false,
       env: {
-        RESEARCH_API_TOKEN: "e2e-token",
-        RESEARCH_RUNS_DIR: runs,
-        RESEARCH_MODEL_PROVIDER: "openai",
-        OPENAI_API_KEY: "",
-        OPENROUTER_API_KEY: "",
-        TAVILY_API_KEY: "",
+        DATABASE_URL: `sqlite:///${database}`,
+        ENVIRONMENT: "test",
+        RESEARCH_PROVIDER: "fixture",
+        WORKSPACE_TOKENS: '{"e2e-token":"browser-tests"}',
+        EMBEDDED_WORKER: "true",
+        AUTO_CREATE_SCHEMA: "true",
       },
     },
     {

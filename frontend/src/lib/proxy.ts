@@ -45,7 +45,7 @@ export async function proxyRequest(request: Request, segments: string[]) {
       "not_configured",
     );
   try {
-    const base = new URL(process.env.MAGELLAN_API_URL || "http://127.0.0.1:3001");
+    const base = new URL(process.env.MAGELLAN_API_URL || "http://127.0.0.1:8000");
     const target = new URL(`/v1/${path}`, base);
     target.search = new URL(request.url).search;
     const headers = new Headers({ Authorization: `Bearer ${token}` });

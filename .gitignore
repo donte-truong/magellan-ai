@@ -14,10 +14,10 @@ test-results/
 !.env.example
 
 # Backend runtime data
-backend/runs/
-backend/coverage/
+backend-node/runs/
+backend-node/coverage/
 
-# Python (legacy)
+# Python (FastAPI backend)
 __pycache__/
 *.py[cod]
 .venv/
