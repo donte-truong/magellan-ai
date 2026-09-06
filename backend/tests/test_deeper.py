@@ -1318,9 +1318,40 @@ async def test_makers_are_located_and_shares_become_distributions(api):
     assert by_label["Kunshan plant"]["share_estimate"] == 0.7  # the only unstated source
     pin = next(s for s in sites["sites"] if s["label"] == "Kunshan plant")
     assert (pin["country_iso2"], pin["city"], pin["precision"]) == ("CN", "Kunshan", "city")
+    assert pin["role"] == "plant"
     assert pin["location_sources"] == ["https://example.org/two"]
     assert pin["operators"][0]["label"] == "Pegatron"
     widget_row = next(m for m in pin["makes"] if m["label"] == "Widget")
     assert widget_row["share_basis"] in {"uniform_prior", "stated_over_plants"}
     # Pegatron itself has no place of its own, so it is not a pin.
     assert not any(s["label"] == "Pegatron" for s in sites["sites"])
+
+
+def test_enrichment_locations_without_coordinates_get_gazetteer_centres():
+    from app.gazetteer import Gazetteer
+    from app.worker import Worker
+
+    worker = Worker.__new__(Worker)
+    worker.gazetteer = Gazetteer()
+    node = {"id": "f1", "kind": "facility", "label": "Foxconn Zhengzhou factory", "data": {}}
+    layer = {
+        "country_iso2": "CN",
+        "admin1": None,
+        "lat": None,
+        "lon": None,
+        "address": "Zhengzhou, Henan, China",
+        "precision": "address",
+        "claim_ids": ["clm_1"],
+    }
+    worker.fill_coordinates(node, layer)
+    assert (layer["lat"], layer["lon"], layer["precision"]) == (34.75, 113.63, "city")
+    assert layer["address"] == "Zhengzhou, Henan, China"
+    assert node["data"]["custom"]["geocoding"]["method"] == "gazetteer_v1"
+    # A place the gazetteer does not know falls back to the country centre, at country precision.
+    unknown = {**layer, "lat": None, "lon": None, "address": "Somewhere obscure"}
+    worker.fill_coordinates(node, unknown)
+    assert (unknown["lat"], unknown["precision"]) == (35.9, "country")
+    # Coordinates already stated by the source are never overwritten.
+    stated = {**layer, "lat": 34.7, "lon": 113.6, "precision": "address"}
+    worker.fill_coordinates(node, stated)
+    assert (stated["lat"], stated["precision"]) == (34.7, "address")

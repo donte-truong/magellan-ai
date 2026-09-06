@@ -1024,6 +1024,25 @@ class Worker:
         }
         return fields
 
+    def fill_coordinates(self, node, layer):
+        """A located facility whose source stated no coordinates gets the gazetteer's city or
+        region centre, at that precision, with the method recorded; the address text stays."""
+        if layer.get("lat") is not None:
+            return
+        place = self.gazetteer.resolve(
+            layer.get("address") or node["label"], layer.get("country_iso2")
+        )
+        if not place or place["country_iso2"] != layer.get("country_iso2"):
+            return
+        layer["lat"], layer["lon"] = place["lat"], place["lon"]
+        layer["admin1"] = layer.get("admin1") or place.get("admin1")
+        layer["precision"] = place["precision"]
+        node.setdefault("data", {}).setdefault("custom", {})["geocoding"] = {
+            "method": place["method"],
+            "precision": place["precision"],
+            "note": "Approximate centre from a reference gazetteer; not a facility address.",
+        }
+
     def same_place(self, graph, label, country_iso2=None):
         """An existing geography node for the same resolved place ('Harrodsburg, KY' and
         'Harrodsburg, Kentucky'); only when the gazetteer resolves both to one city, region, or
@@ -1991,6 +2010,7 @@ class Worker:
                                 f"chars {document.body.find(finding.span)}:{document.body.find(finding.span) + len(finding.span)}",
                             )
                             layer["claim_ids"] = [claim["id"]]
+                            self.fill_coordinates(node, layer)
                             node["data"]["geography"] = layer
                             changed.append(node)
                         location = self.geography.evidenced_location(graph, node)

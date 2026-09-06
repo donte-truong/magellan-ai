@@ -377,6 +377,8 @@ def sites(graph):
             {
                 "node_id": node["id"],
                 "kind": node["kind"],
+                # A located organization is its office or headquarters, never a plant.
+                "role": "plant" if node["kind"] == "facility" else "organization",
                 "label": node["label"],
                 "country_iso2": layer["country_iso2"],
                 "admin1": layer.get("admin1"),
