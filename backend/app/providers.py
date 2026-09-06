@@ -1123,7 +1123,9 @@ class LiveProvider:
                 entry.kind,
                 entry.label,
                 entry.predicate,
-                entry.object_kind or target.get("kind") or "product",
+                (target.get("kind") or "product")
+                if entry.object_label is None
+                else (entry.object_kind or target.get("kind") or "product"),
                 entry.object_label or target["label"],
                 entry.scope_type,
                 product,

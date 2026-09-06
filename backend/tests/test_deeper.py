@@ -1468,3 +1468,58 @@ async def test_followup_runs_research_only_the_targets_under_an_instruction(api)
     # The follow-up appears in the graph's run list through its own run id, and the BOM view
     # works for it.
     assert (await client.get(job["bom_url"])).status_code == 200
+
+
+class NullObjectProvider(PageProvider):
+    """The extractor claims a geography object kind but leaves the object null (the target)."""
+
+    name = "test_null_object"
+
+    async def search_pages(self, query, count, budget, **kwargs):
+        budget.charge("searches")
+        # A distinct page per query, so the organization's task analyzes rather than reuses.
+        return [Page(url=f"https://example.org/{query}", title=query, body=f"{self.body} {query}")]
+
+    async def analyze(self, target, product, company, url, title, body, budget):
+        findings = []
+        if target["kind"] == "product":
+            findings = [
+                Finding(
+                    "Acme Corp",
+                    "organization",
+                    "MANUFACTURES",
+                    "Tin is refined by Acme Smelting",
+                    "maker",
+                )
+            ]
+        elif target["label"] == "Acme Corp":
+            findings = [
+                Finding(
+                    "Acme Corp",
+                    "organization",
+                    "LOCATED_IN",
+                    "Widget contains tin",
+                    "object null but kind geography: the target is an organization",
+                    object_kind="geography",
+                ),
+                Finding(
+                    "Acme Corp",
+                    "organization",
+                    "OPERATES",
+                    "Widget contains tin and a battery",
+                    "object null but kind facility",
+                    object_kind="facility",
+                ),
+            ]
+        return Document(url, title, "example.org", body, findings=findings)
+
+
+async def test_a_null_object_takes_the_targets_kind_so_bad_relations_are_rejected_not_fatal(api):
+    client, app = api
+    app.state.worker.provider = NullObjectProvider()
+    run, graph = await researched(api, "Widget")
+    assert run["status"] == "partial" and run["stop_reason"] == "research_exhausted"
+    assert {e["predicate"] for e in graph["edges"]} == {"MANUFACTURES"}
+    events = sse_events(await client.get(run["events_url"]))
+    reasons = [e["payload"]["reason"] for e in events if e["type"] == "claim.rejected"]
+    assert reasons.count("predicate_invalid") == 4  # two bad findings on each of two pages

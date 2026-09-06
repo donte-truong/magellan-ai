@@ -34,6 +34,7 @@ from app.resolution import (
     resolve_entity,
     share_stated,
     static_rejection,
+    valid_relation,
 )
 from app.schemas import RunLimits
 
@@ -87,6 +88,13 @@ def manufacturer_conflicts(graph, kind, label, part_number, manufacturer):
         if same_mpn or same_name:
             out.append(node)
     return out
+
+
+def object_kind_for(finding, target_node):
+    """A null object means the task target, whatever kind the extractor guessed for it."""
+    if finding.object_label is None:
+        return target_node["kind"]
+    return finding.object_kind or target_node["kind"]
 
 
 def materialize(document, target):
@@ -980,9 +988,16 @@ class Worker:
                     digest(page.body.encode()), materialize(document, target)
                 )
                 await self.resolve_findings(workspace, run, target, document, budget, state)
-                committed = len(
-                    self.commit_document(workspace, identifier, target, document, budget, state)
-                )
+                try:
+                    committed = len(
+                        self.commit_document(workspace, identifier, target, document, budget, state)
+                    )
+                except APIError as exc:
+                    # The ledger refused a write (a kind or span rule): this document's findings
+                    # are lost, recorded in the private history; the task and run continue.
+                    state.record({"stage": "document", "url": page.url, "failure": exc.message})
+                    invalid.append(page.url)
+                    continue
                 found += committed
                 state.record(
                     {
@@ -1189,7 +1204,7 @@ class Worker:
             if finding.rejection:
                 continue
             object_label = finding.object_label or target_node["label"]
-            object_kind = finding.object_kind or target_node["kind"]
+            object_kind = object_kind_for(finding, target_node)
             subject, s_review = resolve_entity(
                 graph, finding.kind, finding.label, finding.part_number, finding.manufacturer
             )
@@ -1550,7 +1565,7 @@ class Worker:
             eligible = []
             for finding in document.findings:
                 object_label = finding.object_label or target_node["label"]
-                object_kind = finding.object_kind or target_node["kind"]
+                object_kind = object_kind_for(finding, target_node)
                 finding.predicate = normalized_predicate(
                     finding.predicate, finding.kind, object_kind
                 )
@@ -1712,6 +1727,16 @@ class Worker:
                             for c in graph["_claims"].values()
                         )
                     ):
+                        eligible.remove(item)
+                        progress = True
+                        continue
+                    if (
+                        subject
+                        and obj
+                        and not valid_relation(finding.predicate, subject["kind"], obj["kind"])
+                    ):
+                        # Resolution can land on a node of another kind than the extractor named.
+                        reject(finding, "predicate_invalid")
                         eligible.remove(item)
                         progress = True
                         continue
