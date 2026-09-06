@@ -27,7 +27,14 @@ import {
   Smartphone,
   X,
 } from "lucide-react";
-import { demoExport, parts, suppliers } from "@/lib/demo-data";
+import { demoExport, parts, suppliers as curatedSuppliers } from "@/lib/demo-data";
+import {
+  downloadDemoGraph,
+  loadDemoGraph,
+  sitesToSuppliers,
+  summarize,
+  type DemoSite,
+} from "@/lib/demo-graph";
 import { useDemo, type DemoStage } from "@/lib/demo-store";
 import { useReducedMotion } from "@/lib/use-reduced-motion";
 
@@ -64,7 +71,7 @@ const steps: { id: DemoStage; label: string }[] = [
 ];
 
 export function Experience() {
-  const { stage, started, paused, setStage, togglePaused } = useDemo();
+  const { stage, started, paused, graphState, setStage, togglePaused } = useDemo();
   const [info, setInfo] = useState(false);
   const heading = useRef<HTMLHeadingElement>(null);
   const dialog = useRef<HTMLDialogElement>(null);
@@ -98,6 +105,25 @@ export function Experience() {
     if (info) dialog.current?.showModal();
     else dialog.current?.close();
   }, [info]);
+  useEffect(() => {
+    // The generated research graph replaces the curated placeholder once it loads. The loader
+    // caches its promise, so React's development double-mount does not fetch twice.
+    let mounted = true;
+    if (useDemo.getState().graphState === "placeholder")
+      useDemo.getState().setGraphState("loading");
+    void loadDemoGraph().then((data) => {
+      if (!mounted) return;
+      if (!data || !data.sites.sites.length) {
+        useDemo.getState().setGraphState("unavailable");
+        return;
+      }
+      const records = sitesToSuppliers(data.sites, curatedSuppliers[0]);
+      useDemo.getState().setGraph(records, summarize(data.index, data.sites, records));
+    });
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   return (
     <div className={`experience stage-${stage} ${paused ? "motion-paused" : ""}`}>
@@ -132,7 +158,7 @@ export function Experience() {
         <div className="header-actions">
           <span className="demo-badge">
             <i />
-            Curated demo
+            {graphState === "generated" ? "Generated graph" : "Curated demo"}
           </span>
           <button
             className="icon-button about-button"
@@ -456,19 +482,45 @@ function DecompositionStage({ headingRef }: HeadingProps) {
 }
 
 function NetworkStage({ headingRef }: HeadingProps) {
-  const { supplier: selected, selectSupplier, setStage } = useDemo();
+  const {
+    supplier: selected,
+    selectSupplier,
+    setStage,
+    suppliers,
+    summary,
+    graphState,
+  } = useDemo();
   const [query, setQuery] = useState("");
   const [exported, setExported] = useState(false);
   const supplier = suppliers.find((s) => s.id === selected);
+  const site = supplier && "role" in supplier ? (supplier as DemoSite) : null;
   const visible = suppliers.filter((s) =>
     `${s.name} ${s.city} ${s.country} ${s.component} ${s.category}`
       .toLowerCase()
       .includes(query.toLowerCase()),
   );
-  const exportGraph = () => {
-    const url = URL.createObjectURL(
-      new Blob([JSON.stringify(demoExport, null, 2)], { type: "application/json" }),
-    );
+  const generated = graphState === "generated" && summary;
+  const counts = generated
+    ? [
+        [summary.organizations + summary.plants, "Sites"],
+        [summary.countries, "Countries"],
+        [summary.connections, "Connections"],
+      ]
+    : [
+        [6, "Companies"],
+        [6, "Countries"],
+        [5, "Connections"],
+      ];
+  const exportGraph = async () => {
+    let blob: Blob;
+    try {
+      blob = generated
+        ? await downloadDemoGraph()
+        : new Blob([JSON.stringify(demoExport, null, 2)], { type: "application/json" });
+    } catch {
+      blob = new Blob([JSON.stringify(demoExport, null, 2)], { type: "application/json" });
+    }
+    const url = URL.createObjectURL(blob);
     const anchor = document.createElement("a");
     anchor.href = url;
     anchor.download = "iphone-17-pro-supply-network.json";
@@ -490,12 +542,16 @@ function NetworkStage({ headingRef }: HeadingProps) {
           <br />
           <span>Connected by a world.</span>
         </h1>
-        <p>Follow the companies behind the components.</p>
+        <p>
+          {generated
+            ? `${summary.nodes} entities and ${summary.edges} verified relations, researched from public sources.`
+            : "Follow the companies behind the components."}
+        </p>
       </div>
       <div className="supplier-panel">
         <div className="panel-label">
           <span>THE SUPPLIER NETWORK</span>
-          <span>06</span>
+          <span>{String(suppliers.length - 1).padStart(2, "0")}</span>
         </div>
         <div className="supplier-search">
           <Search size={15} />
@@ -543,18 +599,12 @@ function NetworkStage({ headingRef }: HeadingProps) {
           )}
         </div>
         <div className="network-counts">
-          <div>
-            <strong>6</strong>
-            <span>Companies</span>
-          </div>
-          <div>
-            <strong>6</strong>
-            <span>Countries</span>
-          </div>
-          <div>
-            <strong>5</strong>
-            <span>Connections</span>
-          </div>
+          {counts.map(([value, label]) => (
+            <div key={label}>
+              <strong>{value}</strong>
+              <span>{label}</span>
+            </div>
+          ))}
         </div>
       </div>
       {supplier ? (
@@ -577,8 +627,23 @@ function NetworkStage({ headingRef }: HeadingProps) {
           <dl className="location-facts">
             <div>
               <dt>Location type</dt>
-              <dd>Company headquarters</dd>
+              <dd>
+                {site
+                  ? site.role === "plant"
+                    ? `Plant · ${site.precision} precision`
+                    : `Company office · ${site.precision} precision`
+                  : "Company headquarters"}
+              </dd>
             </div>
+            {site && site.share !== null && (
+              <div>
+                <dt>Share</dt>
+                <dd>
+                  {Math.round(site.share * 100)}%
+                  {site.shareBasis === "stated" ? " · stated in a source" : " · labelled prior"}
+                </dd>
+              </div>
+            )}
             <div>
               <dt>Coordinates</dt>
               <dd>
@@ -592,19 +657,36 @@ function NetworkStage({ headingRef }: HeadingProps) {
             <Cpu size={18} />
             <div>
               {supplier.component}
-              <small>Identified component</small>
+              <small>
+                {site && site.makes.length > 1
+                  ? `${site.makes.length} verified relations`
+                  : site
+                    ? "Verified relation"
+                    : "Identified component"}
+              </small>
             </div>
           </div>
           <p>{supplier.detail}</p>
           <div className="inspector-links">
-            <a href={supplier.source} target="_blank" rel="noreferrer">
-              Component source
-              <ArrowUpRight size={12} />
-            </a>
-            <a href={supplier.locationSource} target="_blank" rel="noreferrer">
-              Company location
-              <ArrowUpRight size={12} />
-            </a>
+            {site ? (
+              site.sources.slice(0, 3).map((url, i) => (
+                <a key={url} href={url} target="_blank" rel="noreferrer">
+                  {i === 0 ? "Evidence" : new URL(url).hostname.replace(/^www\./, "")}
+                  <ArrowUpRight size={12} />
+                </a>
+              ))
+            ) : (
+              <>
+                <a href={supplier.source} target="_blank" rel="noreferrer">
+                  Component source
+                  <ArrowUpRight size={12} />
+                </a>
+                <a href={supplier.locationSource} target="_blank" rel="noreferrer">
+                  Company location
+                  <ArrowUpRight size={12} />
+                </a>
+              </>
+            )}
           </div>
         </aside>
       ) : (
@@ -625,13 +707,17 @@ function NetworkStage({ headingRef }: HeadingProps) {
         <div className="map-legend">
           <span>
             <i />
-            Supplier headquarters
+            {generated ? "Plants and company offices" : "Supplier headquarters"}
           </span>
           <span>
             <i className="legend-line" />
-            Illustrative relationship
+            {generated ? "Verified relation to the product" : "Illustrative relationship"}
           </span>
-          <p>Locations show headquarters, not factories or shipping routes.</p>
+          <p>
+            {generated
+              ? "Every pin carries its evidence; coordinates are labelled by precision and never a guess."
+              : "Locations show headquarters, not factories or shipping routes."}
+          </p>
         </div>
         <button className="secondary-button" onClick={exportGraph}>
           <ArrowDownToLine size={15} />

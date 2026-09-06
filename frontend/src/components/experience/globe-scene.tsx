@@ -2,7 +2,6 @@
 import { useEffect, useEffectEvent, useRef, useState, type RefObject } from "react";
 import { LocateFixed, Minus, Plus } from "lucide-react";
 import * as THREE from "three";
-import { suppliers } from "@/lib/demo-data";
 import { useDemo } from "@/lib/demo-store";
 import { disposeScene } from "@/lib/scenes/phone";
 import { layoutGlobeLabels, type MapLabelPoint } from "@/lib/scenes/globe-labels";
@@ -54,6 +53,7 @@ export default function GlobeScene({
   const [failed, setFailed] = useState(false);
   const notifyReady = useEffectEvent(() => onReady?.());
   const demoSelected = useDemo((s) => s.supplier);
+  const suppliers = useDemo((s) => s.suppliers);
   const [previewSelected, setPreviewSelected] = useState<string | null>(null);
   const isLandingHandoff = Boolean(preview && handoff);
   const selected = preview ? previewSelected : demoSelected;
@@ -534,7 +534,7 @@ export default function GlobeScene({
       renderer.dispose();
       renderer.domElement.remove();
     };
-  }, [handoff, isLandingHandoff]);
+  }, [handoff, isLandingHandoff, suppliers]);
   return (
     <div className="globe-stage" aria-label="3D supplier globe">
       <div className="globe-atmosphere" />

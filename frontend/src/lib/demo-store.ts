@@ -1,5 +1,6 @@
 import { create } from "zustand";
-import type { PartId } from "./demo-data";
+import { suppliers as curatedSuppliers, type PartId, type Supplier } from "./demo-data";
+import type { DemoGraphSummary, DemoSite } from "./demo-graph";
 
 export type DemoStage = "input" | "bom" | "network";
 export const useDemo = create<{
@@ -9,6 +10,12 @@ export const useDemo = create<{
   supplier: string | null;
   exploded: boolean;
   paused: boolean;
+  /** Pins on the globe: the curated placeholder until the generated graph loads. */
+  suppliers: (Supplier | DemoSite)[];
+  summary: DemoGraphSummary | null;
+  graphState: "placeholder" | "loading" | "generated" | "unavailable";
+  setGraph: (suppliers: DemoSite[], summary: DemoGraphSummary) => void;
+  setGraphState: (graphState: "placeholder" | "loading" | "generated" | "unavailable") => void;
   setStage: (stage: DemoStage) => void;
   selectPart: (part: PartId) => void;
   selectSupplier: (supplier: string | null) => void;
@@ -22,6 +29,11 @@ export const useDemo = create<{
   supplier: null,
   exploded: true,
   paused: false,
+  suppliers: curatedSuppliers,
+  summary: null,
+  graphState: "placeholder",
+  setGraph: (suppliers, summary) => set({ suppliers, summary, graphState: "generated" }),
+  setGraphState: (graphState) => set({ graphState }),
   setStage: (stage) => set((s) => ({ stage, started: s.started || stage !== "input" })),
   selectPart: (part) => set({ part }),
   selectSupplier: (supplier) => set({ supplier }),
