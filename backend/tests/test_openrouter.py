@@ -164,3 +164,37 @@ async def test_reasoning_control_is_sent_only_when_configured(setting, expected)
             Extraction, "Extract.", {}, budget()
         )
     assert bodies[0].get("reasoning") == expected
+
+
+async def test_reasoning_token_budget_takes_precedence_over_effort():
+    bodies = []
+
+    def handle(request):
+        bodies.append(json.loads(request.content))
+        return httpx.Response(200, json=response_data({"findings": []}, "openrouter"))
+
+    async with httpx.AsyncClient(transport=httpx.MockTransport(handle)) as client:
+        await LiveProvider(
+            config(openrouter_reasoning="low", openrouter_reasoning_max_tokens=512), client
+        ).structured(Extraction, "Extract.", {}, budget())
+    assert bodies[0]["reasoning"] == {"max_tokens": 512, "exclude": True}
+
+
+async def test_reasoning_budgets_are_applied_per_role():
+    bodies = []
+
+    def handle(request):
+        bodies.append(json.loads(request.content))
+        return httpx.Response(200, json=response_data({"findings": []}, "openrouter"))
+
+    async with httpx.AsyncClient(transport=httpx.MockTransport(handle)) as client:
+        provider = LiveProvider(
+            config(
+                openrouter_reasoning_max_tokens=256, openrouter_reasoning_max_tokens_planner=2048
+            ),
+            client,
+        )
+        await provider.structured(Extraction, "x", {}, budget())
+        await provider.structured(Extraction, "x", {}, budget(), role="planner")
+    assert bodies[0]["reasoning"] == {"max_tokens": 256, "exclude": True}
+    assert bodies[1]["reasoning"] == {"max_tokens": 2048, "exclude": True}

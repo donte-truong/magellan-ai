@@ -266,3 +266,85 @@ async def test_rate_limits_are_retried_with_bounded_waits_then_fail_closed(monke
         with pytest.raises(ProviderFailure) as caught:
             await LiveProvider(settings(), client).search_pages("Widget", 3, budget())
     assert caught.value.code == "source_unavailable" and len(calls) == 4
+
+
+async def test_verification_sends_quote_windows_instead_of_the_whole_page():
+    bodies = []
+    filler = "Boilerplate navigation text. " * 400
+    page = filler + "Widget contains a battery made by Acme." + filler
+
+    def handle(request):
+        data = json.loads(request.content)
+        if request.url.host == "api.tavily.com":
+            return httpx.Response(
+                200,
+                json={
+                    "results": [
+                        {"url": "https://example.org/spec", "title": "Widget", "raw_content": page}
+                    ]
+                },
+            )
+        bodies.append(data)
+        name = data["text"]["format"]["name"]
+        if name == "extraction":
+            finding = {
+                "label": "battery",
+                "kind": "component",
+                "predicate": "PART_OF",
+                "object_label": None,
+                "object_kind": None,
+                "part_number": None,
+                "manufacturer": None,
+                "quote": "Widget contains a battery made by Acme.",
+                "scope_type": "product",
+                "rationale": "stated",
+                "quantity": None,
+                "unit": None,
+            }
+            return httpx.Response(200, json=response_data({"findings": [finding]}))
+        return httpx.Response(
+            200,
+            json=response_data(
+                {
+                    "findings": [
+                        {
+                            "index": 0,
+                            "entailed": True,
+                            "scope_matches": True,
+                            "quantity_supported": False,
+                        }
+                    ]
+                }
+            ),
+        )
+
+    async with httpx.AsyncClient(transport=httpx.MockTransport(handle)) as client:
+        provider = LiveProvider(settings(), client)
+        docs = [
+            d
+            async for d in provider.research(
+                {"label": "Widget", "tier": 0}, "Widget", None, budget()
+            )
+        ]
+    assert docs[0].findings[0].rejection is None
+    verification = json.loads(bodies[1]["input"])
+    assert "document" not in verification
+    context = verification["claims"][0]["context"]
+    assert "Widget contains a battery made by Acme." in context and len(context) < 1000
+    assert len(json.loads(bodies[0]["input"])["document"]) > len(context)
+
+
+async def test_provider_calls_have_a_hard_deadline(monkeypatch):
+    import asyncio
+
+    async def slow(request):
+        await asyncio.sleep(5)
+        return httpx.Response(200, json={"results": []})
+
+    config = settings(provider_call_deadline_seconds=10)
+    monkeypatch.setattr(config, "provider_call_deadline_seconds", 1, raising=False)
+    async with httpx.AsyncClient(transport=httpx.MockTransport(slow)) as client:
+        provider = LiveProvider(config, client)
+        with pytest.raises(ProviderFailure) as caught:
+            await provider.search_pages("Widget", 3, budget())
+    assert caught.value.code == "provider_timeout"

@@ -114,7 +114,7 @@ async def test_search_pages_and_fetch_page_use_tavily_and_reject_private_or_empt
         pages = await provider.search_pages("Sensor One teardown", 5, allowance)
         assert [p.url for p in pages] == ["https://ifixit.com/teardown", "https://blog.org/no-body"]
         assert pages[0].body.startswith("Full page") and pages[1].body is None
-        assert calls[0][1]["include_raw_content"] == "text" and calls[0][1]["max_results"] == 5
+        assert calls[0][1]["include_raw_content"] == "text" and calls[0][1]["max_results"] == 10
         page = await provider.fetch_page("https://manufacturer.org/spec", allowance)
         assert page.body.startswith("A long enough") and calls[1][0] == "/extract"
         assert allowance.usage["searches"] == 1 and allowance.usage["documents"] == 1

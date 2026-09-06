@@ -64,6 +64,8 @@ class RunState:
         self.trace = []
         self.visited = set()
         self.invalid_documents = []  # pages whose model output was unusable
+        self.stale = {}  # branch id -> consecutive tasks without a verified finding
+        self.paused = set()  # branches paused by the stagnation rule
 
     def record(self, entry):
         if len(self.trace) >= MAX_TRACE_ENTRIES:
@@ -79,6 +81,10 @@ class RunState:
         if node["id"] == graph["root_node_id"]:
             return "root"
         return self.branch_of.get(node["id"], node["id"])
+
+
+def branch_label(graph, branch):
+    return next((n["label"] for n in graph["nodes"] if n["id"] == branch), branch)
 
 
 def unanswered_relations(graph, node):
@@ -445,6 +451,7 @@ class Worker:
             if n["tier"] is not None
             and n["tier"] < run["limits"]["max_hops"]
             and n["id"] not in state.visited
+            and state.branch(n, graph) not in state.paused
         ]
 
     def frontier_counts(self, graph, run, state):
@@ -477,6 +484,7 @@ class Worker:
         fallback = {
             "relation_sought": (unanswered_relations(graph, node) or ["upstream_inputs"])[0],
             "queries": template_queries(run["product"], run["company"], node, hints),
+            "source_types": {},
             "skip": False,
             "skip_reason": None,
             "priority": "medium",
@@ -500,6 +508,7 @@ class Worker:
         return {
             "relation_sought": plan.relation_sought,
             "queries": queries or fallback["queries"],
+            "source_types": {q.query: list(q.source_types) for q in plan.queries},
             "skip": plan.skip,
             "skip_reason": plan.skip_reason,
             "priority": plan.priority,
@@ -566,6 +575,7 @@ class Worker:
                     state,
                     limits,
                     documents_used,
+                    remaining_queries=len(queries) + 1,
                 )
                 if len(state.invalid_documents) > before_invalid and not found_here:
                     failure = "model_output_invalid"
@@ -595,6 +605,21 @@ class Worker:
         state.done[branch] = state.done.get(branch, 0) + 1
         if not found and not plan["skip"] and not failure:
             questions.append(f"No further verified upstream inputs for {target['label']}.")
+        state.stale[branch] = 0 if found else state.stale.get(branch, 0) + 1
+        limit = self.settings.branch_stagnation_tasks
+        if limit and branch != "root" and state.stale[branch] >= limit:
+            with self.db.transaction(workspace) as repo:
+                remaining = [
+                    n
+                    for n in self.pending_tasks(repo.graph(run["graph_id"]), run, state)
+                    if state.branch(n, repo.graph(run["graph_id"])) == branch
+                ]
+            if remaining:
+                state.paused.add(branch)
+                questions.append(
+                    f"Paused the {branch_label(graph, branch)} branch after {limit} tasks without verified findings; "
+                    f"{len(remaining)} pending task(s) released their budget to other branches."
+                )
         with self.db.transaction(workspace, write=True) as repo:
             current = self.owned(repo, identifier)
             graph = repo.graph(run["graph_id"])
@@ -617,21 +642,65 @@ class Worker:
             self.save_trace(repo, identifier, state)
             repo.put("run", current)
 
+    @staticmethod
+    def relevant(body, run, target):
+        """A long page that never names the product, the target, or an alias is not worth a call."""
+        if len(body) <= 2000:
+            return True
+        text = body.casefold()
+        names = [run["product"], target["label"], *target.get("aliases", [])]
+        return any(name and name.casefold() in text for name in names)
+
     async def run_query(
-        self, workspace, identifier, run, target, query, plan, budget, state, limits, used
+        self,
+        workspace,
+        identifier,
+        run,
+        target,
+        query,
+        plan,
+        budget,
+        state,
+        limits,
+        used,
+        remaining_queries=1,
     ):
         """One search: reuse pages already analyzed for this question, analyze the rest, commit."""
         found = docs = 0
         invalid = state.invalid_documents
         question = (target["id"], plan["relation_sought"])
-        room = min(limits["max_documents_per_task"] - used, 5)
+        # Spread the task's document allowance across its remaining queries so one query that
+        # returns irrelevant pages cannot starve the others.
+        share = -(-(limits["max_documents_per_task"] - used) // max(1, remaining_queries))
+        room = max(1, min(share, limits["max_documents_per_task"] - used, 5))
         if hasattr(self.provider, "search_pages") and hasattr(self.provider, "analyze"):
-            pages = await self.provider.search_pages(query, room, budget)
+            pages = await self.provider.search_pages(
+                query,
+                room,
+                budget,
+                source_types=plan.get("source_types", {}).get(query),
+                product=run["product"],
+                company=run["company"],
+            )
+            chosen, deferred = [], None
             for page in pages:
-                if docs >= room:
+                if len(chosen) >= room:
                     break
-                budget.check()
+                try:
+                    budget.check()
+                except BudgetExceeded as exc:
+                    deferred = exc
+                    break
                 if not page.body:
+                    continue
+                if not self.relevant(page.body, run, target):
+                    state.record(
+                        {
+                            "stage": "document",
+                            "url": page.url,
+                            "skipped": "no mention of product or target",
+                        }
+                    )
                     continue
                 content_hash = digest(page.body.encode())
                 seen = state.analyzed.setdefault(content_hash, set())
@@ -645,29 +714,62 @@ class Worker:
                     )
                     continue
                 seen.add(question)
-                budget.charge("documents")
-                docs += 1
                 try:
-                    document = await self.provider.analyze(
-                        target,
-                        run["product"],
-                        run["company"],
-                        page.url,
-                        page.title,
-                        page.body,
-                        budget,
-                    )
-                except ProviderFailure as exc:
+                    budget.charge("documents")
+                except BudgetExceeded as exc:
+                    # Selected pages are still analyzed and committed before the stop propagates.
+                    seen.discard(question)
+                    deferred = exc
+                    break
+                docs += 1
+                chosen.append(page)
+            # Model calls run concurrently (bounded); commits stay sequential through the
+            # single-writer transaction, so ordering and budgets are unchanged.
+            semaphore = asyncio.Semaphore(self.settings.research_concurrency)
+
+            async def analyze(page):
+                async with semaphore:
+                    try:
+                        return (
+                            page,
+                            await self.provider.analyze(
+                                target,
+                                run["product"],
+                                run["company"],
+                                page.url,
+                                page.title,
+                                page.body,
+                                budget,
+                            ),
+                            None,
+                        )
+                    except ProviderFailure as exc:
+                        if exc.code != "model_output_invalid":
+                            raise
+                        return page, None, exc.code
+
+            for page, document, failure in await asyncio.gather(*(analyze(p) for p in chosen)):
+                if failure:
                     # One unusable model output fails this document only; the task continues.
-                    if exc.code != "model_output_invalid":
-                        raise
-                    state.record({"stage": "document", "url": page.url, "failure": exc.code})
+                    state.record({"stage": "document", "url": page.url, "failure": failure})
                     invalid.append(page.url)
                     continue
-                found += len(
+                committed = len(
                     self.commit_document(workspace, identifier, target, document, budget, state)
                 )
-                await asyncio.sleep(0)
+                found += committed
+                state.record(
+                    {
+                        "stage": "document",
+                        "url": page.url,
+                        "chars": len(page.body),
+                        "findings": len(document.findings),
+                        "rejected": sum(1 for f in document.findings if f.rejection),
+                        "new_nodes": committed,
+                    }
+                )
+            if deferred:
+                raise deferred
             return found, docs
         # Legacy providers expose only research(); no reuse is possible for them.
         async for document in self.provider.research(
@@ -1062,8 +1164,15 @@ class Worker:
                         graph["nodes"].append(obj)
                         added.append(obj)
                     if state is not None:
+                        # Entities found from the product root start their own tier-1 branch;
+                        # deeper discoveries inherit the branch of the task that found them.
+                        parent_branch = (
+                            None
+                            if target_node["id"] == graph["root_node_id"]
+                            else state.branch(target_node, graph)
+                        )
                         for node in added:
-                            state.branch_of.setdefault(node["id"], state.branch(target_node, graph))
+                            state.branch_of.setdefault(node["id"], parent_branch or node["id"])
                     record_identity(
                         subject, finding.label, finding.part_number, finding.manufacturer
                     )

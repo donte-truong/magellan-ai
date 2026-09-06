@@ -92,7 +92,7 @@ class PageProvider:
             }
         )
 
-    async def search_pages(self, query, count, budget):
+    async def search_pages(self, query, count, budget, **kwargs):
         budget.charge("searches")
         return [Page(url="https://example.org/widget", title="Widget", snippet="", body=self.body)]
 
@@ -269,3 +269,230 @@ def test_model_roles_resolve_consistently_for_both_providers():
             openrouter_api_key="r",
             openrouter_planner_model="paid/model",
         )
+
+
+class QueryStarvingProvider(PageProvider):
+    """First query returns four irrelevant long pages; the second returns the useful one."""
+
+    name = "test_starving"
+
+    def __init__(self):
+        super().__init__()
+        self.queries = []
+
+    async def search_pages(self, query, count, budget, **kwargs):
+        budget.charge("searches")
+        self.queries.append((query, count))
+        if query.endswith("one"):
+            return [
+                Page(
+                    url=f"https://filings.org/{i}",
+                    title="Form SD",
+                    snippet="",
+                    body="unrelated " * 400,
+                )
+                for i in range(4)
+            ]
+        return [Page(url="https://example.org/widget", title="Widget", snippet="", body=self.body)]
+
+
+async def test_document_allowance_is_shared_across_queries_and_irrelevant_pages_are_skipped(api):
+    client, app = api
+    provider = QueryStarvingProvider()
+    app.state.worker.provider = provider
+    run, graph = await researched(api, "Widget")
+    # Both planned queries ran: the first got half the allowance, and its unrelated long pages
+    # were skipped before any extraction call, so the useful page was still analyzed.
+    assert [q for q, _ in provider.queries][:2] == ["Widget one", "Widget two"]
+    assert provider.queries[0][1] == 2
+    assert "tin" in {n["label"] for n in graph["nodes"]}
+    history = (await client.get(f"/v1/runs/{run['id']}/history")).json()["entries"]
+    skipped = [e for e in history if e.get("skipped") == "no mention of product or target"]
+    # Four unrelated filings per "one" query (root and tin tasks) were skipped without a call.
+    assert len(skipped) == 8 and provider.analyzed.count("Widget") == 1
+
+
+class ReplanningProvider(PageProvider):
+    """First plan yields nothing; the replan proposes a new query that finds the page."""
+
+    name = "test_replan"
+
+    def __init__(self):
+        super().__init__()
+        self.plans = 0
+        self.searches = []
+
+    async def plan(self, context, budget):
+        self.plans += 1
+        query = "dead end" if self.plans == 1 else "second wind"
+        if context["target"]["kind"] != "product":
+            query = f"{context['target']['label']} query"
+        return Plan.model_validate(
+            {
+                "relation_sought": "upstream_inputs",
+                "queries": [{"query": query, "source_types": ["other"], "reason": "r"}],
+                "skip": False,
+                "skip_reason": None,
+                "priority": "high",
+            }
+        )
+
+    async def search_pages(self, query, count, budget, **kwargs):
+        budget.charge("searches")
+        self.searches.append(query)
+        if query == "dead end":
+            return []
+        return [Page(url="https://example.org/widget", title="Widget", snippet="", body=self.body)]
+
+
+async def test_replanned_queries_run_with_their_own_document_share(api):
+    client, app = api
+    provider = ReplanningProvider()
+    app.state.worker.provider = provider
+    run, graph = await researched(api, "Widget")
+    assert provider.searches[:2] == ["dead end", "second wind"]
+    assert "tin" in {n["label"] for n in graph["nodes"]}
+    events = sse_events(await client.get(run["events_url"]))
+    assert [e["payload"]["outcome"] for e in events if e["type"] == "task.finished"][0] == (
+        "findings_committed"
+    )
+    assert run["status"] == "partial" and run["stop_reason"] == "research_exhausted"
+
+
+class ParallelProvider(PageProvider):
+    """Three distinct pages; analysis only completes once all three are in flight together."""
+
+    name = "test_parallel"
+
+    def __init__(self):
+        super().__init__()
+        self.inflight = 0
+        self.peak = 0
+        self.gate = __import__("asyncio").Event()
+
+    async def plan(self, context, budget):
+        # One query so the task's whole document allowance is available to it.
+        return Plan.model_validate(
+            {
+                "relation_sought": "upstream_inputs",
+                "queries": [
+                    {"query": context["target"]["label"], "source_types": ["other"], "reason": "r"}
+                ],
+                "skip": False,
+                "skip_reason": None,
+                "priority": "high",
+            }
+        )
+
+    async def search_pages(self, query, count, budget, **kwargs):
+        budget.charge("searches")
+        return [
+            Page(
+                url=f"https://example.org/p{i}",
+                title="Widget",
+                snippet="",
+                body=f"{self.body} page {i}",
+            )
+            for i in range(3)
+        ]
+
+    async def analyze(self, target, product, company, url, title, body, budget):
+        import asyncio
+
+        self.inflight += 1
+        self.peak = max(self.peak, self.inflight)
+        if self.inflight >= 3:
+            self.gate.set()
+        try:
+            await asyncio.wait_for(self.gate.wait(), timeout=5)
+        finally:
+            self.inflight -= 1
+        return await super().analyze(target, product, company, url, title, body, budget)
+
+
+async def test_documents_within_a_task_are_analyzed_concurrently(api):
+    client, app = api
+    provider = ParallelProvider()
+    app.state.worker.provider = provider
+    run, graph = await researched(api, "Widget")
+    assert provider.peak == 3  # all three pages were in flight at once
+    assert "tin" in {n["label"] for n in graph["nodes"]}
+    assert run["usage"]["documents"] >= 3
+
+
+class StagnantProvider(PageProvider):
+    """Root finds A; A finds A1, A2, A3; nothing below them is ever found."""
+
+    name = "test_stagnant"
+
+    async def plan(self, context, budget):
+        return Plan.model_validate(
+            {
+                "relation_sought": "upstream_inputs",
+                "queries": [
+                    {"query": context["target"]["label"], "source_types": ["other"], "reason": "r"}
+                ],
+                "skip": False,
+                "skip_reason": None,
+                "priority": "high",
+            }
+        )
+
+    async def search_pages(self, query, count, budget, **kwargs):
+        budget.charge("searches")
+        return [
+            Page(
+                url=f"https://example.org/{query}",
+                title=query,
+                snippet="",
+                body=f"Page about {query}",
+            )
+        ]
+
+    async def analyze(self, target, product, company, url, title, body, budget):
+        self.analyzed.append(target["label"])
+        children = {"Widget": ["A"], "A": ["A1", "A2", "A3"]}.get(target["label"], [])
+        findings = [
+            Finding(child, "component", "PART_OF", f"Page about {target['label']}", "stated")
+            for child in children
+        ]
+        return Document(url, title, "example.org", body, findings=findings)
+
+
+async def test_a_branch_pauses_after_consecutive_empty_tasks_and_releases_budget(api):
+    client, app = api
+    provider = StagnantProvider()
+    app.state.worker.provider = provider
+    run, graph = await researched(api, "Widget", limits={"max_hops": 4})
+    # A1 and A2 found nothing, so A3 was never researched and its budget was released.
+    assert provider.analyzed.count("A3") == 0
+    assert any("Paused the A branch" in q for q in run["open_questions"])
+    assert run["frontier"] == {}
+    assert {n["label"] for n in graph["nodes"]} == {"Widget", "A", "A1", "A2", "A3"}
+
+
+def test_rank_pages_prefers_expected_source_types_and_first_party_hosts():
+    from app.providers import rank_pages
+
+    pages = [
+        Page(url="https://shop.example.com/buy-widget", title="Buy Widget", snippet="", body="x"),
+        Page(
+            url="https://www.ifixit.com/Teardown/Widget",
+            title="Widget Teardown",
+            snippet="",
+            body="x",
+        ),
+        Page(
+            url="https://acme.com/docs/widget-datasheet.pdf",
+            title="Datasheet",
+            snippet="",
+            body="x",
+        ),
+        Page(url="https://news.org/widget", title="Widget news", snippet="", body=None),
+    ]
+    ranked = rank_pages(pages, ["datasheet"], product="Widget", company="Acme")
+    assert [p.url for p in ranked][:2] == [
+        "https://acme.com/docs/widget-datasheet.pdf",
+        "https://www.ifixit.com/Teardown/Widget",
+    ]
+    assert ranked[-1].url == "https://shop.example.com/buy-widget"

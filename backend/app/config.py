@@ -33,6 +33,19 @@ class Settings(BaseSettings):
     # "off" disables thinking, or an effort level (minimal/low/medium/high) with reasoning tokens
     # excluded from the response. Hidden reasoning otherwise competes with the JSON for max_tokens.
     openrouter_reasoning: Literal["", "off", "minimal", "low", "medium", "high"] = ""
+    # Reasoning token budget for models whose thinking cannot be disabled (takes precedence
+    # over the effort level). Hidden reasoning otherwise competes with the JSON for max_tokens.
+    openrouter_reasoning_max_tokens: int | None = Field(default=None, ge=1, le=32000)
+    # Per-role overrides: planning deserves thinking, extraction is literal quoting.
+    openrouter_reasoning_max_tokens_planner: int | None = Field(default=None, ge=1, le=32000)
+    openrouter_reasoning_max_tokens_verifier: int | None = Field(default=None, ge=1, le=32000)
+    openrouter_reasoning_max_tokens_extraction: int | None = Field(default=None, ge=1, le=32000)
+    # Hard wall-clock deadline per provider call; keep-alive bytes can defeat the read timeout.
+    provider_call_deadline_seconds: int = Field(default=180, ge=10, le=900)
+    # Documents analyzed concurrently within one research task.
+    research_concurrency: int = Field(default=3, ge=1, le=8)
+    # Pause a tier-1 branch after this many consecutive tasks without a verified finding (0 = never).
+    branch_stagnation_tasks: int = Field(default=2, ge=0, le=10)
     provider_timeout_seconds: float = Field(default=30, gt=0, le=60)
     worker_slots: int = Field(default=3, ge=1, le=16)
     worker_poll_seconds: float = Field(default=0.5, gt=0, le=30)
@@ -97,6 +110,13 @@ class Settings(BaseSettings):
                             "and OUTPUT_TOKEN_COST_PER_MILLION_MINOR"
                         )
         return self
+
+    def reasoning_budget_for(self, role):
+        return {
+            "planner": self.openrouter_reasoning_max_tokens_planner,
+            "verifier": self.openrouter_reasoning_max_tokens_verifier,
+            "extraction": self.openrouter_reasoning_max_tokens_extraction,
+        }.get(role) or self.openrouter_reasoning_max_tokens
 
     def model_for(self, role):
         """Resolve the configured model ID for a role on the active model provider."""
