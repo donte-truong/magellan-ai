@@ -4,7 +4,8 @@ import { join, resolve } from 'node:path';
 import { z } from 'zod';
 import { runResearch, validateRequest } from '../research/engine';
 import { assertLiveCredentials, liveConfig } from '../research/providers';
-import { hash, id, type Graph, type Run, type RunEvent } from '../research/schema';
+import { hash, id, normalize, type Graph, type Run, type RunEvent } from '../research/schema';
+import { deriveBom, presentRun } from './frontend-compat';
 import { atomicJson, readJson } from '../research/store';
 import { renderHtml } from '../research/view';
 import { annotateEdge, ensureGraphEdgeMetadata, hasEdgeMetadata } from '../research/edge-metadata';
@@ -92,6 +93,20 @@ async function createBom(request: Request) {
     return json(bom, 200);
   } finally { state.supplyBomActive = (state.supplyBomActive ?? 1) - 1; }
 }
+// Frontend entry point: `{product, company?}` starts a research run. Live when provider keys are configured;
+// otherwise the curated Raspberry Pi 5 replay is the only product that can be served.
+async function decompose(request: Request) {
+  const body = z.object({ product: z.string().trim().min(1).max(200), company: z.string().trim().max(200).optional() }).strict().parse(await readBody(request));
+  const company = body.company?.trim() || undefined;
+  let mode: 'live' | 'replay' = 'live';
+  try { assertLiveCredentials(); liveConfig(); }
+  catch (e) {
+    if (normalize(body.product) === 'raspberry pi 5' && (!company || normalize(company) === 'raspberry pi')) mode = 'replay';
+    else throw new HttpError(503, 'configuration_required', `Live research is not configured on this workspace, so only the Raspberry Pi 5 curated example is available. (${e instanceof Error ? e.message : 'provider configuration required'})`);
+  }
+  const forwarded = new Request(request.url, { method: 'POST', headers: request.headers, body: JSON.stringify({ product: body.product, ...(company ? { company } : {}), mode }) });
+  return launch(forwarded);
+}
 async function launch(request: Request) {
   const parsed = z.object({ mode: z.enum(['live', 'replay']).default('live') }).passthrough().parse(await readBody(request, 2_000_000));
   const { mode, ...raw } = parsed;
@@ -107,7 +122,7 @@ async function launch(request: Request) {
       try {
         const previous = await readJson<{ bodyHash: string; runId: string }>(idemPath);
         if (previous.bodyHash !== bodyHash) throw new HttpError(409, 'idempotency_conflict', 'Key already used for different inputs');
-        return json(await readRun(previous.runId), 200);
+        return json(presentRun(await readRun(previous.runId)), 200);
       } catch (e) { if ((e as NodeJS.ErrnoException).code !== 'ENOENT') throw e; }
     }
     if (jobs.size >= 3) throw new HttpError(429, 'rate_limited', 'Three research runs are already active');
@@ -122,7 +137,7 @@ async function launch(request: Request) {
     const promise = runResearch(input, { mode, root: root(), signal: controller.signal, onCreated(run) { runId = run.id; jobs.set(run.id, { controller, promise }); createdResolve(structuredClone(run)); } }).catch(error => { createdReject(error); return null; }).finally(() => { if (runId) jobs.delete(runId); });
     const run = await created;
     if (idemPath) { await mkdir(join(root(), 'idempotency'), { recursive: true, mode: 0o700 }); await atomicJson(idemPath, { bodyHash, runId: run.id }); }
-    return json(run, 202);
+    return json(presentRun(run), 202);
   };
   const pending = (state.supplyLaunchLock ?? Promise.resolve()).then(work, work);
   state.supplyLaunchLock = pending.catch(() => undefined);
@@ -179,26 +194,36 @@ export async function handle(request: Request, segments: string[]) {
     const method = request.method; const url = new URL(request.url);
     if (resource === 'bom') {
       if (segments.length === 1 && method === 'POST') return await createBom(request);
+      if (resourceId === 'decompose' && segments.length === 2 && method === 'POST') return await decompose(request);
       if (resourceId && segments.length === 2 && method === 'GET') return json(await readJson<Bom>(join(bomPath(resourceId), 'bom.json')));
       if (resourceId && action === 'history' && segments.length === 3 && method === 'GET') return new Response(await readFile(join(bomPath(resourceId), 'history.jsonl')), { headers: { 'Content-Type': 'application/x-ndjson', 'Cache-Control': 'no-store' } });
     }
     if (resource === 'runs' && segments.length === 1) {
       if (method === 'POST') return await launch(request);
       if (method === 'GET') {
-        const runs = (await Promise.all((await runIds()).map(runId => readRun(runId).catch(() => null)))).filter((r): r is Run => !!r).sort((a, b) => b.created_at.localeCompare(a.created_at));
-        return json({ runs: runs.filter(r => !url.searchParams.has('status') || r.status === url.searchParams.get('status')), next_cursor: null });
+        const limitParam = url.searchParams.get('limit');
+        if (limitParam !== null && !/^\d+$/.test(limitParam)) throw new HttpError(400, 'invalid_input', 'limit must be a nonnegative integer');
+        const limit = Math.min(200, limitParam === null ? 50 : Number(limitParam));
+        const all = (await Promise.all((await runIds()).map(runId => readRun(runId).catch(() => null)))).filter((r): r is Run => !!r).sort((a, b) => b.created_at.localeCompare(a.created_at));
+        const runs = all.filter(r => !url.searchParams.has('status') || r.status === url.searchParams.get('status')).slice(0, limit).map(presentRun);
+        // `items` mirrors `runs` for the frontend's draft-contract client.
+        return json({ runs, items: runs, next_cursor: null });
       }
     }
     if (resource === 'runs' && resourceId) {
-      if (method === 'GET' && segments.length === 2) return json(await readRun(resourceId));
+      if (method === 'GET' && segments.length === 2) return json(presentRun(await readRun(resourceId)));
+      if (method === 'GET' && action === 'bom' && segments.length === 3) { const run = await readRun(resourceId); return json(deriveBom(run, ensureGraphEdgeMetadata(await readJson<Graph>(join(runPath(resourceId), 'graph.json'))))); }
       if (method === 'GET' && action === 'events' && segments.length === 3) return await events(request, resourceId);
       if (method === 'GET' && action === 'history' && segments.length === 3) return new Response(await readFile(join(runPath(resourceId), 'history.jsonl')), { headers: { 'Content-Type': 'application/x-ndjson', 'Cache-Control': 'no-store' } });
-      if (method === 'POST' && action === 'cancel' && segments.length === 3) { const run = await readRun(resourceId); jobs.get(resourceId)?.controller.abort(); return json({ ...run, cancellation_requested: run.status === 'running' }); }
+      if (method === 'POST' && action === 'cancel' && segments.length === 3) { const run = await readRun(resourceId); jobs.get(resourceId)?.controller.abort(); return json({ ...presentRun(run), cancellation_requested: run.status === 'running' }); }
     }
     if (resource === 'graphs' && resourceId && method === 'GET') {
       const { graph, run } = await findGraph(resourceId);
       const revision = url.searchParams.get('revision');
-      if (revision !== null && (!/^\d+$/.test(revision) || Number(revision) !== graph.revision)) throw new HttpError(409, 'revision_conflict', 'Only the latest graph revision is persisted in this prototype');
+      if (revision !== null && !/^\d+$/.test(revision)) throw new HttpError(400, 'invalid_input', 'revision must be a nonnegative integer');
+      // Only the latest revision is persisted. The whole-graph read is strict; child reads pinned to an
+      // earlier revision (the frontend pins the revision it last displayed) are served from the latest graph.
+      if (revision !== null && Number(revision) !== graph.revision && (segments.length === 2 || Number(revision) > graph.revision)) throw new HttpError(409, 'revision_conflict', 'Only the latest graph revision is persisted in this prototype');
       if (segments.length === 2) return json(graph);
       if (action === 'export' && segments.length === 3) return new Response(JSON.stringify(graph, null, 2), { headers: { 'Content-Type': 'application/json', 'Content-Disposition': `attachment; filename="${graph.id}.json"`, 'Cache-Control': 'no-store' } });
       if (action === 'view' && segments.length === 3) return new Response(renderHtml(run, graph), { headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' } });

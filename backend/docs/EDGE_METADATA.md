@@ -88,7 +88,7 @@ Examples: a single recent directly supported source scores 0.70; the same eviden
 
 ## Compatibility and iteration
 
-Implementation: `src/research/edge-metadata.ts`; contract: root `openapi.yaml` (`Edge`, `EdgeSource`, `EdgeConfidenceDetails`); tests: `tests/edge-metadata.test.ts` plus ledger/API coverage.
+Implementation: `src/research/edge-metadata.ts`; contract: `docs/openapi.yaml` (`Edge`, `EdgeSource`, `EdgeConfidenceDetails`); tests: `tests/edge-metadata.test.ts` plus ledger/API coverage.
 
 Existing graph files and old SSE edge events are enriched **on read** if metadata is missing. Each historical event uses only its own claim IDs, so later contradictions do not leak backward into an earlier event's score. Existing audit files and revisions are not rewritten. Already generated HTML/Markdown files remain snapshots; rerun `npm run demo` for new files or use the API view/export for an older saved graph.
 
