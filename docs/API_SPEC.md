@@ -135,6 +135,20 @@ Mutation ops (all user-originated writes are labelled `user_asserted`; ops canno
 | GET | `/materials/{material_node_id}/production?year=` | Country production/export shares for the commodity, with `source_id`, `stage`, `method`. Backs the concentration badge. |
 | GET | `/reference/commodities` | Canonical commodity list the backend can resolve (`tin`, `tantalum`, `cobalt`, …) with available years and stages. |
 
+#### BOM decomposition extension (implemented)
+
+| Method | Path | Purpose |
+|---|---|---|
+| POST | `/bom/decompose` | Accepts the same body as `/runs` (`product` required). Starts a bounded, evidence-backed BOM decomposition and returns `202 Run`, including `bom_url` and `events_url`. Supports `Idempotency-Key`. |
+| GET | `/runs/{run_id}/bom` | BOM view of the run's graph, with `?revision=N`. Returns product-scoped component/material rows, parent and edge IDs, nullable quantities/units, scope, support labels, claims and evidence, plus `method`, `data_quality`, and open questions. Available while the run is in progress. |
+| GET | `/graphs/{graph_id}/enrichments/{enrichment_id}/events` | Implements the enrichment `events_url` described in §3.3, with resumable SSE and heartbeats. |
+
+`Run.provider` identifies `curated_fixture` or `tavily_openai`; this is independent of `mode: live | replay`. A fixture run is explicitly identified as cached public-source research. Replay jobs reconstruct the cached graph's node/edge events into a separate graph and flag every event with `mode: replay`.
+
+BOM output is a **research BOM**, not a complete manufacturing BOM. Generic composition and company-level context remain in the graph; they are not promoted to product-specific BOM rows. Unknown quantities and units remain null. `data_quality.coverage_pct` measures the fraction of returned rows directly supported by public evidence, **not** the fraction of the physical product discovered. Incomplete evidence produces a `partial` run with open questions. When live provider billing rates are not configured, the optional `usage.cost_minor` field is omitted and the run states that cost is unavailable.
+
+Implementation and configuration details, including CSV columns, provider setup, the packaged production dataset, and local/PostgreSQL startup, are in [`../backend/README.md`](../backend/README.md). The runnable API exposes its implemented contract at `/openapi.json` and interactive documentation at `/docs`.
+
 ### 2.7 Market data
 | Method | Path | Purpose |
 |---|---|---|
