@@ -174,7 +174,7 @@ The packaged production catalogue contains **tin, mine stage, 2024 estimates**, 
 
 Extend the catalogue using `PRODUCTION_DATA_PATH` and the validated JSON format in `app/data/production.json`. `/reference/commodities` reflects only configured data. GeoJSON contains points for facilities with accepted matching location claims and explicit coordinates; country features have null geometry and ISO2 keys for the frontend basemap. Country-only facility evidence can fill the geography layer without inventing a map point.
 
-Market enrichment provides explicit **fixture** commodity mappings for tin and copper. Unmapped nodes are reported. Exposure weights remain unknown. Market prices, portfolios, scenarios, and agent endpoints beyond section 2.6 are outside this implementation.
+Market enrichment provides explicit **fixture** commodity mappings for tin and copper. Unmapped nodes are reported. Exposure weights remain unknown. Graph chat, follow-up research, and hypothetical scenario forks are implemented as described above. Live market prices, portfolios, quantified shock simulations, and the full agent session/proposal protocol remain outside this implementation.
 
 ## PostgreSQL and separate worker
 

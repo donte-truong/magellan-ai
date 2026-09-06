@@ -25,7 +25,7 @@ If `/demo` returns 404 after a merge, restart the Next.js process from `frontend
 
 To run the entire MVP in containers, use `docker compose --env-file backend/.env up --build -d` from the repository root, then open http://localhost:3000. Compose builds a standalone Next.js server with Bun and Node.js 22, includes `public/assets`, and connects it to the API over the internal Docker network. Environment files are excluded from the image; the backend workspace token is supplied at runtime. Omit the `--env-file` option for fixture-only defaults. Browser calls use the same-origin Next.js proxy, so a separate backend CORS setting is unnecessary for this frontend.
 
-The reference Next.js backend in `backend-node/` serves the same routes on port 3001; set `MAGELLAN_API_URL=http://127.0.0.1:3001` and match `MAGELLAN_API_TOKEN` to its `RESEARCH_API_TOKEN` to use it instead. Its curated example yields two BOM rows rather than three and never asks clarification questions, so the browser tests target the FastAPI backend only.
+The reference Next.js backend in `backend-node/` serves an earlier subset of the API on port 3001; set `MAGELLAN_API_URL=http://127.0.0.1:3001` and match `MAGELLAN_API_TOKEN` to its `RESEARCH_API_TOKEN` to explore those supported flows. It does not provide the current graph assistant, follow-up research, or scenario endpoints; use FastAPI for the complete frontend. Its curated example yields two BOM rows rather than three and never asks clarification questions, so the browser tests target the FastAPI backend only.
 
 ## What the MVP includes
 
@@ -49,7 +49,7 @@ The research workspace includes:
 - Recent explorations, direct `?run=run_…` URLs, and JSON export pinned to the displayed graph revision.
 - Responsive layouts, labeled controls, focus indicators, an Escape-dismissable evidence panel, and reduced-motion support.
 
-The featured globe uses curated geography; automatic projection of arbitrary research graphs onto that globe remains future work. Uploads, graph editing, enrichment controls, portfolios, and agent chat remain outside this frontend MVP.
+The featured globe uses curated geography; automatic projection of arbitrary research graphs onto that globe remains future work. Graph chat, follow-up research, and hypothetical scenario edits are available through **Ask Magellan**. Uploads, direct graph mutation controls, enrichment controls, and portfolios remain outside this frontend MVP.
 
 ## Tooling and structure
 
@@ -75,7 +75,7 @@ The existing research components remain in `src/components`. `src/lib/api.ts` is
 
 Research updates use sequential polling with bounded retry delays. Each refresh reads the run and graph, then requests the BOM at that graph revision. Inspections and exports pin the same revision. Navigation aborts outstanding reads; a generation counter prevents late responses from replacing another exploration. New graph revisions add nodes without resetting existing node positions, search, or zoom. Node positions last for the current graph view.
 
-The frontend's subset of the API types is in `src/lib/types.ts`; the authoritative contract remains [docs/openapi.yaml](../docs/openapi.yaml).
+The frontend's subset of the API types is in `src/lib/types.ts`. The running FastAPI backend's `/docs` and `/openapi.json` describe the implemented API, including newer chat, follow-up research, and scenario endpoints; [docs/openapi.yaml](../docs/openapi.yaml) remains the broader design contract and does not yet include all of these additions.
 
 ## Server configuration
 

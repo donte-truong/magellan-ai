@@ -1,0 +1,96 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="420" viewBox="0 0 1400 420" fill="none" role="img" aria-labelledby="title description">
+  <title id="title">Magellan</title>
+  <desc id="description">Explore the supply chain behind every product. A compass and a luminous network of connected nodes on a midnight blue background.</desc>
+  <defs>
+    <linearGradient id="background" x1="0" y1="0" x2="1400" y2="420" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0c1930"/>
+      <stop offset=".55" stop-color="#081121"/>
+      <stop offset="1" stop-color="#101b35"/>
+    </linearGradient>
+    <radialGradient id="atmosphere" cx="0" cy="0" r="1" gradientTransform="translate(1080 210) rotate(90) scale(330 450)" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#497dbb" stop-opacity=".2"/>
+      <stop offset="1" stop-color="#497dbb" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="edge" x1="760" y1="40" x2="1260" y2="390" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#a9cfff" stop-opacity=".2"/>
+      <stop offset=".5" stop-color="#a9cfff" stop-opacity=".55"/>
+      <stop offset="1" stop-color="#6fe3d3" stop-opacity=".2"/>
+    </linearGradient>
+    <linearGradient id="horizon" x1="0" y1="0" x2="1400" y2="0" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#a9cfff" stop-opacity="0"/>
+      <stop offset=".5" stop-color="#a9cfff" stop-opacity=".3"/>
+      <stop offset="1" stop-color="#a9cfff" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="glow" x="-150%" y="-150%" width="400%" height="400%">
+      <feGaussianBlur stdDeviation="9"/>
+    </filter>
+    <clipPath id="frame"><rect width="1400" height="420" rx="24"/></clipPath>
+  </defs>
+  <g clip-path="url(#frame)">
+    <rect width="1400" height="420" fill="url(#background)"/>
+    <rect width="1400" height="420" fill="url(#atmosphere)"/>
+    <g stroke="#a9cfff" stroke-opacity=".065">
+      <circle cx="1060" cy="218" r="120"/>
+      <circle cx="1060" cy="218" r="206"/>
+      <circle cx="1060" cy="218" r="300"/>
+      <path d="M730 218h660M1060-100v640"/>
+    </g>
+    <g stroke="url(#edge)" stroke-width="1.5">
+      <path d="M1058 216Q1004 96 918 88M1058 216Q1075 105 1174 72M1058 216Q1169 145 1278 179M1058 216Q1180 235 1228 326M1058 216Q1004 297 1001 346M1058 216Q928 238 864 299M1058 216Q935 149 799 177"/>
+      <path d="M918 88Q837 71 799 177M918 88Q1050 13 1174 72M1174 72Q1277 66 1278 179M1278 179Q1330 244 1228 326M1228 326Q1127 399 1001 346M1001 346Q902 380 864 299M864 299Q790 256 799 177" stroke-opacity=".5"/>
+      <path d="M1278 179 1358 103M1228 326 1327 386M864 299 760 354M918 88 881 19" stroke-opacity=".5"/>
+    </g>
+    <g filter="url(#glow)" opacity=".6">
+      <circle cx="1058" cy="216" r="25" fill="#a9cfff"/>
+      <circle cx="918" cy="88" r="10" fill="#9da7ff"/>
+      <circle cx="1174" cy="72" r="10" fill="#a9cfff"/>
+      <circle cx="1278" cy="179" r="12" fill="#6fe3d3"/>
+      <circle cx="1228" cy="326" r="10" fill="#9da7ff"/>
+      <circle cx="1001" cy="346" r="9" fill="#a9cfff"/>
+      <circle cx="864" cy="299" r="11" fill="#6fe3d3"/>
+      <circle cx="799" cy="177" r="8" fill="#a9cfff"/>
+    </g>
+    <g fill="#101f38" stroke-width="1.5">
+      <circle cx="1058" cy="216" r="26" stroke="#a9cfff"/>
+      <circle cx="1058" cy="216" r="36" stroke="#a9cfff" stroke-opacity=".16"/>
+      <circle cx="918" cy="88" r="11" stroke="#9da7ff"/>
+      <circle cx="1174" cy="72" r="10" stroke="#a9cfff"/>
+      <circle cx="1278" cy="179" r="12" stroke="#6fe3d3"/>
+      <circle cx="1228" cy="326" r="11" stroke="#9da7ff"/>
+      <circle cx="1001" cy="346" r="9" stroke="#a9cfff"/>
+      <circle cx="864" cy="299" r="11" stroke="#6fe3d3"/>
+      <circle cx="799" cy="177" r="8" stroke="#a9cfff"/>
+    </g>
+    <g fill="#d5e7ff">
+      <circle cx="1058" cy="216" r="7"/>
+      <circle cx="918" cy="88" r="3"/>
+      <circle cx="1174" cy="72" r="3"/>
+      <circle cx="1278" cy="179" r="3"/>
+      <circle cx="1228" cy="326" r="3"/>
+      <circle cx="1001" cy="346" r="2.5"/>
+      <circle cx="864" cy="299" r="3"/>
+      <circle cx="799" cy="177" r="2.5"/>
+      <circle cx="1358" cy="103" r="3" opacity=".45"/>
+      <circle cx="1327" cy="386" r="3" opacity=".45"/>
+      <circle cx="760" cy="354" r="3" opacity=".45"/>
+      <circle cx="881" cy="19" r="3" opacity=".45"/>
+    </g>
+    <g fill="#e7eefb" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif">
+      <text x="1100" y="221" font-size="12" letter-spacing="2" fill="#a9cfff">PRODUCT</text>
+      <text x="940" y="82" font-size="11" letter-spacing="1.5" fill="#9da7ff">COMPONENT</text>
+      <text x="791" y="335" font-size="11" letter-spacing="1.5" fill="#6fe3d3">MATERIAL</text>
+      <text x="80" y="228" font-size="84" font-weight="600" letter-spacing="-3">Magellan</text>
+      <text x="84" y="278" font-size="25" fill="#a9bbd5">Explore the supply chain</text>
+      <text x="84" y="313" font-size="25" fill="#a9bbd5">behind every product.</text>
+      <text x="158" y="113" font-size="12" font-weight="500" letter-spacing="3.2" fill="#a9cfff">A WORLD OF CONNECTIONS</text>
+    </g>
+    <g transform="translate(82 78) scale(1.65)" stroke="#a9cfff" stroke-width="1">
+      <circle cx="18" cy="18" r="15" opacity=".35"/>
+      <path d="m24.5 10-4 12.5L11.5 26l4-12.5L24.5 10Z" stroke-width="1.4"/>
+      <path d="m15.5 13.5 5 9M18 1v4m0 26v4M1 18h4m26 0h4"/>
+    </g>
+    <path d="M0 392Q360 338 705 384T1400 351" stroke="url(#horizon)"/>
+    <path d="M0 407Q360 353 705 399T1400 366" stroke="url(#horizon)" opacity=".4"/>
+    <rect x=".5" y=".5" width="1399" height="419" rx="23.5" stroke="#a9cfff" stroke-opacity=".14"/>
+  </g>
+</svg>
