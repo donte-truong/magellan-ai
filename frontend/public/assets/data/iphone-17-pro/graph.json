@@ -1,9 +1,9 @@
 {
  "id": "gph_cc4d2242e894451c8391965c2d298cdd",
- "revision": 317,
+ "revision": 331,
  "name": "iPhone 17 Pro",
  "created_at": "2026-09-06T14:16:19.685883Z",
- "updated_at": "2026-09-06T15:03:11.365869Z",
+ "updated_at": "2026-09-06T17:05:24.720613Z",
  "run_id": "run_5854e703dc6b4bff912c2362eb832451",
  "parent_graph_id": null,
  "root_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
@@ -11,11 +11,11 @@
  "forked_from_revision": null,
  "scenario_edits": [],
  "stats": {
-  "node_count": 160,
-  "edge_count": 210,
-  "max_tier": 4,
+  "node_count": 170,
+  "edge_count": 222,
+  "max_tier": 3,
   "by_support_label": {
-   "directly_supported": 210
+   "directly_supported": 222
   }
  },
  "nodes": [
@@ -2093,7 +2093,7 @@
    "external_ids": {
     "manufacturer": "Apple"
    },
-   "tier": 2,
+   "tier": 1,
    "status": "directly_supported",
    "flags": [],
    "data": {
@@ -2825,7 +2825,7 @@
     "STMicroelectronics N.V."
    ],
    "external_ids": {},
-   "tier": 3,
+   "tier": 2,
    "status": "directly_supported",
    "flags": [],
    "data": {
@@ -3065,7 +3065,7 @@
    "canonical_name": "SiCrystal",
    "aliases": [],
    "external_ids": {},
-   "tier": 4,
+   "tier": 3,
    "status": "directly_supported",
    "flags": [],
    "data": {
@@ -3521,7 +3521,7 @@
     "Samsung Electronics Company Limited"
    ],
    "external_ids": {},
-   "tier": 3,
+   "tier": 2,
    "status": "directly_supported",
    "flags": [],
    "data": {
@@ -3771,6 +3771,234 @@
       "note": "Approximate centre from a reference gazetteer; not a facility address."
      }
     }
+   }
+  },
+  {
+   "id": "nd_77bc9b681d964d5081f399a69261dcf1",
+   "kind": "organization",
+   "label": "Foxconn",
+   "canonical_name": "Foxconn",
+   "aliases": [],
+   "external_ids": {},
+   "tier": 1,
+   "status": "directly_supported",
+   "flags": [],
+   "data": {
+    "geography": null,
+    "concentration": null,
+    "market": null,
+    "operational": null,
+    "custom": {}
+   }
+  },
+  {
+   "id": "nd_ba281be7b763405f91f39433d02b49e6",
+   "kind": "organization",
+   "label": "Pegatron",
+   "canonical_name": "Pegatron",
+   "aliases": [],
+   "external_ids": {},
+   "tier": 1,
+   "status": "directly_supported",
+   "flags": [],
+   "data": {
+    "geography": null,
+    "concentration": null,
+    "market": null,
+    "operational": null,
+    "custom": {}
+   }
+  },
+  {
+   "id": "nd_12f36c85d3da430d9bf7a5f8d24c93e7",
+   "kind": "organization",
+   "label": "Hon Hai",
+   "canonical_name": "Hon Hai",
+   "aliases": [],
+   "external_ids": {},
+   "tier": null,
+   "status": "directly_supported",
+   "flags": [],
+   "data": {
+    "geography": null,
+    "concentration": null,
+    "market": null,
+    "operational": null,
+    "custom": {}
+   }
+  },
+  {
+   "id": "nd_e3c41dc3078b4aee8011c29716603dce",
+   "kind": "facility",
+   "label": "Bengaluru facility",
+   "canonical_name": "Bengaluru facility",
+   "aliases": [],
+   "external_ids": {},
+   "tier": null,
+   "status": "directly_supported",
+   "flags": [],
+   "data": {
+    "geography": null,
+    "concentration": null,
+    "market": null,
+    "operational": null,
+    "custom": {}
+   }
+  },
+  {
+   "id": "nd_f1d462f9dc284b66a5834aba37b0637e",
+   "kind": "facility",
+   "label": "Chennai facility",
+   "canonical_name": "Chennai facility",
+   "aliases": [],
+   "external_ids": {},
+   "tier": null,
+   "status": "directly_supported",
+   "flags": [],
+   "data": {
+    "geography": {
+     "country_iso2": "IN",
+     "admin1": "Tamil Nadu",
+     "lat": 13.08,
+     "lon": 80.27,
+     "address": "Chennai",
+     "precision": "city",
+     "claim_ids": [
+      "clm_23a42f7a6f8442cd9b83a45bed3dbc44"
+     ]
+    },
+    "concentration": null,
+    "market": null,
+    "operational": null,
+    "custom": {
+     "geocoding": {
+      "method": "gazetteer_v1",
+      "precision": "city",
+      "note": "Approximate centre from a reference gazetteer; not a facility address."
+     }
+    }
+   }
+  },
+  {
+   "id": "nd_a0a370d2d734416fae5bf0117761b2d5",
+   "kind": "facility",
+   "label": "Haiphong",
+   "canonical_name": "Haiphong",
+   "aliases": [],
+   "external_ids": {},
+   "tier": null,
+   "status": "directly_supported",
+   "flags": [],
+   "data": {
+    "geography": null,
+    "concentration": null,
+    "market": null,
+    "operational": null,
+    "custom": {}
+   }
+  },
+  {
+   "id": "nd_55b1cc2c104448729ba647bb7fa3de82",
+   "kind": "geography",
+   "label": "Chennai",
+   "canonical_name": "Chennai",
+   "aliases": [],
+   "external_ids": {
+    "iso2": "IN"
+   },
+   "tier": null,
+   "status": "directly_supported",
+   "flags": [],
+   "data": {
+    "geography": {
+     "country_iso2": "IN",
+     "admin1": "Tamil Nadu",
+     "lat": 13.08,
+     "lon": 80.27,
+     "address": "Chennai",
+     "precision": "city",
+     "claim_ids": []
+    },
+    "concentration": null,
+    "market": null,
+    "operational": null,
+    "custom": {
+     "geocoding": {
+      "method": "gazetteer_v1",
+      "precision": "city",
+      "note": "Approximate centre from a reference gazetteer; not a facility address."
+     }
+    }
+   }
+  },
+  {
+   "id": "nd_cad91e279cb94f0695a52dcb2777aec7",
+   "kind": "facility",
+   "label": "TSMC (Taiwan)",
+   "canonical_name": "TSMC (Taiwan)",
+   "aliases": [],
+   "external_ids": {},
+   "tier": null,
+   "status": "directly_supported",
+   "flags": [],
+   "data": {
+    "geography": {
+     "country_iso2": "TW",
+     "admin1": null,
+     "lat": 23.7,
+     "lon": 121.0,
+     "address": null,
+     "precision": "country",
+     "claim_ids": [
+      "clm_7842ede845af4980a769dc3bd3280385"
+     ]
+    },
+    "concentration": null,
+    "market": null,
+    "operational": null,
+    "custom": {
+     "geocoding": {
+      "method": "gazetteer_v1",
+      "precision": "country",
+      "note": "Approximate centre from a reference gazetteer; not a facility address."
+     }
+    }
+   }
+  },
+  {
+   "id": "nd_dd2d7b258dff40e896281d82c39d2ed5",
+   "kind": "facility",
+   "label": "Foxconn Zhengzhou plant",
+   "canonical_name": "Foxconn Zhengzhou plant",
+   "aliases": [],
+   "external_ids": {},
+   "tier": 1,
+   "status": "directly_supported",
+   "flags": [],
+   "data": {
+    "geography": null,
+    "concentration": null,
+    "market": null,
+    "operational": null,
+    "custom": {}
+   }
+  },
+  {
+   "id": "nd_5c9c9cdf74624216a2d8f9d18e38866a",
+   "kind": "facility",
+   "label": "Foxconn Shenzhen plant",
+   "canonical_name": "Foxconn Shenzhen plant",
+   "aliases": [],
+   "external_ids": {},
+   "tier": null,
+   "status": "directly_supported",
+   "flags": [],
+   "data": {
+    "geography": null,
+    "concentration": null,
+    "market": null,
+    "operational": null,
+    "custom": {}
    }
   }
  ],
@@ -24208,6 +24436,1112 @@
     "operational": null,
     "custom": {}
    }
+  },
+  {
+   "id": "ed_26087089e42546d3862a99605250a248",
+   "source_node_id": "nd_4e9163e3198e4f75ae51151c3a8c94aa",
+   "target_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+   "predicate": "MANUFACTURES",
+   "scope": {
+    "type": "product",
+    "product_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+    "organization_node_id": null
+   },
+   "support_label": "directly_supported",
+   "claim_ids": [
+    "clm_da6a3ec920f5499babfecfe85897f7c7",
+    "clm_0bbc61307b2b4c93a65b4090709f6c91"
+   ],
+   "evidence_summary": {
+    "source_count": 2,
+    "independent_family_count": 2,
+    "latest_published_at": null,
+    "has_contradiction": false
+   },
+   "source": [
+    {
+     "id": "src_89eae994801e4239986fc7a2e5de7fb0",
+     "url": "http://markets.chroniclejournal.com/chroniclejournal/article/marketminute-2026-3-10-silicon-south-apple-hits-25-manufacturing-milestone-in-india-as-iphone-17-pro-production-scales-up",
+     "retrieved_at": "2026-09-06T17:04:47.442592Z",
+     "content_hash": "d8c2fced12a992a1fcd6f9d1e179db361036d1ab92b9e7934089714cf300f477",
+     "title": "User | chroniclejournal.com - Silicon South: Apple Hits 25% Manufacturing Milestone in India as iPhone 17 Pro Production Scales Up",
+     "publisher": "markets.chroniclejournal.com",
+     "published_at": null,
+     "source_family_id": "markets.chroniclejournal.com",
+     "kind": "other",
+     "license_notes": "Retrieved public text; evidence excerpts only are exposed.",
+     "support_types": [
+      "supports"
+     ]
+    },
+    {
+     "id": "src_8e32209286964790a5f340759a80c415",
+     "url": "https://www.macrumors.com/2025/08/19/apple-iphone-17-manufacturing-expands-india",
+     "retrieved_at": "2026-09-06T17:04:25.682711Z",
+     "content_hash": "dd314afe52021d9d69a81512c522b57bf444e2c84b775951756cd6675ab649fa",
+     "title": "Apple's iPhone 17 Manufacturing Expands Across Five Indian Plants - MacRumors",
+     "publisher": "www.macrumors.com",
+     "published_at": null,
+     "source_family_id": "www.macrumors.com",
+     "kind": "other",
+     "license_notes": "Retrieved public text; evidence excerpts only are exposed.",
+     "support_types": [
+      "supports"
+     ]
+    }
+   ],
+   "date": "2026-09-06",
+   "time": "17:04:47.519Z",
+   "confidence": 0.75,
+   "confidence_details": {
+    "method": {
+     "name": "edge_evidence_v1",
+     "version": "1",
+     "params": {
+      "scope": "evidence_for_stated_relation",
+      "scale": "0-1",
+      "max_score": 0.95,
+      "disputed_cap": 0.25
+     },
+     "assumptions": []
+    },
+    "factors": {
+     "base": 0.7,
+     "corroboration": 0.1,
+     "freshness": -0.05,
+     "contradiction": 0.0
+    },
+    "data_quality": {
+     "calibrated": false,
+     "replay": false,
+     "supporting_families": 2,
+     "missing_claim_ids": [],
+     "missing_source_ids": [],
+     "notes": [
+      "Heuristic evidence score, not a calibrated probability or a measure of supply-chain completeness.",
+      "Family independence uses stored source-family IDs and content hashes; edited syndication may remain undetected.",
+      "Supporting publication date unknown or in the future; retrieval time is not publication time."
+     ]
+    },
+    "evaluated_at": "2026-09-06T17:04:47.519Z"
+   },
+   "valid_from": null,
+   "valid_to": null,
+   "data": {
+    "geography": null,
+    "concentration": null,
+    "market": null,
+    "operational": {
+     "quantity": null,
+     "unit": null,
+     "lead_time_days": null,
+     "inventory_days": null,
+     "weight": null,
+     "substitutability": null
+    },
+    "custom": {}
+   }
+  },
+  {
+   "id": "ed_908a115df4cc494594496029564cc533",
+   "source_node_id": "nd_77bc9b681d964d5081f399a69261dcf1",
+   "target_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+   "predicate": "MANUFACTURES",
+   "scope": {
+    "type": "product",
+    "product_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+    "organization_node_id": null
+   },
+   "support_label": "directly_supported",
+   "claim_ids": [
+    "clm_d5f0b62955e1470ea4c5da5a95c12d5f",
+    "clm_955c9ea1f82c49a9b909d65221c673d8"
+   ],
+   "evidence_summary": {
+    "source_count": 2,
+    "independent_family_count": 2,
+    "latest_published_at": null,
+    "has_contradiction": false
+   },
+   "source": [
+    {
+     "id": "src_13e9cbc9ade7408a806b8b0f80973f57",
+     "url": "https://macdailynews.com/2025/08/20/foxconn-boosts-hiring-in-china-for-iphone-17-series-assembly",
+     "retrieved_at": "2026-09-06T17:05:24.502385Z",
+     "content_hash": "b05e983984e3deb978bdfbee401afa6888f446514cca586301874fbf15abb7af",
+     "title": "Foxconn boosts hiring in China for iPhone 17 series assembly - MacDailyNews",
+     "publisher": "macdailynews.com",
+     "published_at": null,
+     "source_family_id": "macdailynews.com",
+     "kind": "other",
+     "license_notes": "Retrieved public text; evidence excerpts only are exposed.",
+     "support_types": [
+      "supports"
+     ]
+    },
+    {
+     "id": "src_c124cd04dc4f424a8f1326261d420f3d",
+     "url": "https://www.moneycontrol.com/news/business/apple-s-iphone-17-series-production-in-india-goes-full-throttle-local-factories-gear-up-to-meet-us-europe-demand-13534623.html",
+     "retrieved_at": "2026-09-06T17:04:48.796978Z",
+     "content_hash": "dacce670342a374d0bad8a66810470dd5120596bc500dcbfa2034c4615228abc",
+     "title": "Apple\u2019s iPhone 17 series production in India goes full throttle; local factories gear up to meet US, Europe demand",
+     "publisher": "www.moneycontrol.com",
+     "published_at": null,
+     "source_family_id": "www.moneycontrol.com",
+     "kind": "other",
+     "license_notes": "Retrieved public text; evidence excerpts only are exposed.",
+     "support_types": [
+      "supports"
+     ]
+    }
+   ],
+   "date": "2026-09-06",
+   "time": "17:05:24.560Z",
+   "confidence": 0.75,
+   "confidence_details": {
+    "method": {
+     "name": "edge_evidence_v1",
+     "version": "1",
+     "params": {
+      "scope": "evidence_for_stated_relation",
+      "scale": "0-1",
+      "max_score": 0.95,
+      "disputed_cap": 0.25
+     },
+     "assumptions": []
+    },
+    "factors": {
+     "base": 0.7,
+     "corroboration": 0.1,
+     "freshness": -0.05,
+     "contradiction": 0.0
+    },
+    "data_quality": {
+     "calibrated": false,
+     "replay": false,
+     "supporting_families": 2,
+     "missing_claim_ids": [],
+     "missing_source_ids": [],
+     "notes": [
+      "Heuristic evidence score, not a calibrated probability or a measure of supply-chain completeness.",
+      "Family independence uses stored source-family IDs and content hashes; edited syndication may remain undetected.",
+      "Supporting publication date unknown or in the future; retrieval time is not publication time."
+     ]
+    },
+    "evaluated_at": "2026-09-06T17:05:24.560Z"
+   },
+   "valid_from": null,
+   "valid_to": null,
+   "data": {
+    "geography": null,
+    "concentration": null,
+    "market": null,
+    "operational": {
+     "quantity": null,
+     "unit": null,
+     "lead_time_days": null,
+     "inventory_days": null,
+     "weight": null,
+     "substitutability": null
+    },
+    "custom": {}
+   }
+  },
+  {
+   "id": "ed_43f47f19c7bc49c2994a9ffbd4646631",
+   "source_node_id": "nd_ba281be7b763405f91f39433d02b49e6",
+   "target_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+   "predicate": "MANUFACTURES",
+   "scope": {
+    "type": "product",
+    "product_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+    "organization_node_id": null
+   },
+   "support_label": "directly_supported",
+   "claim_ids": [
+    "clm_b77e2423939f479bbeb7f96c6b9b5480"
+   ],
+   "evidence_summary": {
+    "source_count": 1,
+    "independent_family_count": 1,
+    "latest_published_at": null,
+    "has_contradiction": false
+   },
+   "source": [
+    {
+     "id": "src_c124cd04dc4f424a8f1326261d420f3d",
+     "url": "https://www.moneycontrol.com/news/business/apple-s-iphone-17-series-production-in-india-goes-full-throttle-local-factories-gear-up-to-meet-us-europe-demand-13534623.html",
+     "retrieved_at": "2026-09-06T17:04:48.796978Z",
+     "content_hash": "dacce670342a374d0bad8a66810470dd5120596bc500dcbfa2034c4615228abc",
+     "title": "Apple\u2019s iPhone 17 series production in India goes full throttle; local factories gear up to meet US, Europe demand",
+     "publisher": "www.moneycontrol.com",
+     "published_at": null,
+     "source_family_id": "www.moneycontrol.com",
+     "kind": "other",
+     "license_notes": "Retrieved public text; evidence excerpts only are exposed.",
+     "support_types": [
+      "supports"
+     ]
+    }
+   ],
+   "date": "2026-09-06",
+   "time": "17:04:48.990Z",
+   "confidence": 0.65,
+   "confidence_details": {
+    "method": {
+     "name": "edge_evidence_v1",
+     "version": "1",
+     "params": {
+      "scope": "evidence_for_stated_relation",
+      "scale": "0-1",
+      "max_score": 0.95,
+      "disputed_cap": 0.25
+     },
+     "assumptions": []
+    },
+    "factors": {
+     "base": 0.7,
+     "corroboration": 0.0,
+     "freshness": -0.05,
+     "contradiction": 0.0
+    },
+    "data_quality": {
+     "calibrated": false,
+     "replay": false,
+     "supporting_families": 1,
+     "missing_claim_ids": [],
+     "missing_source_ids": [],
+     "notes": [
+      "Heuristic evidence score, not a calibrated probability or a measure of supply-chain completeness.",
+      "Family independence uses stored source-family IDs and content hashes; edited syndication may remain undetected.",
+      "Supporting publication date unknown or in the future; retrieval time is not publication time."
+     ]
+    },
+    "evaluated_at": "2026-09-06T17:04:48.990Z"
+   },
+   "valid_from": null,
+   "valid_to": null,
+   "data": {
+    "geography": null,
+    "concentration": null,
+    "market": null,
+    "operational": {
+     "quantity": null,
+     "unit": null,
+     "lead_time_days": null,
+     "inventory_days": null,
+     "weight": null,
+     "substitutability": null
+    },
+    "custom": {}
+   }
+  },
+  {
+   "id": "ed_aeb875de0b754219a6608423041e3924",
+   "source_node_id": "nd_12f36c85d3da430d9bf7a5f8d24c93e7",
+   "target_node_id": "nd_77bc9b681d964d5081f399a69261dcf1",
+   "predicate": "OWNED_BY",
+   "scope": {
+    "type": "generic",
+    "product_node_id": null,
+    "organization_node_id": null
+   },
+   "support_label": "directly_supported",
+   "claim_ids": [
+    "clm_8ef21a72e3a84e578ed937c5dd85550b"
+   ],
+   "evidence_summary": {
+    "source_count": 1,
+    "independent_family_count": 1,
+    "latest_published_at": null,
+    "has_contradiction": false
+   },
+   "source": [
+    {
+     "id": "src_c124cd04dc4f424a8f1326261d420f3d",
+     "url": "https://www.moneycontrol.com/news/business/apple-s-iphone-17-series-production-in-india-goes-full-throttle-local-factories-gear-up-to-meet-us-europe-demand-13534623.html",
+     "retrieved_at": "2026-09-06T17:04:48.796978Z",
+     "content_hash": "dacce670342a374d0bad8a66810470dd5120596bc500dcbfa2034c4615228abc",
+     "title": "Apple\u2019s iPhone 17 series production in India goes full throttle; local factories gear up to meet US, Europe demand",
+     "publisher": "www.moneycontrol.com",
+     "published_at": null,
+     "source_family_id": "www.moneycontrol.com",
+     "kind": "other",
+     "license_notes": "Retrieved public text; evidence excerpts only are exposed.",
+     "support_types": [
+      "supports"
+     ]
+    }
+   ],
+   "date": "2026-09-06",
+   "time": "17:04:49.046Z",
+   "confidence": 0.65,
+   "confidence_details": {
+    "method": {
+     "name": "edge_evidence_v1",
+     "version": "1",
+     "params": {
+      "scope": "evidence_for_stated_relation",
+      "scale": "0-1",
+      "max_score": 0.95,
+      "disputed_cap": 0.25
+     },
+     "assumptions": []
+    },
+    "factors": {
+     "base": 0.7,
+     "corroboration": 0.0,
+     "freshness": -0.05,
+     "contradiction": 0.0
+    },
+    "data_quality": {
+     "calibrated": false,
+     "replay": false,
+     "supporting_families": 1,
+     "missing_claim_ids": [],
+     "missing_source_ids": [],
+     "notes": [
+      "Heuristic evidence score, not a calibrated probability or a measure of supply-chain completeness.",
+      "Family independence uses stored source-family IDs and content hashes; edited syndication may remain undetected.",
+      "Supporting publication date unknown or in the future; retrieval time is not publication time."
+     ]
+    },
+    "evaluated_at": "2026-09-06T17:04:49.046Z"
+   },
+   "valid_from": null,
+   "valid_to": null,
+   "data": {
+    "geography": null,
+    "concentration": null,
+    "market": null,
+    "operational": {
+     "quantity": null,
+     "unit": null,
+     "lead_time_days": null,
+     "inventory_days": null,
+     "weight": null,
+     "substitutability": null
+    },
+    "custom": {}
+   }
+  },
+  {
+   "id": "ed_6c1b780bee084d1ab2ed01092d812880",
+   "source_node_id": "nd_12f36c85d3da430d9bf7a5f8d24c93e7",
+   "target_node_id": "nd_e3c41dc3078b4aee8011c29716603dce",
+   "predicate": "OPERATES",
+   "scope": {
+    "type": "generic",
+    "product_node_id": null,
+    "organization_node_id": null
+   },
+   "support_label": "directly_supported",
+   "claim_ids": [
+    "clm_48de69f2519c4482a438ccac13bcb10c"
+   ],
+   "evidence_summary": {
+    "source_count": 1,
+    "independent_family_count": 1,
+    "latest_published_at": null,
+    "has_contradiction": false
+   },
+   "source": [
+    {
+     "id": "src_c124cd04dc4f424a8f1326261d420f3d",
+     "url": "https://www.moneycontrol.com/news/business/apple-s-iphone-17-series-production-in-india-goes-full-throttle-local-factories-gear-up-to-meet-us-europe-demand-13534623.html",
+     "retrieved_at": "2026-09-06T17:04:48.796978Z",
+     "content_hash": "dacce670342a374d0bad8a66810470dd5120596bc500dcbfa2034c4615228abc",
+     "title": "Apple\u2019s iPhone 17 series production in India goes full throttle; local factories gear up to meet US, Europe demand",
+     "publisher": "www.moneycontrol.com",
+     "published_at": null,
+     "source_family_id": "www.moneycontrol.com",
+     "kind": "other",
+     "license_notes": "Retrieved public text; evidence excerpts only are exposed.",
+     "support_types": [
+      "supports"
+     ]
+    }
+   ],
+   "date": "2026-09-06",
+   "time": "17:04:49.102Z",
+   "confidence": 0.65,
+   "confidence_details": {
+    "method": {
+     "name": "edge_evidence_v1",
+     "version": "1",
+     "params": {
+      "scope": "evidence_for_stated_relation",
+      "scale": "0-1",
+      "max_score": 0.95,
+      "disputed_cap": 0.25
+     },
+     "assumptions": []
+    },
+    "factors": {
+     "base": 0.7,
+     "corroboration": 0.0,
+     "freshness": -0.05,
+     "contradiction": 0.0
+    },
+    "data_quality": {
+     "calibrated": false,
+     "replay": false,
+     "supporting_families": 1,
+     "missing_claim_ids": [],
+     "missing_source_ids": [],
+     "notes": [
+      "Heuristic evidence score, not a calibrated probability or a measure of supply-chain completeness.",
+      "Family independence uses stored source-family IDs and content hashes; edited syndication may remain undetected.",
+      "Supporting publication date unknown or in the future; retrieval time is not publication time."
+     ]
+    },
+    "evaluated_at": "2026-09-06T17:04:49.102Z"
+   },
+   "valid_from": null,
+   "valid_to": null,
+   "data": {
+    "geography": null,
+    "concentration": null,
+    "market": null,
+    "operational": {
+     "quantity": null,
+     "unit": null,
+     "lead_time_days": null,
+     "inventory_days": null,
+     "weight": null,
+     "substitutability": null
+    },
+    "custom": {}
+   }
+  },
+  {
+   "id": "ed_0ecce1cd26ba44898f670d836e0a078d",
+   "source_node_id": "nd_ba281be7b763405f91f39433d02b49e6",
+   "target_node_id": "nd_f1d462f9dc284b66a5834aba37b0637e",
+   "predicate": "OPERATES",
+   "scope": {
+    "type": "generic",
+    "product_node_id": null,
+    "organization_node_id": null
+   },
+   "support_label": "directly_supported",
+   "claim_ids": [
+    "clm_80dd552b94954e75a844f54f20180757"
+   ],
+   "evidence_summary": {
+    "source_count": 1,
+    "independent_family_count": 1,
+    "latest_published_at": null,
+    "has_contradiction": false
+   },
+   "source": [
+    {
+     "id": "src_d84da2a20aca4217b18c531ab35109dc",
+     "url": "https://chaitanyaontech.substack.com/p/foxconn-pegatron-and-wistron-the",
+     "retrieved_at": "2026-09-06T17:04:49.202731Z",
+     "content_hash": "aaa23e639afa793202517bd2bcb0efd00e46aa4a2c9ac9347c5eda42da3dbaee",
+     "title": "Foxconn, Pegatron & Wistron: The iPhone Factories You Don\u2019t Know about",
+     "publisher": "chaitanyaontech.substack.com",
+     "published_at": null,
+     "source_family_id": "chaitanyaontech.substack.com",
+     "kind": "other",
+     "license_notes": "Retrieved public text; evidence excerpts only are exposed.",
+     "support_types": [
+      "supports"
+     ]
+    }
+   ],
+   "date": "2026-09-06",
+   "time": "17:04:49.256Z",
+   "confidence": 0.65,
+   "confidence_details": {
+    "method": {
+     "name": "edge_evidence_v1",
+     "version": "1",
+     "params": {
+      "scope": "evidence_for_stated_relation",
+      "scale": "0-1",
+      "max_score": 0.95,
+      "disputed_cap": 0.25
+     },
+     "assumptions": []
+    },
+    "factors": {
+     "base": 0.7,
+     "corroboration": 0.0,
+     "freshness": -0.05,
+     "contradiction": 0.0
+    },
+    "data_quality": {
+     "calibrated": false,
+     "replay": false,
+     "supporting_families": 1,
+     "missing_claim_ids": [],
+     "missing_source_ids": [],
+     "notes": [
+      "Heuristic evidence score, not a calibrated probability or a measure of supply-chain completeness.",
+      "Family independence uses stored source-family IDs and content hashes; edited syndication may remain undetected.",
+      "Supporting publication date unknown or in the future; retrieval time is not publication time."
+     ]
+    },
+    "evaluated_at": "2026-09-06T17:04:49.256Z"
+   },
+   "valid_from": null,
+   "valid_to": null,
+   "data": {
+    "geography": null,
+    "concentration": null,
+    "market": null,
+    "operational": {
+     "quantity": null,
+     "unit": null,
+     "lead_time_days": null,
+     "inventory_days": null,
+     "weight": null,
+     "substitutability": null
+    },
+    "custom": {}
+   }
+  },
+  {
+   "id": "ed_15904b96ffdd4436afd3c9cc90bd1f5f",
+   "source_node_id": "nd_ba281be7b763405f91f39433d02b49e6",
+   "target_node_id": "nd_a0a370d2d734416fae5bf0117761b2d5",
+   "predicate": "OPERATES",
+   "scope": {
+    "type": "generic",
+    "product_node_id": null,
+    "organization_node_id": null
+   },
+   "support_label": "directly_supported",
+   "claim_ids": [
+    "clm_a90140ec1d5d429da2a7b431b307db90"
+   ],
+   "evidence_summary": {
+    "source_count": 1,
+    "independent_family_count": 1,
+    "latest_published_at": null,
+    "has_contradiction": false
+   },
+   "source": [
+    {
+     "id": "src_d84da2a20aca4217b18c531ab35109dc",
+     "url": "https://chaitanyaontech.substack.com/p/foxconn-pegatron-and-wistron-the",
+     "retrieved_at": "2026-09-06T17:04:49.202731Z",
+     "content_hash": "aaa23e639afa793202517bd2bcb0efd00e46aa4a2c9ac9347c5eda42da3dbaee",
+     "title": "Foxconn, Pegatron & Wistron: The iPhone Factories You Don\u2019t Know about",
+     "publisher": "chaitanyaontech.substack.com",
+     "published_at": null,
+     "source_family_id": "chaitanyaontech.substack.com",
+     "kind": "other",
+     "license_notes": "Retrieved public text; evidence excerpts only are exposed.",
+     "support_types": [
+      "supports"
+     ]
+    }
+   ],
+   "date": "2026-09-06",
+   "time": "17:04:49.328Z",
+   "confidence": 0.65,
+   "confidence_details": {
+    "method": {
+     "name": "edge_evidence_v1",
+     "version": "1",
+     "params": {
+      "scope": "evidence_for_stated_relation",
+      "scale": "0-1",
+      "max_score": 0.95,
+      "disputed_cap": 0.25
+     },
+     "assumptions": []
+    },
+    "factors": {
+     "base": 0.7,
+     "corroboration": 0.0,
+     "freshness": -0.05,
+     "contradiction": 0.0
+    },
+    "data_quality": {
+     "calibrated": false,
+     "replay": false,
+     "supporting_families": 1,
+     "missing_claim_ids": [],
+     "missing_source_ids": [],
+     "notes": [
+      "Heuristic evidence score, not a calibrated probability or a measure of supply-chain completeness.",
+      "Family independence uses stored source-family IDs and content hashes; edited syndication may remain undetected.",
+      "Supporting publication date unknown or in the future; retrieval time is not publication time."
+     ]
+    },
+    "evaluated_at": "2026-09-06T17:04:49.328Z"
+   },
+   "valid_from": null,
+   "valid_to": null,
+   "data": {
+    "geography": null,
+    "concentration": null,
+    "market": null,
+    "operational": {
+     "quantity": null,
+     "unit": null,
+     "lead_time_days": null,
+     "inventory_days": null,
+     "weight": null,
+     "substitutability": null
+    },
+    "custom": {}
+   }
+  },
+  {
+   "id": "ed_8f6dcb8ccce34954988801e664a26a1d",
+   "source_node_id": "nd_f1d462f9dc284b66a5834aba37b0637e",
+   "target_node_id": "nd_55b1cc2c104448729ba647bb7fa3de82",
+   "predicate": "LOCATED_IN",
+   "scope": {
+    "type": "generic",
+    "product_node_id": null,
+    "organization_node_id": null
+   },
+   "support_label": "directly_supported",
+   "claim_ids": [
+    "clm_23a42f7a6f8442cd9b83a45bed3dbc44"
+   ],
+   "evidence_summary": {
+    "source_count": 1,
+    "independent_family_count": 1,
+    "latest_published_at": null,
+    "has_contradiction": false
+   },
+   "source": [
+    {
+     "id": "src_d84da2a20aca4217b18c531ab35109dc",
+     "url": "https://chaitanyaontech.substack.com/p/foxconn-pegatron-and-wistron-the",
+     "retrieved_at": "2026-09-06T17:04:49.202731Z",
+     "content_hash": "aaa23e639afa793202517bd2bcb0efd00e46aa4a2c9ac9347c5eda42da3dbaee",
+     "title": "Foxconn, Pegatron & Wistron: The iPhone Factories You Don\u2019t Know about",
+     "publisher": "chaitanyaontech.substack.com",
+     "published_at": null,
+     "source_family_id": "chaitanyaontech.substack.com",
+     "kind": "other",
+     "license_notes": "Retrieved public text; evidence excerpts only are exposed.",
+     "support_types": [
+      "supports"
+     ]
+    }
+   ],
+   "date": "2026-09-06",
+   "time": "17:04:49.385Z",
+   "confidence": 0.65,
+   "confidence_details": {
+    "method": {
+     "name": "edge_evidence_v1",
+     "version": "1",
+     "params": {
+      "scope": "evidence_for_stated_relation",
+      "scale": "0-1",
+      "max_score": 0.95,
+      "disputed_cap": 0.25
+     },
+     "assumptions": []
+    },
+    "factors": {
+     "base": 0.7,
+     "corroboration": 0.0,
+     "freshness": -0.05,
+     "contradiction": 0.0
+    },
+    "data_quality": {
+     "calibrated": false,
+     "replay": false,
+     "supporting_families": 1,
+     "missing_claim_ids": [],
+     "missing_source_ids": [],
+     "notes": [
+      "Heuristic evidence score, not a calibrated probability or a measure of supply-chain completeness.",
+      "Family independence uses stored source-family IDs and content hashes; edited syndication may remain undetected.",
+      "Supporting publication date unknown or in the future; retrieval time is not publication time."
+     ]
+    },
+    "evaluated_at": "2026-09-06T17:04:49.385Z"
+   },
+   "valid_from": null,
+   "valid_to": null,
+   "data": {
+    "geography": null,
+    "concentration": null,
+    "market": null,
+    "operational": {
+     "quantity": null,
+     "unit": null,
+     "lead_time_days": null,
+     "inventory_days": null,
+     "weight": null,
+     "substitutability": null
+    },
+    "custom": {}
+   }
+  },
+  {
+   "id": "ed_4ca1b02938fe4354891037bfbbbb2ab5",
+   "source_node_id": "nd_cad91e279cb94f0695a52dcb2777aec7",
+   "target_node_id": "nd_5fef93936a9c4d65969f4722b646c718",
+   "predicate": "LOCATED_IN",
+   "scope": {
+    "type": "generic",
+    "product_node_id": null,
+    "organization_node_id": null
+   },
+   "support_label": "directly_supported",
+   "claim_ids": [
+    "clm_7842ede845af4980a769dc3bd3280385"
+   ],
+   "evidence_summary": {
+    "source_count": 1,
+    "independent_family_count": 1,
+    "latest_published_at": null,
+    "has_contradiction": false
+   },
+   "source": [
+    {
+     "id": "src_5e66778d11344279a3e3698bc2860f6f",
+     "url": "https://appleinsider.com/articles/26/04/22/where-apple-products-are-assembled-and-where-their-parts-come-from",
+     "retrieved_at": "2026-09-06T17:05:23.391502Z",
+     "content_hash": "c61408e60ab2a1fbc80d5bddd8a50a43c528097539637d2c0b6cf651c37464e8",
+     "title": "Where Apple products are assembled, and where parts come from",
+     "publisher": "appleinsider.com",
+     "published_at": null,
+     "source_family_id": "appleinsider.com",
+     "kind": "other",
+     "license_notes": "Retrieved public text; evidence excerpts only are exposed.",
+     "support_types": [
+      "supports"
+     ]
+    }
+   ],
+   "date": "2026-09-06",
+   "time": "17:05:23.564Z",
+   "confidence": 0.65,
+   "confidence_details": {
+    "method": {
+     "name": "edge_evidence_v1",
+     "version": "1",
+     "params": {
+      "scope": "evidence_for_stated_relation",
+      "scale": "0-1",
+      "max_score": 0.95,
+      "disputed_cap": 0.25
+     },
+     "assumptions": []
+    },
+    "factors": {
+     "base": 0.7,
+     "corroboration": 0.0,
+     "freshness": -0.05,
+     "contradiction": 0.0
+    },
+    "data_quality": {
+     "calibrated": false,
+     "replay": false,
+     "supporting_families": 1,
+     "missing_claim_ids": [],
+     "missing_source_ids": [],
+     "notes": [
+      "Heuristic evidence score, not a calibrated probability or a measure of supply-chain completeness.",
+      "Family independence uses stored source-family IDs and content hashes; edited syndication may remain undetected.",
+      "Supporting publication date unknown or in the future; retrieval time is not publication time."
+     ]
+    },
+    "evaluated_at": "2026-09-06T17:05:23.564Z"
+   },
+   "valid_from": null,
+   "valid_to": null,
+   "data": {
+    "geography": null,
+    "concentration": null,
+    "market": null,
+    "operational": {
+     "quantity": null,
+     "unit": null,
+     "lead_time_days": null,
+     "inventory_days": null,
+     "weight": null,
+     "substitutability": null
+    },
+    "custom": {}
+   }
+  },
+  {
+   "id": "ed_edd77768a96b4782bca392caba8b59d8",
+   "source_node_id": "nd_77bc9b681d964d5081f399a69261dcf1",
+   "target_node_id": "nd_dd2d7b258dff40e896281d82c39d2ed5",
+   "predicate": "OPERATES",
+   "scope": {
+    "type": "generic",
+    "product_node_id": null,
+    "organization_node_id": null
+   },
+   "support_label": "directly_supported",
+   "claim_ids": [
+    "clm_22ea6a72d91446b5b00705535a5645f7"
+   ],
+   "evidence_summary": {
+    "source_count": 1,
+    "independent_family_count": 1,
+    "latest_published_at": null,
+    "has_contradiction": false
+   },
+   "source": [
+    {
+     "id": "src_13e9cbc9ade7408a806b8b0f80973f57",
+     "url": "https://macdailynews.com/2025/08/20/foxconn-boosts-hiring-in-china-for-iphone-17-series-assembly",
+     "retrieved_at": "2026-09-06T17:05:24.502385Z",
+     "content_hash": "b05e983984e3deb978bdfbee401afa6888f446514cca586301874fbf15abb7af",
+     "title": "Foxconn boosts hiring in China for iPhone 17 series assembly - MacDailyNews",
+     "publisher": "macdailynews.com",
+     "published_at": null,
+     "source_family_id": "macdailynews.com",
+     "kind": "other",
+     "license_notes": "Retrieved public text; evidence excerpts only are exposed.",
+     "support_types": [
+      "supports"
+     ]
+    }
+   ],
+   "date": "2026-09-06",
+   "time": "17:05:24.605Z",
+   "confidence": 0.65,
+   "confidence_details": {
+    "method": {
+     "name": "edge_evidence_v1",
+     "version": "1",
+     "params": {
+      "scope": "evidence_for_stated_relation",
+      "scale": "0-1",
+      "max_score": 0.95,
+      "disputed_cap": 0.25
+     },
+     "assumptions": []
+    },
+    "factors": {
+     "base": 0.7,
+     "corroboration": 0.0,
+     "freshness": -0.05,
+     "contradiction": 0.0
+    },
+    "data_quality": {
+     "calibrated": false,
+     "replay": false,
+     "supporting_families": 1,
+     "missing_claim_ids": [],
+     "missing_source_ids": [],
+     "notes": [
+      "Heuristic evidence score, not a calibrated probability or a measure of supply-chain completeness.",
+      "Family independence uses stored source-family IDs and content hashes; edited syndication may remain undetected.",
+      "Supporting publication date unknown or in the future; retrieval time is not publication time."
+     ]
+    },
+    "evaluated_at": "2026-09-06T17:05:24.605Z"
+   },
+   "valid_from": null,
+   "valid_to": null,
+   "data": {
+    "geography": null,
+    "concentration": null,
+    "market": null,
+    "operational": {
+     "quantity": null,
+     "unit": null,
+     "lead_time_days": null,
+     "inventory_days": null,
+     "weight": null,
+     "substitutability": null
+    },
+    "custom": {}
+   }
+  },
+  {
+   "id": "ed_a08b3449b572445aac3be35e6ded6f6b",
+   "source_node_id": "nd_77bc9b681d964d5081f399a69261dcf1",
+   "target_node_id": "nd_5c9c9cdf74624216a2d8f9d18e38866a",
+   "predicate": "OPERATES",
+   "scope": {
+    "type": "generic",
+    "product_node_id": null,
+    "organization_node_id": null
+   },
+   "support_label": "directly_supported",
+   "claim_ids": [
+    "clm_83c8edce391a459495d5b0d240950c95"
+   ],
+   "evidence_summary": {
+    "source_count": 1,
+    "independent_family_count": 1,
+    "latest_published_at": null,
+    "has_contradiction": false
+   },
+   "source": [
+    {
+     "id": "src_13e9cbc9ade7408a806b8b0f80973f57",
+     "url": "https://macdailynews.com/2025/08/20/foxconn-boosts-hiring-in-china-for-iphone-17-series-assembly",
+     "retrieved_at": "2026-09-06T17:05:24.502385Z",
+     "content_hash": "b05e983984e3deb978bdfbee401afa6888f446514cca586301874fbf15abb7af",
+     "title": "Foxconn boosts hiring in China for iPhone 17 series assembly - MacDailyNews",
+     "publisher": "macdailynews.com",
+     "published_at": null,
+     "source_family_id": "macdailynews.com",
+     "kind": "other",
+     "license_notes": "Retrieved public text; evidence excerpts only are exposed.",
+     "support_types": [
+      "supports"
+     ]
+    }
+   ],
+   "date": "2026-09-06",
+   "time": "17:05:24.662Z",
+   "confidence": 0.65,
+   "confidence_details": {
+    "method": {
+     "name": "edge_evidence_v1",
+     "version": "1",
+     "params": {
+      "scope": "evidence_for_stated_relation",
+      "scale": "0-1",
+      "max_score": 0.95,
+      "disputed_cap": 0.25
+     },
+     "assumptions": []
+    },
+    "factors": {
+     "base": 0.7,
+     "corroboration": 0.0,
+     "freshness": -0.05,
+     "contradiction": 0.0
+    },
+    "data_quality": {
+     "calibrated": false,
+     "replay": false,
+     "supporting_families": 1,
+     "missing_claim_ids": [],
+     "missing_source_ids": [],
+     "notes": [
+      "Heuristic evidence score, not a calibrated probability or a measure of supply-chain completeness.",
+      "Family independence uses stored source-family IDs and content hashes; edited syndication may remain undetected.",
+      "Supporting publication date unknown or in the future; retrieval time is not publication time."
+     ]
+    },
+    "evaluated_at": "2026-09-06T17:05:24.662Z"
+   },
+   "valid_from": null,
+   "valid_to": null,
+   "data": {
+    "geography": null,
+    "concentration": null,
+    "market": null,
+    "operational": {
+     "quantity": null,
+     "unit": null,
+     "lead_time_days": null,
+     "inventory_days": null,
+     "weight": null,
+     "substitutability": null
+    },
+    "custom": {}
+   }
+  },
+  {
+   "id": "ed_fca3bbd75dd94639a5ed837c2d930515",
+   "source_node_id": "nd_dd2d7b258dff40e896281d82c39d2ed5",
+   "target_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+   "predicate": "MANUFACTURES",
+   "scope": {
+    "type": "product",
+    "product_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+    "organization_node_id": null
+   },
+   "support_label": "directly_supported",
+   "claim_ids": [
+    "clm_85ba7885df284194a10449f3f772faf5"
+   ],
+   "evidence_summary": {
+    "source_count": 1,
+    "independent_family_count": 1,
+    "latest_published_at": null,
+    "has_contradiction": false
+   },
+   "source": [
+    {
+     "id": "src_13e9cbc9ade7408a806b8b0f80973f57",
+     "url": "https://macdailynews.com/2025/08/20/foxconn-boosts-hiring-in-china-for-iphone-17-series-assembly",
+     "retrieved_at": "2026-09-06T17:05:24.502385Z",
+     "content_hash": "b05e983984e3deb978bdfbee401afa6888f446514cca586301874fbf15abb7af",
+     "title": "Foxconn boosts hiring in China for iPhone 17 series assembly - MacDailyNews",
+     "publisher": "macdailynews.com",
+     "published_at": null,
+     "source_family_id": "macdailynews.com",
+     "kind": "other",
+     "license_notes": "Retrieved public text; evidence excerpts only are exposed.",
+     "support_types": [
+      "supports"
+     ]
+    }
+   ],
+   "date": "2026-09-06",
+   "time": "17:05:24.718Z",
+   "confidence": 0.65,
+   "confidence_details": {
+    "method": {
+     "name": "edge_evidence_v1",
+     "version": "1",
+     "params": {
+      "scope": "evidence_for_stated_relation",
+      "scale": "0-1",
+      "max_score": 0.95,
+      "disputed_cap": 0.25
+     },
+     "assumptions": []
+    },
+    "factors": {
+     "base": 0.7,
+     "corroboration": 0.0,
+     "freshness": -0.05,
+     "contradiction": 0.0
+    },
+    "data_quality": {
+     "calibrated": false,
+     "replay": false,
+     "supporting_families": 1,
+     "missing_claim_ids": [],
+     "missing_source_ids": [],
+     "notes": [
+      "Heuristic evidence score, not a calibrated probability or a measure of supply-chain completeness.",
+      "Family independence uses stored source-family IDs and content hashes; edited syndication may remain undetected.",
+      "Supporting publication date unknown or in the future; retrieval time is not publication time."
+     ]
+    },
+    "evaluated_at": "2026-09-06T17:05:24.718Z"
+   },
+   "valid_from": null,
+   "valid_to": null,
+   "data": {
+    "geography": null,
+    "concentration": null,
+    "market": null,
+    "operational": {
+     "quantity": null,
+     "unit": null,
+     "lead_time_days": null,
+     "inventory_days": null,
+     "weight": 0.8,
+     "substitutability": null
+    },
+    "custom": {
+     "share": {
+      "value": 0.8,
+      "basis": "stated",
+      "claim_id": "clm_85ba7885df284194a10449f3f772faf5"
+     }
+    }
+   }
   }
  ],
  "claims": [
@@ -24832,6 +26166,48 @@
       "publisher": "www.marketsandmarkets.com",
       "published_at": null,
       "source_family_id": "www.marketsandmarkets.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    }
+   ],
+   "contradiction_claim_ids": [],
+   "resolution_notes": [],
+   "confidence_features": {}
+  },
+  {
+   "id": "clm_0bbc61307b2b4c93a65b4090709f6c91",
+   "subject_id": "nd_4e9163e3198e4f75ae51151c3a8c94aa",
+   "predicate": "MANUFACTURES",
+   "object_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+   "scope": {
+    "type": "product",
+    "product_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+    "organization_node_id": null
+   },
+   "status": "accepted",
+   "support_label": "directly_supported",
+   "rationale": "Explicitly states Apple's iPhone 17 Pro was manufactured in Indian and Chinese facilities.",
+   "observed_at": "2026-09-06T17:04:47.519284Z",
+   "valid_from": null,
+   "valid_to": null,
+   "evidence": [
+    {
+     "id": "ev_dfeef5260542432297f282903aee67e4",
+     "source_id": "src_89eae994801e4239986fc7a2e5de7fb0",
+     "span": "the entire iPhone 17 series\u2014including the premium iPhone 17 Pro and Pro Max\u2014was manufactured in Indian facilities simultaneously with Chinese plants",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 874:1022",
+     "extracted_at": "2026-09-06T17:04:47.519289Z",
+     "source": {
+      "id": "src_89eae994801e4239986fc7a2e5de7fb0",
+      "url": "http://markets.chroniclejournal.com/chroniclejournal/article/marketminute-2026-3-10-silicon-south-apple-hits-25-manufacturing-milestone-in-india-as-iphone-17-pro-production-scales-up",
+      "retrieved_at": "2026-09-06T17:04:47.442592Z",
+      "content_hash": "d8c2fced12a992a1fcd6f9d1e179db361036d1ab92b9e7934089714cf300f477",
+      "title": "User | chroniclejournal.com - Silicon South: Apple Hits 25% Manufacturing Milestone in India as iPhone 17 Pro Production Scales Up",
+      "publisher": "markets.chroniclejournal.com",
+      "published_at": null,
+      "source_family_id": "markets.chroniclejournal.com",
       "kind": "other",
       "license_notes": "Retrieved public text; evidence excerpts only are exposed."
      }
@@ -25840,6 +27216,90 @@
       "publisher": "www.apple.com",
       "published_at": null,
       "source_family_id": "www.apple.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    }
+   ],
+   "contradiction_claim_ids": [],
+   "resolution_notes": [],
+   "confidence_features": {}
+  },
+  {
+   "id": "clm_22ea6a72d91446b5b00705535a5645f7",
+   "subject_id": "nd_77bc9b681d964d5081f399a69261dcf1",
+   "predicate": "OPERATES",
+   "object_id": "nd_dd2d7b258dff40e896281d82c39d2ed5",
+   "scope": {
+    "type": "generic",
+    "product_node_id": null,
+    "organization_node_id": null
+   },
+   "status": "accepted",
+   "support_label": "directly_supported",
+   "rationale": "States Foxconn operates its Zhengzhou plant.",
+   "observed_at": "2026-09-06T17:05:24.605721Z",
+   "valid_from": null,
+   "valid_to": null,
+   "evidence": [
+    {
+     "id": "ev_376deeb4078f4a6998ea83252dee80ae",
+     "source_id": "src_13e9cbc9ade7408a806b8b0f80973f57",
+     "span": "has intensified recruitment efforts at its Zhengzhou and Shenzhen plants",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 467:539",
+     "extracted_at": "2026-09-06T17:05:24.605725Z",
+     "source": {
+      "id": "src_13e9cbc9ade7408a806b8b0f80973f57",
+      "url": "https://macdailynews.com/2025/08/20/foxconn-boosts-hiring-in-china-for-iphone-17-series-assembly",
+      "retrieved_at": "2026-09-06T17:05:24.502385Z",
+      "content_hash": "b05e983984e3deb978bdfbee401afa6888f446514cca586301874fbf15abb7af",
+      "title": "Foxconn boosts hiring in China for iPhone 17 series assembly - MacDailyNews",
+      "publisher": "macdailynews.com",
+      "published_at": null,
+      "source_family_id": "macdailynews.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    }
+   ],
+   "contradiction_claim_ids": [],
+   "resolution_notes": [],
+   "confidence_features": {}
+  },
+  {
+   "id": "clm_23a42f7a6f8442cd9b83a45bed3dbc44",
+   "subject_id": "nd_f1d462f9dc284b66a5834aba37b0637e",
+   "predicate": "LOCATED_IN",
+   "object_id": "nd_55b1cc2c104448729ba647bb7fa3de82",
+   "scope": {
+    "type": "generic",
+    "product_node_id": null,
+    "organization_node_id": null
+   },
+   "status": "accepted",
+   "support_label": "directly_supported",
+   "rationale": "The facility name directly indicates Chennai as its location.",
+   "observed_at": "2026-09-06T17:04:49.385927Z",
+   "valid_from": null,
+   "valid_to": null,
+   "evidence": [
+    {
+     "id": "ev_45b55274f758464c9a97fc93c960d518",
+     "source_id": "src_d84da2a20aca4217b18c531ab35109dc",
+     "span": "India: Chennai facility for iPhone production",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 2836:2881",
+     "extracted_at": "2026-09-06T17:04:49.385932Z",
+     "source": {
+      "id": "src_d84da2a20aca4217b18c531ab35109dc",
+      "url": "https://chaitanyaontech.substack.com/p/foxconn-pegatron-and-wistron-the",
+      "retrieved_at": "2026-09-06T17:04:49.202731Z",
+      "content_hash": "aaa23e639afa793202517bd2bcb0efd00e46aa4a2c9ac9347c5eda42da3dbaee",
+      "title": "Foxconn, Pegatron & Wistron: The iPhone Factories You Don\u2019t Know about",
+      "publisher": "chaitanyaontech.substack.com",
+      "published_at": null,
+      "source_family_id": "chaitanyaontech.substack.com",
       "kind": "other",
       "license_notes": "Retrieved public text; evidence excerpts only are exposed."
      }
@@ -27898,6 +29358,48 @@
       "publisher": "www.apple.com",
       "published_at": null,
       "source_family_id": "www.apple.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    }
+   ],
+   "contradiction_claim_ids": [],
+   "resolution_notes": [],
+   "confidence_features": {}
+  },
+  {
+   "id": "clm_48de69f2519c4482a438ccac13bcb10c",
+   "subject_id": "nd_12f36c85d3da430d9bf7a5f8d24c93e7",
+   "predicate": "OPERATES",
+   "object_id": "nd_e3c41dc3078b4aee8011c29716603dce",
+   "scope": {
+    "type": "generic",
+    "product_node_id": null,
+    "organization_node_id": null
+   },
+   "status": "accepted",
+   "support_label": "directly_supported",
+   "rationale": "Hon Hai operates Bengaluru facility.",
+   "observed_at": "2026-09-06T17:04:49.102200Z",
+   "valid_from": null,
+   "valid_to": null,
+   "evidence": [
+    {
+     "id": "ev_e18a1be59dde48ec90e8bac27b34be75",
+     "source_id": "src_c124cd04dc4f424a8f1326261d420f3d",
+     "span": "Foxconn subsidiary Hon Hai\u2019s newest Bengaluru facility",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 1613:1667",
+     "extracted_at": "2026-09-06T17:04:49.102203Z",
+     "source": {
+      "id": "src_c124cd04dc4f424a8f1326261d420f3d",
+      "url": "https://www.moneycontrol.com/news/business/apple-s-iphone-17-series-production-in-india-goes-full-throttle-local-factories-gear-up-to-meet-us-europe-demand-13534623.html",
+      "retrieved_at": "2026-09-06T17:04:48.796978Z",
+      "content_hash": "dacce670342a374d0bad8a66810470dd5120596bc500dcbfa2034c4615228abc",
+      "title": "Apple\u2019s iPhone 17 series production in India goes full throttle; local factories gear up to meet US, Europe demand",
+      "publisher": "www.moneycontrol.com",
+      "published_at": null,
+      "source_family_id": "www.moneycontrol.com",
       "kind": "other",
       "license_notes": "Retrieved public text; evidence excerpts only are exposed."
      }
@@ -30302,6 +31804,48 @@
    "confidence_features": {}
   },
   {
+   "id": "clm_7842ede845af4980a769dc3bd3280385",
+   "subject_id": "nd_cad91e279cb94f0695a52dcb2777aec7",
+   "predicate": "LOCATED_IN",
+   "object_id": "nd_5fef93936a9c4d65969f4722b646c718",
+   "scope": {
+    "type": "generic",
+    "product_node_id": null,
+    "organization_node_id": null
+   },
+   "status": "accepted",
+   "support_label": "directly_supported",
+   "rationale": "Identifies TSMC's foundry in Taiwan without naming a specific plant.",
+   "observed_at": "2026-09-06T17:05:23.564211Z",
+   "valid_from": null,
+   "valid_to": null,
+   "evidence": [
+    {
+     "id": "ev_6e97447d28314b4badb339e2ddee7923",
+     "source_id": "src_5e66778d11344279a3e3698bc2860f6f",
+     "span": "TSMC's Taiwan foundry.",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 1647:1669",
+     "extracted_at": "2026-09-06T17:05:23.564216Z",
+     "source": {
+      "id": "src_5e66778d11344279a3e3698bc2860f6f",
+      "url": "https://appleinsider.com/articles/26/04/22/where-apple-products-are-assembled-and-where-their-parts-come-from",
+      "retrieved_at": "2026-09-06T17:05:23.391502Z",
+      "content_hash": "c61408e60ab2a1fbc80d5bddd8a50a43c528097539637d2c0b6cf651c37464e8",
+      "title": "Where Apple products are assembled, and where parts come from",
+      "publisher": "appleinsider.com",
+      "published_at": null,
+      "source_family_id": "appleinsider.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    }
+   ],
+   "contradiction_claim_ids": [],
+   "resolution_notes": [],
+   "confidence_features": {}
+  },
+  {
    "id": "clm_7a3b9598b2fb4ab79ac7a240d4d48073",
    "subject_id": "nd_6860807386fc4c4596c37b39ddd3546a",
    "predicate": "INPUT_TO",
@@ -30680,6 +32224,48 @@
    "confidence_features": {}
   },
   {
+   "id": "clm_80dd552b94954e75a844f54f20180757",
+   "subject_id": "nd_ba281be7b763405f91f39433d02b49e6",
+   "predicate": "OPERATES",
+   "object_id": "nd_f1d462f9dc284b66a5834aba37b0637e",
+   "scope": {
+    "type": "generic",
+    "product_node_id": null,
+    "organization_node_id": null
+   },
+   "status": "accepted",
+   "support_label": "directly_supported",
+   "rationale": "The span states Pegatron has a Chennai facility for iPhone production.",
+   "observed_at": "2026-09-06T17:04:49.256986Z",
+   "valid_from": null,
+   "valid_to": null,
+   "evidence": [
+    {
+     "id": "ev_f2764da26518425aa53a357c775169c6",
+     "source_id": "src_d84da2a20aca4217b18c531ab35109dc",
+     "span": "India: Chennai facility for iPhone production",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 2836:2881",
+     "extracted_at": "2026-09-06T17:04:49.256991Z",
+     "source": {
+      "id": "src_d84da2a20aca4217b18c531ab35109dc",
+      "url": "https://chaitanyaontech.substack.com/p/foxconn-pegatron-and-wistron-the",
+      "retrieved_at": "2026-09-06T17:04:49.202731Z",
+      "content_hash": "aaa23e639afa793202517bd2bcb0efd00e46aa4a2c9ac9347c5eda42da3dbaee",
+      "title": "Foxconn, Pegatron & Wistron: The iPhone Factories You Don\u2019t Know about",
+      "publisher": "chaitanyaontech.substack.com",
+      "published_at": null,
+      "source_family_id": "chaitanyaontech.substack.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    }
+   ],
+   "contradiction_claim_ids": [],
+   "resolution_notes": [],
+   "confidence_features": {}
+  },
+  {
    "id": "clm_813bed24b3f74e74a7e529f96b390daf",
    "subject_id": "nd_dd3c409974de42aaac16968d200c5a3b",
    "predicate": "PART_OF",
@@ -30932,6 +32518,48 @@
    "confidence_features": {}
   },
   {
+   "id": "clm_83c8edce391a459495d5b0d240950c95",
+   "subject_id": "nd_77bc9b681d964d5081f399a69261dcf1",
+   "predicate": "OPERATES",
+   "object_id": "nd_5c9c9cdf74624216a2d8f9d18e38866a",
+   "scope": {
+    "type": "generic",
+    "product_node_id": null,
+    "organization_node_id": null
+   },
+   "status": "accepted",
+   "support_label": "directly_supported",
+   "rationale": "States Foxconn operates its Shenzhen plant.",
+   "observed_at": "2026-09-06T17:05:24.662135Z",
+   "valid_from": null,
+   "valid_to": null,
+   "evidence": [
+    {
+     "id": "ev_820bcf9145d743ff82a4b8fc1c258fdd",
+     "source_id": "src_13e9cbc9ade7408a806b8b0f80973f57",
+     "span": "has intensified recruitment efforts at its Zhengzhou and Shenzhen plants",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 467:539",
+     "extracted_at": "2026-09-06T17:05:24.662138Z",
+     "source": {
+      "id": "src_13e9cbc9ade7408a806b8b0f80973f57",
+      "url": "https://macdailynews.com/2025/08/20/foxconn-boosts-hiring-in-china-for-iphone-17-series-assembly",
+      "retrieved_at": "2026-09-06T17:05:24.502385Z",
+      "content_hash": "b05e983984e3deb978bdfbee401afa6888f446514cca586301874fbf15abb7af",
+      "title": "Foxconn boosts hiring in China for iPhone 17 series assembly - MacDailyNews",
+      "publisher": "macdailynews.com",
+      "published_at": null,
+      "source_family_id": "macdailynews.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    }
+   ],
+   "contradiction_claim_ids": [],
+   "resolution_notes": [],
+   "confidence_features": {}
+  },
+  {
    "id": "clm_847a8c21731643d1b107f4448ae36303",
    "subject_id": "nd_154fef0e069647deb479f7d84da3306b",
    "predicate": "PART_OF",
@@ -31090,6 +32718,48 @@
       "publisher": "www.ifixit.com",
       "published_at": null,
       "source_family_id": "www.ifixit.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    }
+   ],
+   "contradiction_claim_ids": [],
+   "resolution_notes": [],
+   "confidence_features": {}
+  },
+  {
+   "id": "clm_85ba7885df284194a10449f3f772faf5",
+   "subject_id": "nd_dd2d7b258dff40e896281d82c39d2ed5",
+   "predicate": "MANUFACTURES",
+   "object_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+   "scope": {
+    "type": "product",
+    "product_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+    "organization_node_id": null
+   },
+   "status": "accepted",
+   "support_label": "directly_supported",
+   "rationale": "Plant assembles iPhones, including iPhone 17 series, and the iPhone 17 Pro is in that series.",
+   "observed_at": "2026-09-06T17:05:24.718878Z",
+   "valid_from": null,
+   "valid_to": null,
+   "evidence": [
+    {
+     "id": "ev_82cc17e4e6d946169fec07c3c7190294",
+     "source_id": "src_13e9cbc9ade7408a806b8b0f80973f57",
+     "span": "Foxconn\u2019s Zhengzhou plant, responsible for nearly 80% of global iPhone assembly",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 1386:1465",
+     "extracted_at": "2026-09-06T17:05:24.718882Z",
+     "source": {
+      "id": "src_13e9cbc9ade7408a806b8b0f80973f57",
+      "url": "https://macdailynews.com/2025/08/20/foxconn-boosts-hiring-in-china-for-iphone-17-series-assembly",
+      "retrieved_at": "2026-09-06T17:05:24.502385Z",
+      "content_hash": "b05e983984e3deb978bdfbee401afa6888f446514cca586301874fbf15abb7af",
+      "title": "Foxconn boosts hiring in China for iPhone 17 series assembly - MacDailyNews",
+      "publisher": "macdailynews.com",
+      "published_at": null,
+      "source_family_id": "macdailynews.com",
       "kind": "other",
       "license_notes": "Retrieved public text; evidence excerpts only are exposed."
      }
@@ -31478,6 +33148,48 @@
    "confidence_features": {}
   },
   {
+   "id": "clm_8ef21a72e3a84e578ed937c5dd85550b",
+   "subject_id": "nd_12f36c85d3da430d9bf7a5f8d24c93e7",
+   "predicate": "OWNED_BY",
+   "object_id": "nd_77bc9b681d964d5081f399a69261dcf1",
+   "scope": {
+    "type": "generic",
+    "product_node_id": null,
+    "organization_node_id": null
+   },
+   "status": "accepted",
+   "support_label": "directly_supported",
+   "rationale": "Hon Hai is a Foxconn subsidiary.",
+   "observed_at": "2026-09-06T17:04:49.046638Z",
+   "valid_from": null,
+   "valid_to": null,
+   "evidence": [
+    {
+     "id": "ev_d0f8084a6f75420e91304a48b056915f",
+     "source_id": "src_c124cd04dc4f424a8f1326261d420f3d",
+     "span": "Foxconn subsidiary Hon Hai",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 1613:1639",
+     "extracted_at": "2026-09-06T17:04:49.046641Z",
+     "source": {
+      "id": "src_c124cd04dc4f424a8f1326261d420f3d",
+      "url": "https://www.moneycontrol.com/news/business/apple-s-iphone-17-series-production-in-india-goes-full-throttle-local-factories-gear-up-to-meet-us-europe-demand-13534623.html",
+      "retrieved_at": "2026-09-06T17:04:48.796978Z",
+      "content_hash": "dacce670342a374d0bad8a66810470dd5120596bc500dcbfa2034c4615228abc",
+      "title": "Apple\u2019s iPhone 17 series production in India goes full throttle; local factories gear up to meet US, Europe demand",
+      "publisher": "www.moneycontrol.com",
+      "published_at": null,
+      "source_family_id": "www.moneycontrol.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    }
+   ],
+   "contradiction_claim_ids": [],
+   "resolution_notes": [],
+   "confidence_features": {}
+  },
+  {
    "id": "clm_8f41019a4b41400ab8e091bffb95b7de",
    "subject_id": "nd_f173279422894924ad4a35145c656ca4",
    "predicate": "LOCATED_IN",
@@ -31720,6 +33432,48 @@
       "publisher": "www.everythingrf.com",
       "published_at": null,
       "source_family_id": "www.everythingrf.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    }
+   ],
+   "contradiction_claim_ids": [],
+   "resolution_notes": [],
+   "confidence_features": {}
+  },
+  {
+   "id": "clm_955c9ea1f82c49a9b909d65221c673d8",
+   "subject_id": "nd_77bc9b681d964d5081f399a69261dcf1",
+   "predicate": "MANUFACTURES",
+   "object_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+   "scope": {
+    "type": "product",
+    "product_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+    "organization_node_id": null
+   },
+   "status": "accepted",
+   "support_label": "directly_supported",
+   "rationale": "Establishes Foxconn as assembling the iPhone 17 series, which includes the iPhone 17 Pro.",
+   "observed_at": "2026-09-06T17:05:24.560850Z",
+   "valid_from": null,
+   "valid_to": null,
+   "evidence": [
+    {
+     "id": "ev_d3a989fc7fed4ff98a8ccf6a3a2516ed",
+     "source_id": "src_13e9cbc9ade7408a806b8b0f80973f57",
+     "span": "Foxconn, Apple\u2019s primary manufacturing partner, is significantly ramping up hiring at its factories in China to prepare for the iPhone 17 series launch",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 221:372",
+     "extracted_at": "2026-09-06T17:05:24.560854Z",
+     "source": {
+      "id": "src_13e9cbc9ade7408a806b8b0f80973f57",
+      "url": "https://macdailynews.com/2025/08/20/foxconn-boosts-hiring-in-china-for-iphone-17-series-assembly",
+      "retrieved_at": "2026-09-06T17:05:24.502385Z",
+      "content_hash": "b05e983984e3deb978bdfbee401afa6888f446514cca586301874fbf15abb7af",
+      "title": "Foxconn boosts hiring in China for iPhone 17 series assembly - MacDailyNews",
+      "publisher": "macdailynews.com",
+      "published_at": null,
+      "source_family_id": "macdailynews.com",
       "kind": "other",
       "license_notes": "Retrieved public text; evidence excerpts only are exposed."
      }
@@ -32822,6 +34576,48 @@
    "confidence_features": {}
   },
   {
+   "id": "clm_a90140ec1d5d429da2a7b431b307db90",
+   "subject_id": "nd_ba281be7b763405f91f39433d02b49e6",
+   "predicate": "OPERATES",
+   "object_id": "nd_a0a370d2d734416fae5bf0117761b2d5",
+   "scope": {
+    "type": "generic",
+    "product_node_id": null,
+    "organization_node_id": null
+   },
+   "status": "accepted",
+   "support_label": "directly_supported",
+   "rationale": "Span states Pegatron has existing operations in Haiphong.",
+   "observed_at": "2026-09-06T17:04:49.328406Z",
+   "valid_from": null,
+   "valid_to": null,
+   "evidence": [
+    {
+     "id": "ev_e51bbca0ff194d10a90a40b18820c17d",
+     "source_id": "src_d84da2a20aca4217b18c531ab35109dc",
+     "span": "Vietnam: Existing operations in Haiphong, with plans to open facilities in Northern vietnam",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 2882:2973",
+     "extracted_at": "2026-09-06T17:04:49.328413Z",
+     "source": {
+      "id": "src_d84da2a20aca4217b18c531ab35109dc",
+      "url": "https://chaitanyaontech.substack.com/p/foxconn-pegatron-and-wistron-the",
+      "retrieved_at": "2026-09-06T17:04:49.202731Z",
+      "content_hash": "aaa23e639afa793202517bd2bcb0efd00e46aa4a2c9ac9347c5eda42da3dbaee",
+      "title": "Foxconn, Pegatron & Wistron: The iPhone Factories You Don\u2019t Know about",
+      "publisher": "chaitanyaontech.substack.com",
+      "published_at": null,
+      "source_family_id": "chaitanyaontech.substack.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    }
+   ],
+   "contradiction_claim_ids": [],
+   "resolution_notes": [],
+   "confidence_features": {}
+  },
+  {
    "id": "clm_a94f85c55a6049f18c8377433cc6eddf",
    "subject_id": "nd_a10d17029d1e4e4fb9d399a4d3b4b497",
    "predicate": "PART_OF",
@@ -33862,6 +35658,48 @@
       "publisher": "apple.fandom.com",
       "published_at": null,
       "source_family_id": "apple.fandom.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    }
+   ],
+   "contradiction_claim_ids": [],
+   "resolution_notes": [],
+   "confidence_features": {}
+  },
+  {
+   "id": "clm_b77e2423939f479bbeb7f96c6b9b5480",
+   "subject_id": "nd_ba281be7b763405f91f39433d02b49e6",
+   "predicate": "MANUFACTURES",
+   "object_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+   "scope": {
+    "type": "product",
+    "product_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+    "organization_node_id": null
+   },
+   "status": "accepted",
+   "support_label": "directly_supported",
+   "rationale": "Pegatron unit run by Tata assembles iPhone 17 Pro.",
+   "observed_at": "2026-09-06T17:04:48.990538Z",
+   "valid_from": null,
+   "valid_to": null,
+   "evidence": [
+    {
+     "id": "ev_306d700ac0e14912a3ddb34b1ab0038f",
+     "source_id": "src_c124cd04dc4f424a8f1326261d420f3d",
+     "span": "The lineup includes the iPhone 17 Pro, assembled at Foxconn and Tata-run Pegatron units",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 1092:1179",
+     "extracted_at": "2026-09-06T17:04:48.990541Z",
+     "source": {
+      "id": "src_c124cd04dc4f424a8f1326261d420f3d",
+      "url": "https://www.moneycontrol.com/news/business/apple-s-iphone-17-series-production-in-india-goes-full-throttle-local-factories-gear-up-to-meet-us-europe-demand-13534623.html",
+      "retrieved_at": "2026-09-06T17:04:48.796978Z",
+      "content_hash": "dacce670342a374d0bad8a66810470dd5120596bc500dcbfa2034c4615228abc",
+      "title": "Apple\u2019s iPhone 17 series production in India goes full throttle; local factories gear up to meet US, Europe demand",
+      "publisher": "www.moneycontrol.com",
+      "published_at": null,
+      "source_family_id": "www.moneycontrol.com",
       "kind": "other",
       "license_notes": "Retrieved public text; evidence excerpts only are exposed."
      }
@@ -35300,6 +37138,48 @@
    "confidence_features": {}
   },
   {
+   "id": "clm_d5f0b62955e1470ea4c5da5a95c12d5f",
+   "subject_id": "nd_77bc9b681d964d5081f399a69261dcf1",
+   "predicate": "MANUFACTURES",
+   "object_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+   "scope": {
+    "type": "product",
+    "product_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+    "organization_node_id": null
+   },
+   "status": "accepted",
+   "support_label": "directly_supported",
+   "rationale": "Explicitly states Foxconn assembles the iPhone 17 Pro.",
+   "observed_at": "2026-09-06T17:04:48.935919Z",
+   "valid_from": null,
+   "valid_to": null,
+   "evidence": [
+    {
+     "id": "ev_385a8d4846c64f2fbaa48cebfc70bb2c",
+     "source_id": "src_c124cd04dc4f424a8f1326261d420f3d",
+     "span": "The lineup includes the iPhone 17 Pro, assembled at Foxconn and Tata-run Pegatron units",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 1092:1179",
+     "extracted_at": "2026-09-06T17:04:48.935924Z",
+     "source": {
+      "id": "src_c124cd04dc4f424a8f1326261d420f3d",
+      "url": "https://www.moneycontrol.com/news/business/apple-s-iphone-17-series-production-in-india-goes-full-throttle-local-factories-gear-up-to-meet-us-europe-demand-13534623.html",
+      "retrieved_at": "2026-09-06T17:04:48.796978Z",
+      "content_hash": "dacce670342a374d0bad8a66810470dd5120596bc500dcbfa2034c4615228abc",
+      "title": "Apple\u2019s iPhone 17 series production in India goes full throttle; local factories gear up to meet US, Europe demand",
+      "publisher": "www.moneycontrol.com",
+      "published_at": null,
+      "source_family_id": "www.moneycontrol.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    }
+   ],
+   "contradiction_claim_ids": [],
+   "resolution_notes": [],
+   "confidence_features": {}
+  },
+  {
    "id": "clm_d7bad44239f74bd2b546b9d0325b512e",
    "subject_id": "nd_44a2e777ee964555b842e37e7279bde4",
    "predicate": "PART_OF",
@@ -35542,6 +37422,48 @@
       "publisher": "en.wikipedia.org",
       "published_at": null,
       "source_family_id": "en.wikipedia.org",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    }
+   ],
+   "contradiction_claim_ids": [],
+   "resolution_notes": [],
+   "confidence_features": {}
+  },
+  {
+   "id": "clm_da6a3ec920f5499babfecfe85897f7c7",
+   "subject_id": "nd_4e9163e3198e4f75ae51151c3a8c94aa",
+   "predicate": "MANUFACTURES",
+   "object_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+   "scope": {
+    "type": "product",
+    "product_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+    "organization_node_id": null
+   },
+   "status": "accepted",
+   "support_label": "directly_supported",
+   "rationale": "States all iPhone 17 models including Pro are manufactured in India.",
+   "observed_at": "2026-09-06T17:04:25.779194Z",
+   "valid_from": null,
+   "valid_to": null,
+   "evidence": [
+    {
+     "id": "ev_bc526c5a247149d28b897d66feb19b21",
+     "source_id": "src_8e32209286964790a5f340759a80c415",
+     "span": "For the first time, all four iPhone 17 models will be manufactured in India",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 326:401",
+     "extracted_at": "2026-09-06T17:04:25.779197Z",
+     "source": {
+      "id": "src_8e32209286964790a5f340759a80c415",
+      "url": "https://www.macrumors.com/2025/08/19/apple-iphone-17-manufacturing-expands-india",
+      "retrieved_at": "2026-09-06T17:04:25.682711Z",
+      "content_hash": "dd314afe52021d9d69a81512c522b57bf444e2c84b775951756cd6675ab649fa",
+      "title": "Apple's iPhone 17 Manufacturing Expands Across Five Indian Plants - MacRumors",
+      "publisher": "www.macrumors.com",
+      "published_at": null,
+      "source_family_id": "www.macrumors.com",
       "kind": "other",
       "license_notes": "Retrieved public text; evidence excerpts only are exposed."
      }
@@ -37912,6 +39834,26 @@
    }
   },
   {
+   "id": "ev_dfeef5260542432297f282903aee67e4",
+   "source_id": "src_89eae994801e4239986fc7a2e5de7fb0",
+   "span": "the entire iPhone 17 series\u2014including the premium iPhone 17 Pro and Pro Max\u2014was manufactured in Indian facilities simultaneously with Chinese plants",
+   "support_type": "supports",
+   "locator": "retrieved document character offsets; chars 874:1022",
+   "extracted_at": "2026-09-06T17:04:47.519289Z",
+   "source": {
+    "id": "src_89eae994801e4239986fc7a2e5de7fb0",
+    "url": "http://markets.chroniclejournal.com/chroniclejournal/article/marketminute-2026-3-10-silicon-south-apple-hits-25-manufacturing-milestone-in-india-as-iphone-17-pro-production-scales-up",
+    "retrieved_at": "2026-09-06T17:04:47.442592Z",
+    "content_hash": "d8c2fced12a992a1fcd6f9d1e179db361036d1ab92b9e7934089714cf300f477",
+    "title": "User | chroniclejournal.com - Silicon South: Apple Hits 25% Manufacturing Milestone in India as iPhone 17 Pro Production Scales Up",
+    "publisher": "markets.chroniclejournal.com",
+    "published_at": null,
+    "source_family_id": "markets.chroniclejournal.com",
+    "kind": "other",
+    "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+   }
+  },
+  {
    "id": "ev_26dcf5c34ed34a1790cf3378d95d91fc",
    "source_id": "src_949733955d1145d68579f2ce771aa95a",
    "span": "M\u00f3dulo USI 339M00399 WiFi 7/Bluetooth 6/Thread (contiene Apple N1)",
@@ -38387,6 +40329,46 @@
     "publisher": "www.apple.com",
     "published_at": null,
     "source_family_id": "www.apple.com",
+    "kind": "other",
+    "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+   }
+  },
+  {
+   "id": "ev_376deeb4078f4a6998ea83252dee80ae",
+   "source_id": "src_13e9cbc9ade7408a806b8b0f80973f57",
+   "span": "has intensified recruitment efforts at its Zhengzhou and Shenzhen plants",
+   "support_type": "supports",
+   "locator": "retrieved document character offsets; chars 467:539",
+   "extracted_at": "2026-09-06T17:05:24.605725Z",
+   "source": {
+    "id": "src_13e9cbc9ade7408a806b8b0f80973f57",
+    "url": "https://macdailynews.com/2025/08/20/foxconn-boosts-hiring-in-china-for-iphone-17-series-assembly",
+    "retrieved_at": "2026-09-06T17:05:24.502385Z",
+    "content_hash": "b05e983984e3deb978bdfbee401afa6888f446514cca586301874fbf15abb7af",
+    "title": "Foxconn boosts hiring in China for iPhone 17 series assembly - MacDailyNews",
+    "publisher": "macdailynews.com",
+    "published_at": null,
+    "source_family_id": "macdailynews.com",
+    "kind": "other",
+    "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+   }
+  },
+  {
+   "id": "ev_45b55274f758464c9a97fc93c960d518",
+   "source_id": "src_d84da2a20aca4217b18c531ab35109dc",
+   "span": "India: Chennai facility for iPhone production",
+   "support_type": "supports",
+   "locator": "retrieved document character offsets; chars 2836:2881",
+   "extracted_at": "2026-09-06T17:04:49.385932Z",
+   "source": {
+    "id": "src_d84da2a20aca4217b18c531ab35109dc",
+    "url": "https://chaitanyaontech.substack.com/p/foxconn-pegatron-and-wistron-the",
+    "retrieved_at": "2026-09-06T17:04:49.202731Z",
+    "content_hash": "aaa23e639afa793202517bd2bcb0efd00e46aa4a2c9ac9347c5eda42da3dbaee",
+    "title": "Foxconn, Pegatron & Wistron: The iPhone Factories You Don\u2019t Know about",
+    "publisher": "chaitanyaontech.substack.com",
+    "published_at": null,
+    "source_family_id": "chaitanyaontech.substack.com",
     "kind": "other",
     "license_notes": "Retrieved public text; evidence excerpts only are exposed."
    }
@@ -39367,6 +41349,26 @@
     "publisher": "www.apple.com",
     "published_at": null,
     "source_family_id": "www.apple.com",
+    "kind": "other",
+    "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+   }
+  },
+  {
+   "id": "ev_e18a1be59dde48ec90e8bac27b34be75",
+   "source_id": "src_c124cd04dc4f424a8f1326261d420f3d",
+   "span": "Foxconn subsidiary Hon Hai\u2019s newest Bengaluru facility",
+   "support_type": "supports",
+   "locator": "retrieved document character offsets; chars 1613:1667",
+   "extracted_at": "2026-09-06T17:04:49.102203Z",
+   "source": {
+    "id": "src_c124cd04dc4f424a8f1326261d420f3d",
+    "url": "https://www.moneycontrol.com/news/business/apple-s-iphone-17-series-production-in-india-goes-full-throttle-local-factories-gear-up-to-meet-us-europe-demand-13534623.html",
+    "retrieved_at": "2026-09-06T17:04:48.796978Z",
+    "content_hash": "dacce670342a374d0bad8a66810470dd5120596bc500dcbfa2034c4615228abc",
+    "title": "Apple\u2019s iPhone 17 series production in India goes full throttle; local factories gear up to meet US, Europe demand",
+    "publisher": "www.moneycontrol.com",
+    "published_at": null,
+    "source_family_id": "www.moneycontrol.com",
     "kind": "other",
     "license_notes": "Retrieved public text; evidence excerpts only are exposed."
    }
@@ -40512,6 +42514,26 @@
    }
   },
   {
+   "id": "ev_6e97447d28314b4badb339e2ddee7923",
+   "source_id": "src_5e66778d11344279a3e3698bc2860f6f",
+   "span": "TSMC's Taiwan foundry.",
+   "support_type": "supports",
+   "locator": "retrieved document character offsets; chars 1647:1669",
+   "extracted_at": "2026-09-06T17:05:23.564216Z",
+   "source": {
+    "id": "src_5e66778d11344279a3e3698bc2860f6f",
+    "url": "https://appleinsider.com/articles/26/04/22/where-apple-products-are-assembled-and-where-their-parts-come-from",
+    "retrieved_at": "2026-09-06T17:05:23.391502Z",
+    "content_hash": "c61408e60ab2a1fbc80d5bddd8a50a43c528097539637d2c0b6cf651c37464e8",
+    "title": "Where Apple products are assembled, and where parts come from",
+    "publisher": "appleinsider.com",
+    "published_at": null,
+    "source_family_id": "appleinsider.com",
+    "kind": "other",
+    "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+   }
+  },
+  {
    "id": "ev_c1d0f06d66474abe99f7bde852bac312",
    "source_id": "src_2f11cfe113f74ded8b7d8dc319941353",
    "span": "Inside is a tiny bit of liquid \u2014 de-ionised water \u2014 and a wick-like structure.",
@@ -40692,6 +42714,26 @@
    }
   },
   {
+   "id": "ev_f2764da26518425aa53a357c775169c6",
+   "source_id": "src_d84da2a20aca4217b18c531ab35109dc",
+   "span": "India: Chennai facility for iPhone production",
+   "support_type": "supports",
+   "locator": "retrieved document character offsets; chars 2836:2881",
+   "extracted_at": "2026-09-06T17:04:49.256991Z",
+   "source": {
+    "id": "src_d84da2a20aca4217b18c531ab35109dc",
+    "url": "https://chaitanyaontech.substack.com/p/foxconn-pegatron-and-wistron-the",
+    "retrieved_at": "2026-09-06T17:04:49.202731Z",
+    "content_hash": "aaa23e639afa793202517bd2bcb0efd00e46aa4a2c9ac9347c5eda42da3dbaee",
+    "title": "Foxconn, Pegatron & Wistron: The iPhone Factories You Don\u2019t Know about",
+    "publisher": "chaitanyaontech.substack.com",
+    "published_at": null,
+    "source_family_id": "chaitanyaontech.substack.com",
+    "kind": "other",
+    "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+   }
+  },
+  {
    "id": "ev_3b9bc918284547f8813b779a2fc886ab",
    "source_id": "src_30d9956c89dc4ea79cc49d043a1f8b79",
    "span": "It incorporates the new Apple-designed N1 networking chip",
@@ -40812,6 +42854,26 @@
    }
   },
   {
+   "id": "ev_820bcf9145d743ff82a4b8fc1c258fdd",
+   "source_id": "src_13e9cbc9ade7408a806b8b0f80973f57",
+   "span": "has intensified recruitment efforts at its Zhengzhou and Shenzhen plants",
+   "support_type": "supports",
+   "locator": "retrieved document character offsets; chars 467:539",
+   "extracted_at": "2026-09-06T17:05:24.662138Z",
+   "source": {
+    "id": "src_13e9cbc9ade7408a806b8b0f80973f57",
+    "url": "https://macdailynews.com/2025/08/20/foxconn-boosts-hiring-in-china-for-iphone-17-series-assembly",
+    "retrieved_at": "2026-09-06T17:05:24.502385Z",
+    "content_hash": "b05e983984e3deb978bdfbee401afa6888f446514cca586301874fbf15abb7af",
+    "title": "Foxconn boosts hiring in China for iPhone 17 series assembly - MacDailyNews",
+    "publisher": "macdailynews.com",
+    "published_at": null,
+    "source_family_id": "macdailynews.com",
+    "kind": "other",
+    "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+   }
+  },
+  {
    "id": "ev_9b9a3a61707245ffac076dfb14d25598",
    "source_id": "src_699d3ca1e63c400a83194122284f9e5c",
    "span": "the iPhone 17 Pro camera specs will include a 1/1.3\" 48MP Fusion lens, a 48MP Ultra Wide lens, and a new upgraded 48MP Tetraprism telephoto lens",
@@ -40887,6 +42949,26 @@
     "publisher": "www.ifixit.com",
     "published_at": null,
     "source_family_id": "www.ifixit.com",
+    "kind": "other",
+    "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+   }
+  },
+  {
+   "id": "ev_82cc17e4e6d946169fec07c3c7190294",
+   "source_id": "src_13e9cbc9ade7408a806b8b0f80973f57",
+   "span": "Foxconn\u2019s Zhengzhou plant, responsible for nearly 80% of global iPhone assembly",
+   "support_type": "supports",
+   "locator": "retrieved document character offsets; chars 1386:1465",
+   "extracted_at": "2026-09-06T17:05:24.718882Z",
+   "source": {
+    "id": "src_13e9cbc9ade7408a806b8b0f80973f57",
+    "url": "https://macdailynews.com/2025/08/20/foxconn-boosts-hiring-in-china-for-iphone-17-series-assembly",
+    "retrieved_at": "2026-09-06T17:05:24.502385Z",
+    "content_hash": "b05e983984e3deb978bdfbee401afa6888f446514cca586301874fbf15abb7af",
+    "title": "Foxconn boosts hiring in China for iPhone 17 series assembly - MacDailyNews",
+    "publisher": "macdailynews.com",
+    "published_at": null,
+    "source_family_id": "macdailynews.com",
     "kind": "other",
     "license_notes": "Retrieved public text; evidence excerpts only are exposed."
    }
@@ -41072,6 +43154,26 @@
    }
   },
   {
+   "id": "ev_d0f8084a6f75420e91304a48b056915f",
+   "source_id": "src_c124cd04dc4f424a8f1326261d420f3d",
+   "span": "Foxconn subsidiary Hon Hai",
+   "support_type": "supports",
+   "locator": "retrieved document character offsets; chars 1613:1639",
+   "extracted_at": "2026-09-06T17:04:49.046641Z",
+   "source": {
+    "id": "src_c124cd04dc4f424a8f1326261d420f3d",
+    "url": "https://www.moneycontrol.com/news/business/apple-s-iphone-17-series-production-in-india-goes-full-throttle-local-factories-gear-up-to-meet-us-europe-demand-13534623.html",
+    "retrieved_at": "2026-09-06T17:04:48.796978Z",
+    "content_hash": "dacce670342a374d0bad8a66810470dd5120596bc500dcbfa2034c4615228abc",
+    "title": "Apple\u2019s iPhone 17 series production in India goes full throttle; local factories gear up to meet US, Europe demand",
+    "publisher": "www.moneycontrol.com",
+    "published_at": null,
+    "source_family_id": "www.moneycontrol.com",
+    "kind": "other",
+    "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+   }
+  },
+  {
    "id": "ev_1badce4d79ab449e860b6ec5566a19d1",
    "source_id": "src_07bd873f9a4b4c5f9d69d18bf750cee1",
    "span": "ONE RIVERFRONT PLAZA, CORNING, NY",
@@ -41187,6 +43289,26 @@
     "publisher": "www.everythingrf.com",
     "published_at": null,
     "source_family_id": "www.everythingrf.com",
+    "kind": "other",
+    "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+   }
+  },
+  {
+   "id": "ev_d3a989fc7fed4ff98a8ccf6a3a2516ed",
+   "source_id": "src_13e9cbc9ade7408a806b8b0f80973f57",
+   "span": "Foxconn, Apple\u2019s primary manufacturing partner, is significantly ramping up hiring at its factories in China to prepare for the iPhone 17 series launch",
+   "support_type": "supports",
+   "locator": "retrieved document character offsets; chars 221:372",
+   "extracted_at": "2026-09-06T17:05:24.560854Z",
+   "source": {
+    "id": "src_13e9cbc9ade7408a806b8b0f80973f57",
+    "url": "https://macdailynews.com/2025/08/20/foxconn-boosts-hiring-in-china-for-iphone-17-series-assembly",
+    "retrieved_at": "2026-09-06T17:05:24.502385Z",
+    "content_hash": "b05e983984e3deb978bdfbee401afa6888f446514cca586301874fbf15abb7af",
+    "title": "Foxconn boosts hiring in China for iPhone 17 series assembly - MacDailyNews",
+    "publisher": "macdailynews.com",
+    "published_at": null,
+    "source_family_id": "macdailynews.com",
     "kind": "other",
     "license_notes": "Retrieved public text; evidence excerpts only are exposed."
    }
@@ -41712,6 +43834,26 @@
    }
   },
   {
+   "id": "ev_e51bbca0ff194d10a90a40b18820c17d",
+   "source_id": "src_d84da2a20aca4217b18c531ab35109dc",
+   "span": "Vietnam: Existing operations in Haiphong, with plans to open facilities in Northern vietnam",
+   "support_type": "supports",
+   "locator": "retrieved document character offsets; chars 2882:2973",
+   "extracted_at": "2026-09-06T17:04:49.328413Z",
+   "source": {
+    "id": "src_d84da2a20aca4217b18c531ab35109dc",
+    "url": "https://chaitanyaontech.substack.com/p/foxconn-pegatron-and-wistron-the",
+    "retrieved_at": "2026-09-06T17:04:49.202731Z",
+    "content_hash": "aaa23e639afa793202517bd2bcb0efd00e46aa4a2c9ac9347c5eda42da3dbaee",
+    "title": "Foxconn, Pegatron & Wistron: The iPhone Factories You Don\u2019t Know about",
+    "publisher": "chaitanyaontech.substack.com",
+    "published_at": null,
+    "source_family_id": "chaitanyaontech.substack.com",
+    "kind": "other",
+    "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+   }
+  },
+  {
    "id": "ev_57015422f7424f6fa8c97a81a4e31efc",
    "source_id": "src_0f9edba565d64aaa8ffc468dbc139262",
    "span": "denser packaging for chips including the new A19 Pro processor",
@@ -42207,6 +44349,26 @@
     "publisher": "apple.fandom.com",
     "published_at": null,
     "source_family_id": "apple.fandom.com",
+    "kind": "other",
+    "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+   }
+  },
+  {
+   "id": "ev_306d700ac0e14912a3ddb34b1ab0038f",
+   "source_id": "src_c124cd04dc4f424a8f1326261d420f3d",
+   "span": "The lineup includes the iPhone 17 Pro, assembled at Foxconn and Tata-run Pegatron units",
+   "support_type": "supports",
+   "locator": "retrieved document character offsets; chars 1092:1179",
+   "extracted_at": "2026-09-06T17:04:48.990541Z",
+   "source": {
+    "id": "src_c124cd04dc4f424a8f1326261d420f3d",
+    "url": "https://www.moneycontrol.com/news/business/apple-s-iphone-17-series-production-in-india-goes-full-throttle-local-factories-gear-up-to-meet-us-europe-demand-13534623.html",
+    "retrieved_at": "2026-09-06T17:04:48.796978Z",
+    "content_hash": "dacce670342a374d0bad8a66810470dd5120596bc500dcbfa2034c4615228abc",
+    "title": "Apple\u2019s iPhone 17 series production in India goes full throttle; local factories gear up to meet US, Europe demand",
+    "publisher": "www.moneycontrol.com",
+    "published_at": null,
+    "source_family_id": "www.moneycontrol.com",
     "kind": "other",
     "license_notes": "Retrieved public text; evidence excerpts only are exposed."
    }
@@ -42892,6 +45054,26 @@
    }
   },
   {
+   "id": "ev_385a8d4846c64f2fbaa48cebfc70bb2c",
+   "source_id": "src_c124cd04dc4f424a8f1326261d420f3d",
+   "span": "The lineup includes the iPhone 17 Pro, assembled at Foxconn and Tata-run Pegatron units",
+   "support_type": "supports",
+   "locator": "retrieved document character offsets; chars 1092:1179",
+   "extracted_at": "2026-09-06T17:04:48.935924Z",
+   "source": {
+    "id": "src_c124cd04dc4f424a8f1326261d420f3d",
+    "url": "https://www.moneycontrol.com/news/business/apple-s-iphone-17-series-production-in-india-goes-full-throttle-local-factories-gear-up-to-meet-us-europe-demand-13534623.html",
+    "retrieved_at": "2026-09-06T17:04:48.796978Z",
+    "content_hash": "dacce670342a374d0bad8a66810470dd5120596bc500dcbfa2034c4615228abc",
+    "title": "Apple\u2019s iPhone 17 series production in India goes full throttle; local factories gear up to meet US, Europe demand",
+    "publisher": "www.moneycontrol.com",
+    "published_at": null,
+    "source_family_id": "www.moneycontrol.com",
+    "kind": "other",
+    "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+   }
+  },
+  {
    "id": "ev_56cf0fff8ffe4a6fa5959e0309e69b01",
    "source_id": "src_0f9edba565d64aaa8ffc468dbc139262",
    "span": "The teardown also confirmed that the camera module is easier to access than in previous Pro models",
@@ -43007,6 +45189,26 @@
     "publisher": "en.wikipedia.org",
     "published_at": null,
     "source_family_id": "en.wikipedia.org",
+    "kind": "other",
+    "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+   }
+  },
+  {
+   "id": "ev_bc526c5a247149d28b897d66feb19b21",
+   "source_id": "src_8e32209286964790a5f340759a80c415",
+   "span": "For the first time, all four iPhone 17 models will be manufactured in India",
+   "support_type": "supports",
+   "locator": "retrieved document character offsets; chars 326:401",
+   "extracted_at": "2026-09-06T17:04:25.779197Z",
+   "source": {
+    "id": "src_8e32209286964790a5f340759a80c415",
+    "url": "https://www.macrumors.com/2025/08/19/apple-iphone-17-manufacturing-expands-india",
+    "retrieved_at": "2026-09-06T17:04:25.682711Z",
+    "content_hash": "dd314afe52021d9d69a81512c522b57bf444e2c84b775951756cd6675ab649fa",
+    "title": "Apple's iPhone 17 Manufacturing Expands Across Five Indian Plants - MacRumors",
+    "publisher": "www.macrumors.com",
+    "published_at": null,
+    "source_family_id": "www.macrumors.com",
     "kind": "other",
     "license_notes": "Retrieved public text; evidence excerpts only are exposed."
    }
@@ -44090,6 +46292,18 @@
    "license_notes": "Retrieved public text; evidence excerpts only are exposed."
   },
   {
+   "id": "src_13e9cbc9ade7408a806b8b0f80973f57",
+   "url": "https://macdailynews.com/2025/08/20/foxconn-boosts-hiring-in-china-for-iphone-17-series-assembly",
+   "retrieved_at": "2026-09-06T17:05:24.502385Z",
+   "content_hash": "b05e983984e3deb978bdfbee401afa6888f446514cca586301874fbf15abb7af",
+   "title": "Foxconn boosts hiring in China for iPhone 17 series assembly - MacDailyNews",
+   "publisher": "macdailynews.com",
+   "published_at": null,
+   "source_family_id": "macdailynews.com",
+   "kind": "other",
+   "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+  },
+  {
    "id": "src_14ca853e435445a9bc5379258995c4ef",
    "url": "https://www.lgcorp.com/media/release/27138",
    "retrieved_at": "2026-09-06T14:47:38.202857Z",
@@ -44414,6 +46628,18 @@
    "license_notes": "Retrieved public text; evidence excerpts only are exposed."
   },
   {
+   "id": "src_5e66778d11344279a3e3698bc2860f6f",
+   "url": "https://appleinsider.com/articles/26/04/22/where-apple-products-are-assembled-and-where-their-parts-come-from",
+   "retrieved_at": "2026-09-06T17:05:23.391502Z",
+   "content_hash": "c61408e60ab2a1fbc80d5bddd8a50a43c528097539637d2c0b6cf651c37464e8",
+   "title": "Where Apple products are assembled, and where parts come from",
+   "publisher": "appleinsider.com",
+   "published_at": null,
+   "source_family_id": "appleinsider.com",
+   "kind": "other",
+   "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+  },
+  {
    "id": "src_5ecaf2b9cd31491f8e6b95b49f795fa5",
    "url": "https://www.croma.com/unboxed/apple-iphone-17-series-use-sony-sensors-for-all-models",
    "retrieved_at": "2026-09-06T14:49:41.495641Z",
@@ -44606,6 +46832,18 @@
    "license_notes": "Retrieved public text; evidence excerpts only are exposed."
   },
   {
+   "id": "src_89eae994801e4239986fc7a2e5de7fb0",
+   "url": "http://markets.chroniclejournal.com/chroniclejournal/article/marketminute-2026-3-10-silicon-south-apple-hits-25-manufacturing-milestone-in-india-as-iphone-17-pro-production-scales-up",
+   "retrieved_at": "2026-09-06T17:04:47.442592Z",
+   "content_hash": "d8c2fced12a992a1fcd6f9d1e179db361036d1ab92b9e7934089714cf300f477",
+   "title": "User | chroniclejournal.com - Silicon South: Apple Hits 25% Manufacturing Milestone in India as iPhone 17 Pro Production Scales Up",
+   "publisher": "markets.chroniclejournal.com",
+   "published_at": null,
+   "source_family_id": "markets.chroniclejournal.com",
+   "kind": "other",
+   "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+  },
+  {
    "id": "src_8a5586a4eaac4766913bc3e0cf21daf7",
    "url": "https://newsroom.st.com/media-center/press-item.html/c3252.html",
    "retrieved_at": "2026-09-06T14:56:41.787593Z",
@@ -44626,6 +46864,18 @@
    "publisher": "www.commoncriteriaportal.org",
    "published_at": null,
    "source_family_id": "www.commoncriteriaportal.org",
+   "kind": "other",
+   "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+  },
+  {
+   "id": "src_8e32209286964790a5f340759a80c415",
+   "url": "https://www.macrumors.com/2025/08/19/apple-iphone-17-manufacturing-expands-india",
+   "retrieved_at": "2026-09-06T17:04:25.682711Z",
+   "content_hash": "dd314afe52021d9d69a81512c522b57bf444e2c84b775951756cd6675ab649fa",
+   "title": "Apple's iPhone 17 Manufacturing Expands Across Five Indian Plants - MacRumors",
+   "publisher": "www.macrumors.com",
+   "published_at": null,
+   "source_family_id": "www.macrumors.com",
    "kind": "other",
    "license_notes": "Retrieved public text; evidence excerpts only are exposed."
   },
@@ -44954,6 +47204,18 @@
    "license_notes": "Retrieved public text; evidence excerpts only are exposed."
   },
   {
+   "id": "src_c124cd04dc4f424a8f1326261d420f3d",
+   "url": "https://www.moneycontrol.com/news/business/apple-s-iphone-17-series-production-in-india-goes-full-throttle-local-factories-gear-up-to-meet-us-europe-demand-13534623.html",
+   "retrieved_at": "2026-09-06T17:04:48.796978Z",
+   "content_hash": "dacce670342a374d0bad8a66810470dd5120596bc500dcbfa2034c4615228abc",
+   "title": "Apple\u2019s iPhone 17 series production in India goes full throttle; local factories gear up to meet US, Europe demand",
+   "publisher": "www.moneycontrol.com",
+   "published_at": null,
+   "source_family_id": "www.moneycontrol.com",
+   "kind": "other",
+   "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+  },
+  {
    "id": "src_c7baca6b0680482b80aae74cc01e9cb8",
    "url": "https://chipwise.tech/our-portfolio/apple-a19pro-die-shot-analysis",
    "retrieved_at": "2026-09-06T14:23:47.996223Z",
@@ -45082,6 +47344,18 @@
    "publisher": "pr.tsmc.com",
    "published_at": null,
    "source_family_id": "pr.tsmc.com",
+   "kind": "other",
+   "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+  },
+  {
+   "id": "src_d84da2a20aca4217b18c531ab35109dc",
+   "url": "https://chaitanyaontech.substack.com/p/foxconn-pegatron-and-wistron-the",
+   "retrieved_at": "2026-09-06T17:04:49.202731Z",
+   "content_hash": "aaa23e639afa793202517bd2bcb0efd00e46aa4a2c9ac9347c5eda42da3dbaee",
+   "title": "Foxconn, Pegatron & Wistron: The iPhone Factories You Don\u2019t Know about",
+   "publisher": "chaitanyaontech.substack.com",
+   "published_at": null,
+   "source_family_id": "chaitanyaontech.substack.com",
    "kind": "other",
    "license_notes": "Retrieved public text; evidence excerpts only are exposed."
   },
@@ -45266,5 +47540,5 @@
    "license_notes": "Retrieved public text; evidence excerpts only are exposed."
   }
  ],
- "exported_at": "2026-09-06T15:03:12.739720Z"
+ "exported_at": "2026-09-06T17:06:40.066191Z"
 }

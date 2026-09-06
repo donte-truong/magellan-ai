@@ -1,16 +1,16 @@
 {
  "graph_id": "gph_cc4d2242e894451c8391965c2d298cdd",
  "product": "iPhone 17 Pro",
- "generated_at": "2026-09-06T15:03:15Z",
+ "generated_at": "2026-09-06T17:06:40Z",
  "stats": {
-  "node_count": 160,
-  "edge_count": 210,
-  "max_tier": 4,
+  "node_count": 170,
+  "edge_count": 222,
+  "max_tier": 3,
   "by_support_label": {
-   "directly_supported": 210
+   "directly_supported": 222
   }
  },
- "sites": 21,
+ "sites": 23,
  "runs": [
   {
    "id": "run_5854e703dc6b4bff912c2362eb832451",

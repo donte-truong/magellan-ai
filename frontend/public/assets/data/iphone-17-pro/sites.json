@@ -122,6 +122,23 @@
      "sources": [
       "https://www.apple.com/newsroom/2025/09/apple-unveils-iphone-17-pro-and-iphone-17-pro-max"
      ]
+    },
+    {
+     "node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+     "label": "iPhone 17 Pro",
+     "kind": "product",
+     "predicate": "MANUFACTURES",
+     "scope": "product",
+     "share": 0.0667,
+     "share_basis": "uniform_prior",
+     "claim_ids": [
+      "clm_da6a3ec920f5499babfecfe85897f7c7",
+      "clm_0bbc61307b2b4c93a65b4090709f6c91"
+     ],
+     "sources": [
+      "https://www.macrumors.com/2025/08/19/apple-iphone-17-manufacturing-expands-india",
+      "http://markets.chroniclejournal.com/chroniclejournal/article/marketminute-2026-3-10-silicon-south-apple-hits-25-manufacturing-milestone-in-india-as-iphone-17-pro-production-scales-up"
+     ]
     }
    ]
   },
@@ -773,9 +790,148 @@
    ],
    "operators": [],
    "makes": []
+  },
+  {
+   "node_id": "nd_f1d462f9dc284b66a5834aba37b0637e",
+   "kind": "facility",
+   "role": "plant",
+   "label": "Chennai facility",
+   "country_iso2": "IN",
+   "admin1": "Tamil Nadu",
+   "city": "Chennai",
+   "lat": 13.08,
+   "lon": 80.27,
+   "precision": "city",
+   "geocoding": {
+    "method": "gazetteer_v1",
+    "precision": "city",
+    "note": "Approximate centre from a reference gazetteer; not a facility address."
+   },
+   "location_claim_ids": [
+    "clm_23a42f7a6f8442cd9b83a45bed3dbc44"
+   ],
+   "location_sources": [
+    "https://chaitanyaontech.substack.com/p/foxconn-pegatron-and-wistron-the"
+   ],
+   "operators": [
+    {
+     "node_id": "nd_ba281be7b763405f91f39433d02b49e6",
+     "label": "Pegatron"
+    }
+   ],
+   "makes": [
+    {
+     "node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+     "label": "iPhone 17 Pro",
+     "kind": "product",
+     "predicate": "MANUFACTURES",
+     "scope": "product",
+     "share": 0.0667,
+     "share_basis": "uniform_prior",
+     "claim_ids": [
+      "clm_b77e2423939f479bbeb7f96c6b9b5480"
+     ],
+     "sources": [
+      "https://www.moneycontrol.com/news/business/apple-s-iphone-17-series-production-in-india-goes-full-throttle-local-factories-gear-up-to-meet-us-europe-demand-13534623.html"
+     ],
+     "via_organization_id": "nd_ba281be7b763405f91f39433d02b49e6"
+    }
+   ]
+  },
+  {
+   "node_id": "nd_cad91e279cb94f0695a52dcb2777aec7",
+   "kind": "facility",
+   "role": "plant",
+   "label": "TSMC (Taiwan)",
+   "country_iso2": "TW",
+   "admin1": null,
+   "city": null,
+   "lat": 23.7,
+   "lon": 121.0,
+   "precision": "country",
+   "geocoding": {
+    "method": "gazetteer_v1",
+    "precision": "country",
+    "note": "Approximate centre from a reference gazetteer; not a facility address."
+   },
+   "location_claim_ids": [
+    "clm_7842ede845af4980a769dc3bd3280385"
+   ],
+   "location_sources": [
+    "https://appleinsider.com/articles/26/04/22/where-apple-products-are-assembled-and-where-their-parts-come-from"
+   ],
+   "operators": [],
+   "makes": []
   }
  ],
  "distributions": [
+  {
+   "target_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+   "target_label": "iPhone 17 Pro",
+   "family": "makers",
+   "entries": [
+    {
+     "node_id": "nd_4e9163e3198e4f75ae51151c3a8c94aa",
+     "label": "Apple",
+     "kind": "organization",
+     "predicate": "MANUFACTURES",
+     "scope": "product",
+     "share": null,
+     "share_basis": null,
+     "share_estimate": 0.0667,
+     "estimate_basis": "uniform_prior",
+     "claim_ids": [
+      "clm_da6a3ec920f5499babfecfe85897f7c7",
+      "clm_0bbc61307b2b4c93a65b4090709f6c91"
+     ]
+    },
+    {
+     "node_id": "nd_77bc9b681d964d5081f399a69261dcf1",
+     "label": "Foxconn",
+     "kind": "organization",
+     "predicate": "MANUFACTURES",
+     "scope": "product",
+     "share": null,
+     "share_basis": null,
+     "share_estimate": 0.0667,
+     "estimate_basis": "uniform_prior",
+     "claim_ids": [
+      "clm_d5f0b62955e1470ea4c5da5a95c12d5f",
+      "clm_955c9ea1f82c49a9b909d65221c673d8"
+     ]
+    },
+    {
+     "node_id": "nd_ba281be7b763405f91f39433d02b49e6",
+     "label": "Pegatron",
+     "kind": "organization",
+     "predicate": "MANUFACTURES",
+     "scope": "product",
+     "share": null,
+     "share_basis": null,
+     "share_estimate": 0.0667,
+     "estimate_basis": "uniform_prior",
+     "claim_ids": [
+      "clm_b77e2423939f479bbeb7f96c6b9b5480"
+     ]
+    },
+    {
+     "node_id": "nd_dd2d7b258dff40e896281d82c39d2ed5",
+     "label": "Foxconn Zhengzhou plant",
+     "kind": "facility",
+     "predicate": "MANUFACTURES",
+     "scope": "product",
+     "share": 0.8,
+     "share_basis": "stated",
+     "share_estimate": null,
+     "estimate_basis": null,
+     "claim_ids": [
+      "clm_85ba7885df284194a10449f3f772faf5"
+     ]
+    }
+   ],
+   "stated_total": 0.8,
+   "unassigned": 0.2
+  },
   {
    "target_node_id": "nd_a10d17029d1e4e4fb9d399a4d3b4b497",
    "target_label": "A19 Pro",
