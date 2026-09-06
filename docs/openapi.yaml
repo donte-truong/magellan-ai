@@ -388,6 +388,46 @@ paths:
                         years: { type: array, items: { type: integer } }
                         stages: { type: array, items: { type: string } }
 
+  # ------------------------------------------------------------ BOM extension
+  /bom/decompose:
+    post:
+      tags: [bom]
+      operationId: decomposeBillOfMaterials
+      summary: Deconstruct a product's bill of materials from public evidence
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RunCreate' }
+      responses:
+        '202': { description: 'Accepted; poll bom_url or subscribe to events_url', content: { application/json: { schema: { $ref: '#/components/schemas/Run' } } } }
+        '200': { description: Idempotent replay, content: { application/json: { schema: { $ref: '#/components/schemas/Run' } } } }
+        '400': { $ref: '#/components/responses/Error' }
+        '409': { $ref: '#/components/responses/Error' }
+        '429': { $ref: '#/components/responses/Error' }
+  /runs/{run_id}/bom:
+    get:
+      tags: [bom]
+      operationId: getBillOfMaterials
+      summary: Evidence-backed BOM rows for a research run
+      parameters:
+        - { $ref: '#/components/parameters/RunId' }
+        - { $ref: '#/components/parameters/Revision' }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/BOM' } } } }
+        '404': { $ref: '#/components/responses/Error' }
+  /graphs/{graph_id}/enrichments/{enrichment_id}/events:
+    get:
+      tags: [enrichments]
+      operationId: streamEnrichmentEvents
+      parameters:
+        - { $ref: '#/components/parameters/GraphId' }
+        - { name: enrichment_id, in: path, required: true, schema: { type: string } }
+        - { name: Last-Event-ID, in: header, schema: { type: string } }
+      responses:
+        '200': { description: 'SSE job.status, node.updated, job.completed; see API_SPEC §3.3', content: { text/event-stream: { schema: { type: string } } } }
+
   # ------------------------------------------------------------ market
   /market/instruments:
     get:
@@ -914,6 +954,8 @@ components:
         stop_reason: { type: [string, 'null'] }
         open_questions: { type: array, items: { type: string } }
         events_url: { type: string }
+        bom_url: { type: string, description: 'Poll for the evidence-backed BOM view' }
+        provider: { type: string, description: 'curated_fixture or tavily_openai; separate from replay mode' }
         created_at: { type: string, format: date-time }
         completed_at: { type: [string, 'null'], format: date-time }
 
@@ -1325,6 +1367,42 @@ components:
         hhi: { type: number }
         top_share: { type: number }
         source_id: { type: string }
+        method: { $ref: '#/components/schemas/Method' }
+        data_quality: { $ref: '#/components/schemas/DataQuality' }
+
+    # ---------------- BOM extension
+    BOMItem:
+      type: object
+      required: [node_id, name, kind, tier, parent_node_id, edge_id, support_label, scope, claim_ids, evidence]
+      properties:
+        node_id: { type: string }
+        name: { type: string }
+        kind: { $ref: '#/components/schemas/NodeKind' }
+        tier: { type: integer }
+        parent_node_id: { type: string }
+        edge_id: { type: string }
+        quantity: { type: [number, 'null'] }
+        unit: { type: [string, 'null'] }
+        quantity_support_label:
+          type: [string, 'null']
+          description: 'Provenance of a known quantity, independently of relationship support'
+        support_label: { $ref: '#/components/schemas/SupportLabel' }
+        scope: { $ref: '#/components/schemas/Scope' }
+        claim_ids: { type: array, items: { type: string } }
+        evidence: { type: array, items: { $ref: '#/components/schemas/Evidence' } }
+    BOM:
+      type: object
+      required: [run_id, graph_id, revision, product, status, mode, provider, items, open_questions, method, data_quality]
+      properties:
+        run_id: { type: string }
+        graph_id: { type: string }
+        revision: { type: integer }
+        product: { type: string }
+        status: { $ref: '#/components/schemas/RunStatus' }
+        mode: { type: string, enum: [live, replay] }
+        provider: { type: string }
+        items: { type: array, items: { $ref: '#/components/schemas/BOMItem' } }
+        open_questions: { type: array, items: { type: string } }
         method: { $ref: '#/components/schemas/Method' }
         data_quality: { $ref: '#/components/schemas/DataQuality' }
 
