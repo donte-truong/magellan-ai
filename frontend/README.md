@@ -44,6 +44,8 @@ The overlay is a dependency network. A geographic basemap, uploads, graph editin
 
 Next.js owns the application's build pipeline. Vite powers the test pipeline through `vite.config.ts`. Fonts are bundled locally, and the network visualization is loaded when needed.
 
+Project media lives in [public/assets](public/assets/README.md), with separate directories for 3D models, animations, videos, and images. Reference these files using `/assets/…` URLs.
+
 `src/components` contains the input, BOM, network, and evidence views. `src/lib/api.ts` is the typed browser client; `proxy.ts` implements the server boundary; `store.ts` owns exploration state; `use-research.ts` synchronizes API snapshots; `graph-layout.ts` keeps API edge direction intact while laying out dependencies.
 
 Research updates use sequential polling with bounded retry delays. Each refresh reads the run and graph, then requests the BOM at that graph revision. Inspections and exports pin the same revision. Navigation aborts outstanding reads; a generation counter prevents late responses from replacing another exploration. A graph revision change applies a fresh layout; manual node positions last for the current view and revision.
