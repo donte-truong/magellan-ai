@@ -5,6 +5,7 @@ import * as THREE from "three";
 import { suppliers } from "@/lib/demo-data";
 import { useDemo } from "@/lib/demo-store";
 import { disposeScene } from "@/lib/scenes/phone";
+import { layoutGlobeLabels, type MapLabelPoint } from "@/lib/scenes/globe-labels";
 
 const radius = 2.15;
 function position(lat: number, lon: number, r = radius) {
@@ -35,6 +36,7 @@ function route(from: THREE.Vector3, to: THREE.Vector3) {
 export default function GlobeScene() {
   const host = useRef<HTMLDivElement>(null);
   const pins = useRef<(HTMLButtonElement | null)[]>([]);
+  const leaders = useRef<(SVGPathElement | null)[]>([]);
   const control = useRef({ zoom: 1, reset: 0 });
   const [failed, setFailed] = useState(false);
   const selected = useDemo((s) => s.supplier);
@@ -65,8 +67,8 @@ export default function GlobeScene() {
     const surface = new THREE.Mesh(
       new THREE.SphereGeometry(radius, 80, 64),
       new THREE.MeshPhongMaterial({
-        color: "#071329",
-        emissive: "#040b1c",
+        color: "#050e20",
+        emissive: "#020818",
         shininess: 12,
         specular: "#24487a",
       }),
@@ -121,13 +123,13 @@ export default function GlobeScene() {
     const ctx = pointCanvas.getContext("2d")!;
     const gradient = ctx.createRadialGradient(16, 16, 0, 16, 16, 16);
     gradient.addColorStop(0, "#ffffff");
-    gradient.addColorStop(0.45, "#ffffff");
+    gradient.addColorStop(0.65, "#ffffff");
     gradient.addColorStop(1, "#ffffff00");
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, 32, 32);
     const dot = new THREE.CanvasTexture(pointCanvas);
     let mapVersion = 0;
-    fetch("/assets/models/world-points.json", { signal: abort.signal })
+    const pointsLoaded = fetch("/assets/models/world-points.json", { signal: abort.signal })
       .then((r) => {
         if (!r.ok) throw new Error("Map asset unavailable");
         return r.json() as Promise<[number, number][]>;
@@ -142,20 +144,67 @@ export default function GlobeScene() {
           new THREE.Points(
             geometry,
             new THREE.PointsMaterial({
-              color: "#6f9fc8",
-              size: 0.023,
+              color: "#addcff",
+              size: 0.033,
               map: dot,
               transparent: true,
-              opacity: 0.8,
+              opacity: 0.96,
               depthWrite: false,
               alphaTest: 0.05,
             }),
           ),
         );
-      })
-      .catch(() => {
-        if (!abort.signal.aborted) setFailed(true);
       });
+
+    const coastlinesLoaded = fetch("/assets/models/world-coastlines.json", {
+      signal: abort.signal,
+    })
+      .then((response) => {
+        if (!response.ok) throw new Error("Coastline asset unavailable");
+        return response.json() as Promise<[number, number][][]>;
+      })
+      .then((rings) => {
+        if (abort.signal.aborted) return;
+        // One draw call for all shorelines. Subdivide long segments so they follow
+        // the sphere instead of cutting through its surface near the horizon.
+        const vertices: THREE.Vector3[] = [];
+        for (const ring of rings) {
+          for (let i = 1; i < ring.length; i++) {
+            const a = position(...ring[i - 1], 1);
+            const b = position(...ring[i], 1);
+            const steps = Math.max(1, Math.ceil(a.angleTo(b) / 0.012));
+            for (let step = 0; step < steps; step++) {
+              for (const t of [step / steps, (step + 1) / steps]) {
+                vertices.push(
+                  a
+                    .clone()
+                    .lerp(b, t)
+                    .normalize()
+                    .multiplyScalar(radius + 0.012),
+                );
+              }
+            }
+          }
+        }
+        earth.add(
+          new THREE.LineSegments(
+            new THREE.BufferGeometry().setFromPoints(vertices),
+            new THREE.LineBasicMaterial({
+              color: "#78bce9",
+              transparent: true,
+              opacity: 0.65,
+              depthWrite: false,
+            }),
+          ),
+        );
+        mapVersion++;
+      });
+    // Either layer can still provide a usable map if the other fails to load.
+    void Promise.allSettled([pointsLoaded, coastlinesLoaded]).then((results) => {
+      if (!abort.signal.aborted && results.every((result) => result.status === "rejected")) {
+        setFailed(true);
+      }
+    });
 
     const anchor = position(suppliers[0].lat, suppliers[0].lon, radius + 0.025);
     const arcs = suppliers.slice(1).map((supplier) => {
@@ -219,6 +268,7 @@ export default function GlobeScene() {
 
     let width = 1,
       height = 1;
+    const labelBounds = { left: 12, right: 1, top: 30, bottom: 1, width: 164, height: 74 };
     const resize = () => {
       width = container.clientWidth;
       height = container.clientHeight;
@@ -226,6 +276,14 @@ export default function GlobeScene() {
       camera.aspect = width / height;
       camera.updateProjectionMatrix();
       renderer.setSize(width, height);
+      const rect = container.getBoundingClientRect();
+      const compact = window.innerWidth <= 760;
+      labelBounds.left = Math.max(12, 12 - rect.left);
+      labelBounds.right = Math.min(width - 12, window.innerWidth - rect.left - 12);
+      labelBounds.top = compact ? 36 : height * 0.18;
+      labelBounds.bottom = height * 0.8;
+      labelBounds.width = compact ? 142 : 164;
+      labelBounds.height = compact ? 68 : 74;
     };
     const observer = new ResizeObserver(resize);
     observer.observe(container);
@@ -257,6 +315,9 @@ export default function GlobeScene() {
     renderer.domElement.addEventListener("pointercancel", up);
     const projected = new THREE.Vector3(),
       worldPosition = new THREE.Vector3();
+    const labels = pins.current.map((pin) =>
+      pin?.querySelector<HTMLElement>(".globe-location-card"),
+    );
     let renderedSnapshot = "";
     const render = (time: number) => {
       frame = requestAnimationFrame(render);
@@ -302,6 +363,7 @@ export default function GlobeScene() {
         arc.trail.visible = active;
         arc.trail.position.copy(arc.curve.getPointAt((elapsed * 0.07 + i * 0.17) % 1));
       });
+      const labelPoints: MapLabelPoint[] = [];
       markers.forEach((entry, i) => {
         entry.ring.scale.setScalar(1 + (motion ? (Math.sin(elapsed * 2 + i) + 1) * 0.3 : 0));
         worldPosition.copy(entry.location).applyMatrix4(earth.matrixWorld);
@@ -316,8 +378,30 @@ export default function GlobeScene() {
           pin.style.visibility = visible ? "visible" : "hidden";
           pin.style.opacity = visible ? "1" : "0";
           pin.tabIndex = visible ? 0 : -1;
+          if (labels[i]) labels[i]!.style.visibility = "hidden";
+          if (leaders.current[i]) leaders.current[i]!.style.visibility = "hidden";
+          if (visible && (!state.supplier || state.supplier === suppliers[i].id)) {
+            labelPoints.push({
+              id: suppliers[i].id,
+              x: (projected.x * 0.5 + 0.5) * width,
+              y: (-projected.y * 0.5 + 0.5) * height,
+            });
+          }
         }
       });
+      for (const label of layoutGlobeLabels(labelPoints, labelBounds)) {
+        const index = suppliers.findIndex((supplier) => supplier.id === label.id);
+        const card = labels[index];
+        const leader = leaders.current[index];
+        if (!card || !leader) continue;
+        card.style.left = `${label.left - label.x + 13.5}px`;
+        card.style.top = `${label.top - label.y + 13.5}px`;
+        card.style.visibility = "visible";
+        const edgeX = label.left + (label.left < label.x ? labelBounds.width : 0);
+        const edgeY = label.top + labelBounds.height / 2;
+        leader.setAttribute("d", `M${label.x},${label.y} L${edgeX},${edgeY}`);
+        leader.style.visibility = "visible";
+      }
       renderer.render(scene, camera);
     };
     const lost = (event: Event) => {
@@ -345,6 +429,21 @@ export default function GlobeScene() {
     <div className="globe-stage" aria-label="3D supplier globe">
       <div className="globe-atmosphere" />
       <div ref={host} className="globe-canvas">
+        <svg
+          className="globe-label-leaders"
+          aria-hidden="true"
+          style={failed ? { display: "none" } : undefined}
+        >
+          {suppliers.map((supplier, index) => (
+            <path
+              key={supplier.id}
+              ref={(el) => {
+                leaders.current[index] = el;
+              }}
+              stroke={supplier.color}
+            />
+          ))}
+        </svg>
         {!failed &&
           suppliers.map((supplier, index) => (
             <button
@@ -355,12 +454,16 @@ export default function GlobeScene() {
               className={`globe-pin ${selected === supplier.id ? "selected" : ""}`}
               style={{ "--pin-color": supplier.color } as React.CSSProperties}
               aria-label={`Locate ${supplier.name} in ${supplier.country}`}
+              aria-pressed={selected === supplier.id}
               onClick={() => useDemo.getState().selectSupplier(supplier.id)}
             >
               <i />
-              <span>
-                {supplier.name}
-                <small>{supplier.city}</small>
+              <span className="globe-location-card">
+                <small>
+                  {supplier.city} · {supplier.code}
+                </small>
+                <strong>{supplier.name}</strong>
+                <span>{supplier.component}</span>
               </span>
             </button>
           ))}

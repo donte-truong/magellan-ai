@@ -464,7 +464,9 @@ function NetworkStage({ headingRef }: HeadingProps) {
   const [exported, setExported] = useState(false);
   const supplier = suppliers.find((s) => s.id === selected);
   const visible = suppliers.filter((s) =>
-    `${s.name} ${s.country} ${s.component}`.toLowerCase().includes(query.toLowerCase()),
+    `${s.name} ${s.city} ${s.country} ${s.component} ${s.category}`
+      .toLowerCase()
+      .includes(query.toLowerCase()),
   );
   const exportGraph = () => {
     const url = URL.createObjectURL(
@@ -526,7 +528,9 @@ function NetworkStage({ headingRef }: HeadingProps) {
               <span className="supplier-dot" />
               <span className="supplier-name">
                 {item.name}
-                <small>{item.component}</small>
+                <small>
+                  <span className="supplier-city">{item.city}</span> · {item.component}
+                </small>
               </span>
               <span className="country-code">{item.code}</span>
               <ChevronRight size={13} />
@@ -573,6 +577,20 @@ function NetworkStage({ headingRef }: HeadingProps) {
             <span style={{ background: supplier.color }} />
             {supplier.city}, {supplier.country}
           </p>
+          <dl className="location-facts">
+            <div>
+              <dt>Location type</dt>
+              <dd>Company headquarters</dd>
+            </div>
+            <div>
+              <dt>Coordinates</dt>
+              <dd>
+                {Math.abs(supplier.lat).toFixed(2)}° {supplier.lat >= 0 ? "N" : "S"}
+                {" / "}
+                {Math.abs(supplier.lon).toFixed(2)}° {supplier.lon >= 0 ? "E" : "W"}
+              </dd>
+            </div>
+          </dl>
           <div className="inspector-component">
             <Cpu size={18} />
             <div>

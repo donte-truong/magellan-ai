@@ -8,3 +8,4 @@ coverage
 *.tsbuildinfo
 # Generated, compact geographic point data.
 public/assets/models/world-points.json
+public/assets/models/world-coastlines.json
