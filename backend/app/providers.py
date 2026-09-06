@@ -18,6 +18,7 @@ from app.resolution import (
     locate_span,
     normalized_predicate,
     select_passages,
+    share_stated,
     static_rejection,
     tidy_label,
 )
@@ -1101,7 +1102,11 @@ class LiveProvider:
                     findings[i].rationale = f"{findings[i].rationale} | verifier: {reason}"
                 if not judgment or not judgment.quantity_supported:
                     findings[i].quantity = findings[i].unit = None
-                if not judgment or not judgment.share_supported:
+                if (
+                    not judgment
+                    or not judgment.share_supported
+                    or not share_stated(findings[i].span, findings[i].share)
+                ):
                     findings[i].share = None
         return Document(url, title or url, urlsplit(url).hostname or "", body, findings=findings)
 

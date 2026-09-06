@@ -32,6 +32,7 @@ from app.resolution import (
     record_identity,
     resolution_candidates,
     resolve_entity,
+    share_stated,
     static_rejection,
 )
 from app.schemas import RunLimits
@@ -1541,6 +1542,8 @@ class Worker:
                     finding.predicate, finding.kind, object_kind
                 )
                 finding.scope_type = normalized_scope(finding.predicate, finding.scope_type)
+                if not share_stated(finding.span, finding.share):
+                    finding.share = None
                 rejected = finding.rejection
                 if finding.span not in document.body:
                     rejected = "span_not_found"
@@ -1979,11 +1982,15 @@ class Worker:
                                 None,
                             )
                             if country is None:
+                                code = layer["country_iso2"]
                                 country = make_node(
                                     "geography",
-                                    layer["country_iso2"],
-                                    external_ids={"iso2": layer["country_iso2"]},
+                                    self.gazetteer.countries.get(code, {}).get("name", code),
                                     status="directly_supported",
+                                    **(
+                                        self.place_fields(code, code)
+                                        or {"external_ids": {"iso2": code}}
+                                    ),
                                 )
                                 graph["nodes"].append(country)
                                 changed.append(country)

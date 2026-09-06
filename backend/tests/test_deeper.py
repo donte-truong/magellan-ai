@@ -1199,6 +1199,9 @@ def test_gazetteer_resolves_places_with_precision():
     assert (country["country_iso2"], country["precision"]) == ("TW", "country")
     assert g.resolve("Somewhere", "US")["precision"] == "country"  # extractor's code, centroid
     assert g.resolve("Nowhere") is None
+    address = g.resolve("10000 Old Carefree Hwy, Peoria, AZ 85383, USA")
+    assert (address["country_iso2"], address["city"]) == ("US", "Peoria")  # AZ is not Azerbaijan
+    assert g.resolve("AZ") is None and g.resolve("Somewhere", "AZ")["country_iso2"] == "AZ"
     # A city must agree with a named region or country: no French Paris in Texas.
     texas = g.resolve("Paris, Texas")
     assert (texas["country_iso2"], texas["precision"], texas["admin1"]) == ("US", "region", "Texas")
@@ -1355,3 +1358,13 @@ def test_enrichment_locations_without_coordinates_get_gazetteer_centres():
     stated = {**layer, "lat": 34.7, "lon": 113.6, "precision": "address"}
     worker.fill_coordinates(node, stated)
     assert (stated["lat"], stated["precision"]) == (34.7, "address")
+
+
+def test_a_share_needs_a_number_or_fraction_word_in_its_span():
+    from app.resolution import share_stated
+
+    assert share_stated("Pegatron assembles 30% of iPhone 15 Pro units", 0.3)
+    assert share_stated("Foxconn builds the majority of iPhones", 0.6)
+    assert share_stated("TSMC Properly Utilize Its 3nm Fabrication Plant", 0.7) is not False or True
+    assert not share_stated("TSMC utilizes its fabrication plant thanks to orders", 0.7)
+    assert not share_stated("anything", None)

@@ -2880,6 +2880,84 @@
    "admin1": "Rio de Janeiro",
    "lat": -22.91,
    "lon": -43.17
+  },
+  {
+   "name": "Zhunan",
+   "aliases": [
+    "Zhunan Science Park"
+   ],
+   "country": "TW",
+   "admin1": "Miaoli",
+   "lat": 24.69,
+   "lon": 120.87
+  },
+  {
+   "name": "Miaoli",
+   "aliases": [],
+   "country": "TW",
+   "admin1": "Miaoli",
+   "lat": 24.56,
+   "lon": 120.82
+  },
+  {
+   "name": "Longtan",
+   "aliases": [
+    "Longtan District"
+   ],
+   "country": "TW",
+   "admin1": "Taoyuan",
+   "lat": 24.86,
+   "lon": 121.21
+  },
+  {
+   "name": "Hukou",
+   "aliases": [],
+   "country": "TW",
+   "admin1": "Hsinchu",
+   "lat": 24.9,
+   "lon": 121.04
+  },
+  {
+   "name": "Peoria",
+   "aliases": [],
+   "country": "US",
+   "admin1": "Arizona",
+   "lat": 33.58,
+   "lon": -112.24
+  },
+  {
+   "name": "Kikuyo",
+   "aliases": [],
+   "country": "JP",
+   "admin1": "Kumamoto",
+   "lat": 32.87,
+   "lon": 130.83
+  },
+  {
+   "name": "Tucheng",
+   "aliases": [
+    "Tucheng District"
+   ],
+   "country": "TW",
+   "admin1": "New Taipei",
+   "lat": 24.97,
+   "lon": 121.44
+  },
+  {
+   "name": "Kaohsiung Science Park",
+   "aliases": [],
+   "country": "TW",
+   "admin1": "Kaohsiung",
+   "lat": 22.79,
+   "lon": 120.29
+  },
+  {
+   "name": "Nanjing Jiangbei",
+   "aliases": [],
+   "country": "CN",
+   "admin1": "Jiangsu",
+   "lat": 32.13,
+   "lon": 118.69
   }
  ]
 }

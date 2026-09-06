@@ -35,6 +35,22 @@ RELATION_TYPES = {
 GENERIC_PREDICATES = {"LOCATED_IN", "OPERATES", "OWNED_BY"}
 
 
+SHARE_WORDS = re.compile(
+    r"\d+(?:\.\d+)?\s*(?:%|percent|per cent)"
+    r"|\b\d+\s+(?:out\s+of|in)\s+\d+\b"
+    r"|\b(?:half|one third|two thirds|a third|a quarter|three quarters|majority|most|all|sole|"
+    r"exclusive|entire|exclusively)\b",
+    re.IGNORECASE,
+)
+
+
+def share_stated(span, share):
+    """A share survives only when the span itself states a percentage, an "x in y", or a
+    fraction word; a process node like "3nm" is not a share and a model's inference is not
+    evidence."""
+    return share is not None and bool(SHARE_WORDS.search(span or ""))
+
+
 def normalized_scope(predicate, scope_type):
     return "generic" if predicate in GENERIC_PREDICATES else scope_type
 

@@ -26,9 +26,11 @@ class Gazetteer:
         )
         data = json.loads(raw)
         self.countries = data["countries"]
+        # Names and aliases only: a bare two-letter code inside label text is as likely a US
+        # state ("Peoria, AZ") as a country, so codes are accepted only as explicit hints.
         self.by_country_name = {}
         for code, entry in self.countries.items():
-            for name in (code, entry["name"], *entry.get("aliases", [])):
+            for name in (entry["name"], *entry.get("aliases", [])):
                 self.by_country_name[normalize_label(name)] = code
         self.regions = {}
         for entry in data["regions"]:
@@ -40,8 +42,11 @@ class Gazetteer:
                 self.cities.setdefault(normalize_label(name), []).append(entry)
 
     def country(self, text):
-        """ISO2 for a country name, alias, or code; None otherwise."""
-        return self.by_country_name.get(normalize_label(text))
+        """ISO2 for a country name, alias, or explicit code; None otherwise."""
+        key = normalize_label(text)
+        if key.upper() in self.countries:
+            return key.upper()
+        return self.by_country_name.get(key)
 
     def parts(self, label):
         out = []
