@@ -165,6 +165,15 @@ async def main(args):
                 r.raise_for_status()
                 run = await wait_run(client, r.json())
                 await export(client, run["graph_id"], out, [run])
+            elif args.command == "resume":
+                body = {"resume": True, "limits": limits(args)}
+                if args.instruction:
+                    body["instruction"] = args.instruction
+                r = await client.post(f"/v1/graphs/{args.graph}/research", json=body)
+                print("resume:", r.status_code, r.text[:200], flush=True)
+                r.raise_for_status()
+                run = await wait_run(client, r.json())
+                await export(client, args.graph, out, [run])
             elif args.command == "followup":
                 targets = None
                 if args.targets:
@@ -186,7 +195,7 @@ async def main(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("command", choices=["run", "followup", "export"])
+    parser.add_argument("command", choices=["run", "followup", "resume", "export"])
     parser.add_argument("--product", default="iPhone 17 Pro")
     parser.add_argument("--company", default="Apple")
     parser.add_argument("--graph")
