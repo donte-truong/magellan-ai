@@ -1050,6 +1050,7 @@ def test_spec_tokens_and_slug_labels():
 
     assert part_tokens("12mp ultrawide snapper") == set()
     assert part_tokens("kioxia 256gb nand") == set()
+    assert part_tokens("100% recycled cobalt 2023") == set()  # bare numbers are not identities
     assert part_tokens("bcm2712 a76") == {"bcm2712", "a76"}
     assert (
         near_duplicates(

@@ -177,12 +177,12 @@ SPEC_TOKEN = re.compile(
 
 
 def part_tokens(key):
-    """Part-number-like tokens: three or more alphanumerics including a digit (rp1, a76, bcm2712),
-    excluding quantities such as 12mp or 8gb."""
+    """Part-number-like tokens: three or more alphanumerics mixing letters and digits (rp1, a76,
+    bcm2712), excluding bare numbers (100, 2023) and quantities such as 12mp or 8gb."""
     return {
         t
         for t in PART_TOKEN.findall(key)
-        if any(c.isdigit() for c in t) and not SPEC_TOKEN.match(t)
+        if any(c.isdigit() for c in t) and not t.isdigit() and not SPEC_TOKEN.match(t)
     }
 
 
