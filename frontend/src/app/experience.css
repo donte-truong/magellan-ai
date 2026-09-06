@@ -904,33 +904,66 @@
   border-radius: 50%;
   transition: transform 0.2s;
 }
-.globe-pin > span {
+.globe-label-leaders {
   position: absolute;
-  bottom: calc(100% + 3px);
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 9px;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+.globe-label-leaders path {
+  fill: none;
+  stroke-width: 1;
+  opacity: 0.6;
+  visibility: hidden;
+}
+.globe-pin > .globe-location-card {
+  position: absolute;
+  width: 164px;
+  height: 74px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
   color: #d7e6fc;
-  background: #071122eb;
-  padding: 9px 13px;
-  border: 1px solid #89b2e935;
-  border-radius: 5px;
+  background: linear-gradient(135deg, #12233bef, #081326f5);
+  padding: 10px 12px;
+  border: 1px solid #89b2e950;
+  border-left: 2px solid var(--pin-color);
+  border-radius: 7px;
   white-space: nowrap;
   text-align: left;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.25s;
+  pointer-events: auto;
+  box-shadow: 0 8px 24px #02071466;
+  backdrop-filter: blur(14px);
+  transition:
+    border-color 0.2s,
+    background 0.2s;
 }
-.globe-pin > span small {
-  display: block;
-  color: #8299ba;
-  font-size: 7px;
-  margin-top: 3px;
+.globe-location-card small {
+  color: var(--pin-color);
+  font-size: 8px;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
 }
-.globe-pin:hover > span,
-.globe-pin:focus-visible > span,
-.globe-pin.selected > span {
-  opacity: 1;
+.globe-location-card strong {
+  font-size: 11px;
+  font-weight: 500;
+}
+.globe-location-card > span {
+  font-size: 9px;
+  color: #a3b9d5;
+}
+.globe-pin:hover > .globe-location-card,
+.globe-pin:focus-visible > .globe-location-card,
+.globe-pin.selected > .globe-location-card {
+  border-color: var(--pin-color);
+  background: #142840f5;
+}
+.globe-pin:focus-visible > .globe-location-card {
+  outline: 2px solid #e0f1ff;
+  outline-offset: 3px;
 }
 .globe-pin:hover > i,
 .globe-pin.selected > i {
@@ -1045,8 +1078,11 @@
 .supplier-name small {
   display: block;
   font-size: 8px;
-  color: #687f9f;
+  color: #8ca6c6;
   margin-top: 5px;
+}
+.supplier-city {
+  color: #b0c4de;
 }
 .country-code {
   color: #657e9f;
@@ -1215,6 +1251,26 @@
   width: 4px;
   height: 4px;
   border-radius: 50%;
+}
+.location-facts {
+  margin-top: 15px;
+  display: grid;
+  gap: 8px;
+  font-size: 9px;
+}
+.location-facts > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+.location-facts dt {
+  color: #839dbd;
+}
+.location-facts dd {
+  color: #c1d5ed;
+  margin: 0;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
 }
 .inspector-component {
   display: flex;
@@ -1947,6 +2003,18 @@
   .globe-controls {
     right: 20%;
     bottom: 6%;
+  }
+  .globe-pin > .globe-location-card {
+    width: 142px;
+    height: 68px;
+    padding: 9px;
+    gap: 4px;
+  }
+  .globe-location-card strong {
+    font-size: 10px;
+  }
+  .globe-location-card > span {
+    font-size: 8px;
   }
   .globe-instruction {
     bottom: 9%;

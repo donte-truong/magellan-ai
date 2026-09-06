@@ -80,3 +80,36 @@ test("demo input, keyboard dialog, and reduced motion remain usable", async ({ p
   await page.getByRole("button", { name: "Show all suppliers" }).click();
   await expect(page.locator(".supplier-row")).toHaveCount(6);
 });
+
+test("globe location cards expose components and support city search", async ({
+  page,
+}, testInfo) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  const coastline = page.waitForResponse((response) =>
+    response.url().endsWith("/assets/models/world-coastlines.json"),
+  );
+  await page.goto("/#network");
+  expect((await coastline).ok()).toBe(true);
+  await expect(page.locator(".globe-location-card:visible")).toHaveCount(3);
+  const nxp = page.getByRole("button", { name: "Locate NXP in Netherlands" });
+  await expect(nxp.locator(".globe-location-card")).toContainText("NFC & secure element");
+  await nxp.locator(".globe-location-card").click();
+  const details = page.getByRole("complementary", { name: "Supplier details" });
+  await expect(details).toContainText("Eindhoven, Netherlands");
+  await expect(details).toContainText("Company headquarters");
+  await expect(details).toContainText("51.44° N / 5.47° E");
+  await expect(nxp).toHaveAttribute("aria-pressed", "true");
+  await page.getByRole("button", { name: "Reset globe view" }).click();
+  await expect(details).toHaveCount(0);
+  await page.getByRole("textbox", { name: "Find a supplier" }).fill("Tokyo");
+  await expect(page.locator(".supplier-row")).toHaveCount(1);
+  await expect(page.locator(".supplier-row")).toContainText("Kioxia");
+  await page.getByRole("button", { name: "Clear supplier search" }).click();
+  await page.screenshot({ path: testInfo.outputPath("04-location-cards.png"), fullPage: true });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(
+    page.viewportSize()!.width,
+  );
+  expect(errors).toEqual([]);
+});

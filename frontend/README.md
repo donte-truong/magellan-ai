@@ -22,8 +22,9 @@ To run the entire MVP in containers, use `docker compose --env-file backend/.env
 ## What the MVP includes
 
 - A three-stage featured demo with a persistent, original Three.js phone model, six animated assemblies, source links, reassembly, and selection highlighting.
-- A draggable spherical world map with 7,015 land points, illuminated relationship arcs, moving particles, supplier selection, search, zoom, and view reset.
-- Supplier details, headquarters/source links, and JSON export with provenance and limitations.
+- A draggable spherical world map with 7,015 bright land points, coastline outlines, illuminated relationship arcs, moving particles, supplier selection, search, zoom, and view reset.
+- Location cards connected to map pins by SVG lines, showing each company, city, and component. Nearby cards are spaced apart; search also accepts cities and component categories.
+- Supplier details, headquarters coordinates/source links, and JSON export with provenance and limitations.
 - Responsive mobile layouts, keyboard navigation, native modal focus handling, reduced motion, an animation pause control, and WebGL fallback illustrations.
 
 The live research workspace retains:
@@ -56,7 +57,7 @@ Next.js owns the application's build pipeline. Vite powers the test pipeline thr
 
 Project media lives in [public/assets](public/assets/README.md), with separate directories for 3D models, animations, videos, and images. Reference these files using `/assets/…` URLs.
 
-`src/components/experience` contains the featured demo, product renderer, and globe renderer. `src/lib/demo-data.ts` owns curated facts and source URLs; `demo-store.ts` owns demo navigation and selection; `scenes/phone.ts` creates the original six-part model. Each scene caps pixel ratio, stops updates when the page is hidden, handles failed WebGL initialization, and disposes geometry, materials, textures, observers, and animation frames on exit. The map geometry is served locally from `public/assets/models/world-points.json`.
+`src/components/experience` contains the featured demo, product renderer, and globe renderer. `src/lib/demo-data.ts` owns curated facts and source URLs; `demo-store.ts` owns demo navigation and selection; `scenes/phone.ts` creates the original six-part model. Each scene caps pixel ratio, stops updates when the page is hidden, handles failed WebGL initialization, and disposes geometry, materials, textures, observers, and animation frames on exit. Map geometry is served locally from `public/assets/models/world-points.json` and `world-coastlines.json`; either layer can render independently if the other fails to load. `scenes/globe-labels.ts` places projected location cards within the viewport without overlapping neighboring cards.
 
 The existing research components remain in `src/components`. `src/lib/api.ts` is the typed browser client; `proxy.ts` implements the server boundary; `store.ts` owns research state; `use-research.ts` synchronizes API snapshots; `graph-layout.ts` keeps API edge direction intact while laying out dependencies.
 
