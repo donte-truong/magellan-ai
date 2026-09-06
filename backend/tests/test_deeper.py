@@ -927,3 +927,66 @@ async def test_manufacturer_only_identifier_conflicts_can_be_resolved_by_the_mod
     )
     merged = [e["payload"] for e in events if e["type"] == "entity.merged"]
     assert merged and merged[0]["alias"] == "Renesas DA9091"
+
+
+def test_accessories_are_not_parts_and_predicates_are_normalized_by_kind():
+    from app.resolution import accessory, normalized_predicate, static_rejection
+
+    assert accessory("USB-C Charge Cable (1 m)") and accessory("Official Raspberry Pi 5 Case")
+    assert not accessory("display flex cable", part_number="821-01234")
+    assert not accessory("Ceramic Shield front cover glass", manufacturer="Corning")
+    assert (
+        static_rejection(
+            "component",
+            "USB-C Charge Cable (1 m)",
+            "PART_OF",
+            "product",
+            "iPhone",
+            "product",
+            "iPhone",
+        )
+        == "predicate_invalid"
+    )
+    assert normalized_predicate("PART_OF", "material", "product") == "INPUT_TO"
+    assert normalized_predicate("INPUT_TO", "component", "component") == "PART_OF"
+    assert normalized_predicate("INPUT_TO", "material", "component") == "INPUT_TO"
+    assert normalized_predicate("PART_OF", "component", "product") == "PART_OF"
+
+
+class DanglingWholeProvider(PageProvider):
+    """A material is stated to be part of a board that is never tied to the product."""
+
+    name = "test_dangling"
+
+    async def analyze(self, target, product, company, url, title, body, budget):
+        findings = []
+        if target["kind"] == "product":
+            findings = [
+                Finding("tin", "material", "PART_OF", "Widget contains tin", "material as part"),
+                Finding(
+                    "tin",
+                    "material",
+                    "INPUT_TO",
+                    "Tin is refined by Acme Smelting",
+                    "whole never connected",
+                    object_label="main logic board",
+                    object_kind="component",
+                ),
+            ]
+        return Document(url, title, "example.org", body, findings=findings)
+
+
+async def test_a_whole_is_never_created_from_a_claim_about_its_part(api):
+    client, app = api
+    app.state.worker.provider = DanglingWholeProvider()
+    run, graph = await researched(api, "Widget")
+    labels = {n["label"] for n in graph["nodes"]}
+    assert labels == {"Widget", "tin"}
+    # The material PART_OF claim was committed as INPUT_TO.
+    assert [e["predicate"] for e in graph["edges"]] == ["INPUT_TO"]
+    events = sse_events(await client.get(run["events_url"]))
+    # Rejected once for the product task and once more when the tin task reused the analysis.
+    assert [e["payload"]["reason"] for e in events if e["type"] == "claim.rejected"] == [
+        "disconnected",
+        "disconnected",
+    ]

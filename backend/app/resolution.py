@@ -55,6 +55,32 @@ INTERFACE_PATTERN = re.compile(
 )
 
 
+ACCESSORY_PATTERN = re.compile(
+    r"\b(charg(e|ing) cable|power adapter|charger|wall plug|earbuds|headphones|earphones|"
+    r"documentation|quick start guide|sim (ejector|tool)|starter kit|kit|bundle|case|cover|"
+    r"screen protector|stand|mount|tripod|strap|lanyard|hat\+?|carrying pouch|cleaning cloth)\b",
+    re.IGNORECASE,
+)
+
+
+def accessory(label, part_number=None, manufacturer=None):
+    """Items sold or boxed with a product are not parts of it unless identified as a specific
+    internal part by number or maker."""
+    if part_number or manufacturer:
+        return False
+    return bool(ACCESSORY_PATTERN.search(label or ""))
+
+
+def normalized_predicate(predicate, kind, object_kind):
+    """Materials flow INPUT_TO a whole; components are PART_OF it. The same span supports the
+    same relation either way, so the predicate is normalized rather than the claim rejected."""
+    if predicate == "PART_OF" and kind == "material":
+        return "INPUT_TO"
+    if predicate == "INPUT_TO" and kind == "component" and object_kind in {"product", "component"}:
+        return "PART_OF"
+    return predicate
+
+
 def interface_feature(label, part_number=None, manufacturer=None):
     """Ports, slots, headers, and interface standards describe interfaces, not parts, unless a
     specific part is identified by number or maker."""
@@ -232,6 +258,8 @@ def static_rejection(
             object_kind == "component" and interface_feature(object_label)
         ):
             return "predicate_invalid"  # ports, slots, and standards are interfaces
+        if kind == "component" and accessory(label, part_number, manufacturer):
+            return "predicate_invalid"  # boxed or sold-with items are not parts
     if any(
         k == "product" and normalize_label(name) != normalize_label(root_label)
         for k, name in ((kind, label), (object_kind, object_label))

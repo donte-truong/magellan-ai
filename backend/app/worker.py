@@ -25,6 +25,7 @@ from app.resolution import (
     RELATION_TYPES,
     near_duplicates,
     normalize_label,
+    normalized_predicate,
     part_tokens,
     record_identity,
     resolution_candidates,
@@ -1294,6 +1295,9 @@ class Worker:
             for finding in document.findings:
                 object_label = finding.object_label or target_node["label"]
                 object_kind = finding.object_kind or target_node["kind"]
+                finding.predicate = normalized_predicate(
+                    finding.predicate, finding.kind, object_kind
+                )
                 rejected = finding.rejection
                 if finding.span not in document.body:
                     rejected = "span_not_found"
@@ -1396,6 +1400,12 @@ class Worker:
                         continue
                     if subject is None and obj is None:
                         continue  # Wait for a later pass once another finding places an endpoint.
+                    if obj is None and object_kind not in NON_DEPENDENCY_KINDS:
+                        # A whole (the object of PART_OF/INPUT_TO, the thing made or supplied)
+                        # is never created from a claim about its part: it must already be
+                        # connected to the product, or the claim ends as "disconnected". This
+                        # keeps every part and material on a tiered path from the root.
+                        continue
                     anchor = subject or obj
                     missing_kind = (
                         object_kind if obj is None else finding.kind if subject is None else None

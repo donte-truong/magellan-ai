@@ -14,7 +14,7 @@ import httpx
 from pydantic import Field
 
 from app.config import Settings
-from app.resolution import select_passages, static_rejection
+from app.resolution import normalized_predicate, select_passages, static_rejection
 from app.schemas import GeographyLayer, Model, NodeKind, Predicate
 
 # Conservative flat reservation per image; observed usage is reconciled after the response.
@@ -30,6 +30,9 @@ SKIP_HOSTS = (
     "x.com",
     "twitter.com",
     "pinterest.com",
+    "reddit.com",
+    "news.ycombinator.com",
+    "quora.com",
 )
 
 
@@ -964,7 +967,9 @@ class LiveProvider:
                 Finding(
                     entry.label,
                     entry.kind,
-                    entry.predicate,
+                    normalized_predicate(
+                        entry.predicate, entry.kind, entry.object_kind or target.get("kind")
+                    ),
                     entry.quote,
                     entry.rationale,
                     entry.scope_type,
