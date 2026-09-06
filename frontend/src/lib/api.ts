@@ -1,4 +1,4 @@
-import type { BOM, EdgeDetail, Graph, Run, Sites } from "./types";
+import type { BOM, EdgeDetail, EditResult, Graph, GraphMeta, Run, RunLimits, Sites } from "./types";
 
 export class APIError extends Error {
   constructor(
@@ -60,6 +60,40 @@ export const api = {
     apiRequest<BOM>(`runs/${id}/bom?revision=${revision}`, { signal }),
   graph: (id: string, signal?: AbortSignal) => apiRequest<Graph>(`graphs/${id}`, { signal }),
   sites: (id: string, signal?: AbortSignal) => apiRequest<Sites>(`graphs/${id}/sites`, { signal }),
+  /** Deepen or refine an existing graph (base or scenario) with a natural-language instruction. */
+  followup: (
+    graph: string,
+    instruction: string,
+    target_node_ids?: string[],
+    limits?: Partial<RunLimits>,
+  ) =>
+    apiRequest<Run>(`graphs/${graph}/research`, {
+      method: "POST",
+      body: JSON.stringify({
+        instruction,
+        ...(target_node_ids ? { target_node_ids } : {}),
+        ...(limits ? { limits } : {}),
+      }),
+    }),
+  /** Fork a base graph into a scenario for hypothetical edits and sandboxed research. */
+  createScenario: (graph: string, name?: string) =>
+    apiRequest<GraphMeta>(`graphs/${graph}/scenarios`, {
+      method: "POST",
+      body: JSON.stringify(name ? { name } : {}),
+    }),
+  scenarios: (graph: string, signal?: AbortSignal) =>
+    apiRequest<{ items: GraphMeta[] }>(`graphs/${graph}/scenarios`, { signal }),
+  /** Revert a scenario to the base graph's latest real version (the reset button). */
+  resetScenario: (graph: string, scenario: string) =>
+    apiRequest<GraphMeta>(`graphs/${graph}/scenarios/${scenario}/reset`, { method: "POST" }),
+  deleteScenario: (graph: string, scenario: string) =>
+    apiRequest<void>(`graphs/${graph}/scenarios/${scenario}`, { method: "DELETE" }),
+  /** Apply a natural-language hypothetical to a scenario graph; the agent proposes the edits. */
+  edit: (scenario: string, instruction: string) =>
+    apiRequest<EditResult>(`graphs/${scenario}/edits`, {
+      method: "POST",
+      body: JSON.stringify({ instruction }),
+    }),
   edge: (graph: string, edge: string, revision: number, signal?: AbortSignal) =>
     apiRequest<EdgeDetail>(`graphs/${graph}/edges/${edge}?revision=${revision}`, { signal }),
   recent: (signal?: AbortSignal) => apiRequest<{ items: Run[] }>("runs?limit=5", { signal }),

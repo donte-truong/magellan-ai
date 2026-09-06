@@ -2,7 +2,7 @@ from copy import deepcopy
 
 from app.db import new_id, now, public
 from app.errors import APIError, invalid
-from app.graphs import create_graph, find_node, refresh
+from app.graphs import create_graph, find_node, fork_graph, refresh, reset_scenario
 from app.schemas import RunUsage
 
 TERMINAL_RUN = {"completed", "partial", "failed", "cancelled"}
@@ -270,3 +270,89 @@ def bom_view(run, graph):
             "as_of": graph["updated_at"],
         },
     }
+
+
+def create_followup(repo, graph_id, request, provider):
+    """A run that deepens an existing graph (base or scenario) under an instruction."""
+    graph = repo.graph(graph_id)
+    targets = request.target_node_ids or [graph["root_node_id"]]
+    for identifier in targets:
+        find_node(graph, identifier)
+    active = [r for r in repo.all("run") if r["status"] not in TERMINAL_RUN]
+    if len(active) >= 3:
+        raise APIError(
+            429,
+            "rate_limited",
+            "At most three research runs may be active per workspace",
+            headers={"Retry-After": "5"},
+        )
+    root = find_node(graph, graph["root_node_id"])
+    company = None
+    original_id = graph.get("run_id") or (
+        repo.graph(graph["parent_graph_id"]).get("run_id") if graph.get("parent_graph_id") else None
+    )
+    if original_id:
+        try:
+            company = repo.get(original_id, "run").get("company")
+        except APIError:
+            company = None
+    identifier = new_id("run")
+    usage = RunUsage().model_dump(exclude_none=True)
+    if provider.name == "curated_fixture":
+        usage["cost_minor"] = 0
+    run = {
+        "id": identifier,
+        "product": root["label"],
+        "company": company,
+        "upload_id": None,
+        "mode": "followup",
+        "status": "queued",
+        "graph_id": graph["id"],
+        "limits": request.limits.model_dump(),
+        "usage": usage,
+        "progress": {"tasks_done": 0, "tasks_total": len(set(targets))},
+        "frontier": {},
+        "enrichment_ids": [],
+        "pending_questions": [],
+        "stop_reason": None,
+        "open_questions": [],
+        "instruction": request.instruction,
+        "provider": provider.name,
+        "_target_ids": list(dict.fromkeys(targets)),
+        "events_url": f"/v1/runs/{identifier}/events",
+        "bom_url": f"/v1/runs/{identifier}/bom",
+        "created_at": now(),
+        "completed_at": None,
+    }
+    repo.emit(run, "run.status", {"status": "queued", "progress": run["progress"]})
+    repo.put("run", run)
+    return public(run)
+
+
+def create_scenario(repo, graph_id, request):
+    base = repo.graph(graph_id)
+    if base.get("mode") == "scenario":
+        raise invalid("Scenarios fork base graphs only; reset or fork the base instead")
+    scenario = fork_graph(base, request.name)
+    repo.save_graph(scenario)
+    return scenario
+
+
+def scenario_of(repo, graph_id, scenario_id):
+    scenario = repo.graph(scenario_id)
+    if scenario.get("parent_graph_id") != graph_id or scenario.get("mode") != "scenario":
+        raise invalid("Not a scenario of this graph")
+    return scenario
+
+
+def reset_scenario_graph(repo, graph_id, scenario_id):
+    scenario = scenario_of(repo, graph_id, scenario_id)
+    base = repo.graph(graph_id)
+    reset_scenario(scenario, base)
+    repo.save_graph(scenario)
+    return scenario
+
+
+def delete_scenario(repo, graph_id, scenario_id):
+    scenario_of(repo, graph_id, scenario_id)
+    repo.delete_graph(scenario_id)

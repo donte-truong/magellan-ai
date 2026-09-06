@@ -85,7 +85,9 @@ export interface Graph {
   name: string;
   revision: number;
   root_node_id: string;
-  mode: "live" | "replay";
+  mode: "live" | "replay" | "scenario";
+  /** Scenarios: the base graph they were forked from. */
+  parent_graph_id?: string | null;
   nodes: GraphNode[];
   edges: GraphEdge[];
   stats: { node_count: number; edge_count: number; max_tier: number };
@@ -99,7 +101,9 @@ export interface RunQuestion {
 export interface Run {
   id: string;
   status: RunStatus;
-  mode: "live" | "replay";
+  mode: "live" | "replay" | "followup";
+  /** Follow-up runs: the natural-language instruction steering planning and extraction. */
+  instruction?: string | null;
   product: string;
   company: string | null;
   graph_id: string;
@@ -135,7 +139,7 @@ export interface BOM {
   product: string;
   status: RunStatus;
   provider: string;
-  mode: "live" | "replay";
+  mode: "live" | "replay" | "followup";
   items: BOMItem[];
   open_questions: string[];
   method: { name: string; assumptions: string[] };
@@ -153,7 +157,6 @@ export const supportLabels: Record<SupportLabel, string> = {
   unresolved: "Unresolved",
 };
 
-
 /** One map pin from GET /graphs/{id}/sites: a located plant or organization office. */
 export interface SiteMake {
   node_id: string;
@@ -164,11 +167,7 @@ export interface SiteMake {
   /** Stated share from a verified claim, or a labelled prior; null when unknown. */
   share: number | null;
   share_basis:
-    | "stated"
-    | "uniform_prior"
-    | "stated_over_plants"
-    | "uniform_prior_over_plants"
-    | null;
+    "stated" | "uniform_prior" | "stated_over_plants" | "uniform_prior_over_plants" | null;
   claim_ids: string[];
   sources: string[];
   via_organization_id?: string;
@@ -219,4 +218,46 @@ export interface Distribution {
 export interface Sites {
   sites: Site[];
   distributions: Distribution[];
+}
+
+export interface RunLimits {
+  max_hops: number;
+  max_nodes: number;
+  max_claims: number;
+  max_searches: number;
+  max_documents: number;
+  max_input_tokens: number;
+  max_output_tokens: number;
+  max_seconds: number;
+  max_searches_per_task: number;
+  max_documents_per_task: number;
+}
+
+/** A graph without its nodes and edges; scenarios carry their fork point and edits. */
+export interface GraphMeta {
+  id: string;
+  revision: number;
+  name: string;
+  created_at: string;
+  updated_at: string;
+  run_id: string | null;
+  parent_graph_id: string | null;
+  root_node_id: string | null;
+  mode: "live" | "replay" | "scenario";
+  forked_from_revision?: number | null;
+  scenario_edits?: {
+    edit_id: string;
+    instruction: string;
+    applied: Record<string, unknown>[];
+    at: string;
+  }[];
+  stats: Record<string, unknown>;
+}
+
+export interface EditResult {
+  edit_id: string;
+  graph_id: string;
+  revision: number;
+  applied: Record<string, unknown>[];
+  skipped: Record<string, unknown>[];
 }

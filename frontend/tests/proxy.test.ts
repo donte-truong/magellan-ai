@@ -129,6 +129,13 @@ describe("workspace API boundary", () => {
     expect(allowedPath("graphs/g_1/edges/e_1", "GET")).toBe(true);
     expect(allowedPath("graphs/g_1/sites", "GET")).toBe(true);
     expect(allowedPath("graphs/g_1/sites", "POST")).toBe(false);
+    expect(allowedPath("graphs/g_1/research", "POST")).toBe(true);
+    expect(allowedPath("graphs/g_1/scenarios", "POST")).toBe(true);
+    expect(allowedPath("graphs/g_1/scenarios", "GET")).toBe(true);
+    expect(allowedPath("graphs/g_1/scenarios/g_2/reset", "POST")).toBe(true);
+    expect(allowedPath("graphs/g_1/scenarios/g_2", "DELETE")).toBe(true);
+    expect(allowedPath("graphs/g_1/edits", "POST")).toBe(true);
+    expect(allowedPath("graphs/g_1/edits", "GET")).toBe(false);
     expect(allowedPath("runs/run_1", "DELETE")).toBe(false);
   });
 });

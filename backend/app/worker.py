@@ -172,6 +172,11 @@ class RunState:
         self.stale = {}  # branch id -> consecutive tasks without a verified finding
         self.paused = set()  # branches paused by the stagnation rule
         self.analysis_slots = None  # asyncio.Semaphore bounding concurrent document analyses
+        # Follow-up runs: the instruction steering planning and extraction, the nodes to
+        # research, and the nodes this run created (researched too, within the hop limit).
+        self.instruction = None
+        self.focus = None
+        self.created = set()
         self.running = {}  # asyncio task -> branch id, for fair concurrent scheduling
 
     def record(self, entry):
@@ -269,6 +274,7 @@ def planner_context(run, graph, node, state, budget, questions):
         "previous_queries": state.queries.get(node["id"], [])[-6:],
         "failed_queries": state.failed.get(node["id"], [])[-6:],
         "open_questions": questions[-8:],
+        **({"instruction": state.instruction} if state.instruction else {}),
         "remaining": {
             "searches": budget.remaining("searches"),
             "documents": budget.remaining("documents"),
@@ -448,6 +454,9 @@ class Worker:
             return
         usage = deepcopy(run["usage"])
         state = RunState()
+        if run.get("instruction"):
+            state.instruction = run["instruction"]
+            state.focus = set(run.get("_target_ids") or [])
 
         def checkpoint():
             with self.db.transaction(workspace, write=True) as repo:
@@ -559,6 +568,8 @@ class Worker:
         for n in graph["nodes"]:
             depth = research_depth(n, graph)
             if depth is None or n["id"] in state.visited:
+                continue
+            if state.focus is not None and n["id"] not in state.focus | state.created:
                 continue
             # A part at the last hop cannot have children; a maker or site at the last hop
             # can still be located, which adds no tier.
@@ -674,6 +685,8 @@ class Worker:
 
     async def research_task(self, workspace, identifier, run, target, budget, questions, state):
         state.visited.add(target["id"])
+        if state.instruction:
+            target = {**target, "focus": state.instruction}
         with self.db.transaction(workspace) as repo:
             graph = repo.graph(run["graph_id"])
         branch = state.branch(target, graph)
@@ -1760,6 +1773,7 @@ class Worker:
                         graph["nodes"].append(obj)
                         added.append(obj)
                     if state is not None:
+                        state.created.update(n["id"] for n in added)
                         # Entities found from the product root start their own tier-1 branch;
                         # deeper discoveries inherit the branch of the task that found them.
                         parent_branch = (

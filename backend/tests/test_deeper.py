@@ -1368,3 +1368,103 @@ def test_a_share_needs_a_number_or_fraction_word_in_its_span():
     assert share_stated("TSMC Properly Utilize Its 3nm Fabrication Plant", 0.7) is not False or True
     assert not share_stated("TSMC utilizes its fabrication plant thanks to orders", 0.7)
     assert not share_stated("anything", None)
+
+
+async def test_scenarios_take_hypothetical_edits_and_reset_while_the_base_stays_real(api):
+    client, app = api
+    run, base = await researched(api)  # Raspberry Pi 5 fixture: three components
+    graph_id = run["graph_id"]
+    base_revision = base["revision"]
+    created = await client.post(f"/v1/graphs/{graph_id}/scenarios", json={"name": "What if"})
+    assert created.status_code == 201, created.text
+    scenario = created.json()
+    assert scenario["mode"] == "scenario" and scenario["parent_graph_id"] == graph_id
+    listed = (await client.get(f"/v1/graphs/{graph_id}/scenarios")).json()["items"]
+    assert [s["id"] for s in listed] == [scenario["id"]]
+    # Edits are refused on the base graph.
+    refused = await client.post(f"/v1/graphs/{graph_id}/edits", json={"instruction": "remove RP1"})
+    assert refused.status_code == 400
+    # A hypothetical replacement: the new entity takes over the old one's relations, labelled
+    # user_asserted with the instruction as its provenance.
+    labels = {n["label"]: n for n in base["nodes"]}
+    old = next(label for label in labels if label != "Raspberry Pi 5")
+    edit = await client.post(
+        f"/v1/graphs/{scenario['id']}/edits",
+        json={"instruction": f"replace {old} with Acme Alternative"},
+    )
+    assert edit.status_code == 200, edit.text
+    result = edit.json()
+    assert result["applied"][0]["op"] == "replace_node" and result["skipped"] == []
+    view = (await client.get(f"/v1/graphs/{scenario['id']}?include=claims")).json()
+    names = {n["label"]: n for n in view["nodes"]}
+    assert "Acme Alternative" in names and old not in names
+    swapped = names["Acme Alternative"]
+    assert swapped["status"] == "user_asserted"
+    assert swapped["data"]["custom"]["hypothetical"]["edit_id"] == result["edit_id"]
+    rewired = [e for e in view["edges"] if e["source_node_id"] == swapped["id"]]
+    assert rewired and all(e["support_label"] == "user_asserted" for e in rewired)
+    # An added relation carries the instruction as its span and source.
+    added = await client.post(
+        f"/v1/graphs/{scenario['id']}/edits",
+        json={"instruction": "add Widget Foundry as organization supplier of Acme Alternative"},
+    )
+    assert added.status_code == 200 and added.json()["applied"][0]["op"] == "add_edge"
+    view = (await client.get(f"/v1/graphs/{scenario['id']}/export")).json()
+    claim = next(
+        c
+        for c in view["claims"]
+        if c["support_label"] == "user_asserted" and c["predicate"] == "SUPPLIES"
+    )
+    assert claim["evidence"][0]["source"]["url"].startswith("scenario://")
+    assert claim["evidence"][0]["span"].startswith("add Widget Foundry")
+    # The base graph is untouched at the same revision.
+    base_again = (await client.get(f"/v1/graphs/{graph_id}")).json()
+    assert base_again["revision"] == base_revision
+    assert old in {n["label"] for n in base_again["nodes"]}
+    # Reset puts the base back; delete removes the scenario.
+    reset = await client.post(f"/v1/graphs/{graph_id}/scenarios/{scenario['id']}/reset")
+    assert reset.status_code == 200
+    view = (await client.get(f"/v1/graphs/{scenario['id']}")).json()
+    assert old in {n["label"] for n in view["nodes"]} and "Acme Alternative" not in {
+        n["label"] for n in view["nodes"]
+    }
+    gone = await client.delete(f"/v1/graphs/{graph_id}/scenarios/{scenario['id']}")
+    assert gone.status_code == 204
+    assert (await client.get(f"/v1/graphs/{scenario['id']}")).status_code == 404
+    assert (await client.get(f"/v1/graphs/{graph_id}/scenarios")).json()["items"] == []
+
+
+async def test_followup_runs_research_only_the_targets_under_an_instruction(api):
+    client, app = api
+    provider = ResolvingProvider()
+    app.state.worker.provider = provider
+    run, graph = await researched(api, "Widget", limits={"max_hops": 3})
+    labels = {n["label"]: n for n in graph["nodes"]}
+    tasks_before = run["progress"]["tasks_done"]
+    provider.analyzed.clear()
+    followup = await client.post(
+        f"/v1/graphs/{run['graph_id']}/research",
+        json={
+            "instruction": "Distinguish the die from the packaged part and find who packages it.",
+            "target_node_ids": [labels["RP1"]["id"]],
+            "limits": {"max_hops": 3},
+        },
+    )
+    assert followup.status_code == 202, followup.text
+    job = followup.json()
+    assert job["mode"] == "followup" and job["graph_id"] == run["graph_id"]
+    assert job["product"] == "Widget" and job["instruction"].startswith("Distinguish")
+    assert await app.state.worker.tick()
+    job = (await client.get(f"/v1/runs/{job['id']}")).json()
+    assert job["status"] == "partial" and job["stop_reason"] == "research_exhausted"
+    events = sse_events(await client.get(job["events_url"]))
+    targets = [e["payload"]["target_node_id"] for e in events if e["type"] == "task.planned"]
+    # Only the requested target was researched, not the product or the other parts.
+    assert targets == [labels["RP1"]["id"]]
+    # A follow-up run has its own reuse memory, so the target's pages were analyzed again,
+    # this time with the instruction supplied to the extractor.
+    assert provider.analyzed == ["RP1", "RP1"]
+    assert job["progress"]["tasks_done"] == 1 and tasks_before >= 1
+    # The follow-up appears in the graph's run list through its own run id, and the BOM view
+    # works for it.
+    assert (await client.get(job["bom_url"])).status_code == 200

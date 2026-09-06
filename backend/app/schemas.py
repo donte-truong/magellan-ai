@@ -267,7 +267,10 @@ class GraphMeta(Model):
     run_id: str | None = None
     parent_graph_id: str | None = None
     root_node_id: str | None = None
-    mode: Literal["live", "replay"] = "live"
+    mode: Literal["live", "replay", "scenario"] = "live"
+    # Scenarios: the base revision they were forked from and the hypothetical edits applied.
+    forked_from_revision: int | None = None
+    scenario_edits: list[dict[str, Any]] = Field(default_factory=list)
     stats: dict[str, Any]
 
 
@@ -438,7 +441,9 @@ class RunQuestion(Model):
 class Run(Model):
     id: str
     status: RunStatus
-    mode: Literal["live", "replay"]
+    mode: Literal["live", "replay", "followup"]
+    # Follow-up runs: the natural-language instruction steering planning and extraction.
+    instruction: str | None = None
     product: str
     company: str | None = None
     upload_id: str | None = None
@@ -545,7 +550,7 @@ class BOM(Model):
     revision: int
     product: str
     status: RunStatus
-    mode: Literal["live", "replay"]
+    mode: Literal["live", "replay", "followup"]
     provider: str
     items: list[BOMItem]
     open_questions: list[str]
@@ -805,3 +810,33 @@ class BomEstimateImport(Lenient):
 
 RunCreate.model_rebuild()
 Edge.model_rebuild()
+
+
+class FollowupCreate(Model):
+    """Deepen or refine an existing graph with a natural-language instruction. Research runs
+    with the same evidence rules; the instruction only steers planning and extraction."""
+
+    instruction: str = Field(min_length=3, max_length=1000)
+    # Nodes to research; the product root when omitted. New nodes found under them are
+    # researched too, within the hop limit.
+    target_node_ids: list[str] | None = Field(default=None, max_length=50)
+    limits: RunLimits = Field(default_factory=RunLimits)
+
+
+class ScenarioCreate(Model):
+    name: str | None = Field(default=None, max_length=200)
+
+
+class EditCreate(Model):
+    """A hypothetical change to a scenario graph, in natural language. Never applied to a
+    base graph; the instruction is the provenance of what it adds."""
+
+    instruction: str = Field(min_length=3, max_length=1000)
+
+
+class EditResult(Model):
+    edit_id: str
+    graph_id: str
+    revision: int
+    applied: list[dict[str, Any]]
+    skipped: list[dict[str, Any]]

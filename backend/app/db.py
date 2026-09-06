@@ -239,6 +239,20 @@ class Repository:
             raise not_found()
         return deepcopy(data)
 
+    def delete_graph(self, identifier):
+        self.connection.execute(
+            delete(snapshots).where(
+                snapshots.c.workspace == self.workspace, snapshots.c.graph_id == identifier
+            )
+        )
+        self.connection.execute(
+            delete(resources).where(
+                resources.c.workspace == self.workspace,
+                resources.c.id == identifier,
+                resources.c.kind == "graph",
+            )
+        )
+
     def save_graph(self, graph):
         graph["updated_at"] = now()
         self.put("graph", graph)

@@ -2,14 +2,26 @@ const identifier = "[a-zA-Z0-9_-]+";
 const readPaths = [
   /^runs$/,
   new RegExp(`^runs/${identifier}(?:/bom)?$`),
-  new RegExp(`^graphs/${identifier}(?:/export|/sites|/edges/${identifier})?$`),
+  new RegExp(`^graphs/${identifier}(?:/export|/sites|/scenarios|/edges/${identifier})?$`),
 ];
-const writePaths = [/^bom\/decompose$/, new RegExp(`^runs/${identifier}/(?:cancel|answers)$`)];
+const writePaths = [
+  /^bom\/decompose$/,
+  new RegExp(`^runs/${identifier}/(?:cancel|answers)$`),
+  new RegExp(`^graphs/${identifier}/(?:research|scenarios|edits)$`),
+  new RegExp(`^graphs/${identifier}/scenarios/${identifier}/reset$`),
+];
+const deletePaths = [new RegExp(`^graphs/${identifier}/scenarios/${identifier}$`)];
 
 export function allowedPath(path: string, method: string) {
-  return (method === "GET" ? readPaths : method === "POST" ? writePaths : []).some((rule) =>
-    rule.test(path),
-  );
+  const rules =
+    method === "GET"
+      ? readPaths
+      : method === "POST"
+        ? writePaths
+        : method === "DELETE"
+          ? deletePaths
+          : [];
+  return rules.some((rule) => rule.test(path));
 }
 
 function failure(message: string, status: number, code: string) {

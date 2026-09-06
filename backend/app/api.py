@@ -622,6 +622,139 @@ def enrichment_events(
     return stream(request, ws, enrichment_id, "enrichment", last_event_id, graph_id)
 
 
+@router.post(
+    "/graphs/{graph_id}/research",
+    response_model=schemas.Run,
+    status_code=202,
+    tags=["runs"],
+    operation_id="createFollowupRun",
+    summary="Deepen or refine an existing graph with a natural-language instruction",
+)
+def create_followup(
+    request: Request,
+    response: Response,
+    ws: Workspace,
+    graph_id: str,
+    body: schemas.FollowupCreate,
+    idempotency_key: IdempotencyKey = None,
+):
+    return create(
+        request,
+        ws,
+        idempotency_key,
+        {"graph_id": graph_id, **body.model_dump()},
+        202,
+        response,
+        lambda repo: jobs.create_followup(repo, graph_id, body, request.app.state.provider),
+    )
+
+
+@router.post(
+    "/graphs/{graph_id}/scenarios",
+    response_model=schemas.GraphMeta,
+    status_code=201,
+    tags=["graphs"],
+    operation_id="createScenario",
+    summary="Fork the graph into a scenario for hypothetical edits and sandboxed research",
+)
+def create_scenario(request: Request, ws: Workspace, graph_id: str, body: schemas.ScenarioCreate):
+    with request.app.state.db.transaction(ws, write=True) as repo:
+        return graphs.meta(jobs.create_scenario(repo, graph_id, body))
+
+
+@router.get(
+    "/graphs/{graph_id}/scenarios",
+    tags=["graphs"],
+    operation_id="listScenarios",
+)
+def list_scenarios(request: Request, ws: Workspace, graph_id: str):
+    with request.app.state.db.transaction(ws) as repo:
+        repo.graph(graph_id)
+        items = [
+            graphs.meta(g)
+            for g in repo.all("graph")
+            if g.get("parent_graph_id") == graph_id and g.get("mode") == "scenario"
+        ]
+        return {"items": items}
+
+
+@router.post(
+    "/graphs/{graph_id}/scenarios/{scenario_id}/reset",
+    response_model=schemas.GraphMeta,
+    tags=["graphs"],
+    operation_id="resetScenario",
+    summary="Revert the scenario to the base graph's latest real version",
+)
+def reset_scenario(request: Request, ws: Workspace, graph_id: str, scenario_id: str):
+    with request.app.state.db.transaction(ws, write=True) as repo:
+        return graphs.meta(jobs.reset_scenario_graph(repo, graph_id, scenario_id))
+
+
+@router.delete(
+    "/graphs/{graph_id}/scenarios/{scenario_id}",
+    status_code=204,
+    tags=["graphs"],
+    operation_id="deleteScenario",
+)
+def delete_scenario(request: Request, ws: Workspace, graph_id: str, scenario_id: str):
+    with request.app.state.db.transaction(ws, write=True) as repo:
+        jobs.delete_scenario(repo, graph_id, scenario_id)
+    return Response(status_code=204)
+
+
+@router.post(
+    "/graphs/{graph_id}/edits",
+    response_model=schemas.EditResult,
+    tags=["graphs"],
+    operation_id="applyHypotheticalEdit",
+    summary="Apply a natural-language hypothetical to a scenario graph",
+)
+async def apply_edit(request: Request, ws: Workspace, graph_id: str, body: schemas.EditCreate):
+    from app.providers import Budget
+
+    worker = request.app.state.worker
+    with request.app.state.db.transaction(ws) as repo:
+        graph = repo.graph(graph_id)
+        if graph.get("mode") != "scenario":
+            raise APIError(
+                400, "invalid_request", "Hypothetical edits apply to scenario graphs only"
+            )
+        names = {n["id"]: n["label"] for n in graph["nodes"]}
+        summary = {
+            "entities": [{"label": n["label"], "kind": n["kind"]} for n in graph["nodes"]][:150],
+            "relations": [
+                f"{names[e['source_node_id']]} {e['predicate']} {names[e['target_node_id']]}"
+                for e in graph["edges"]
+            ][:200],
+        }
+        revision = graph["revision"]
+    budget = Budget(
+        schemas.RunLimits(max_input_tokens=60000, max_output_tokens=4000).model_dump(), {}
+    )
+    if not hasattr(worker.provider, "propose_edits"):
+        raise APIError(400, "invalid_request", "The configured provider cannot propose edits")
+    edits = await worker.provider.propose_edits(body.instruction, summary, budget)
+    edit_id = new_id("edit")
+    with request.app.state.db.transaction(ws, write=True) as repo:
+        graph = repo.graph(graph_id)
+        if graph["revision"] != revision:
+            raise APIError(409, "conflict", "The scenario changed while the edit was proposed")
+        applied, skipped = graphs.apply_edits(repo, graph, edits, body.instruction, edit_id)
+        graph.setdefault("scenario_edits", []).append(
+            {"edit_id": edit_id, "instruction": body.instruction, "applied": applied, "at": now()}
+        )
+        graph["revision"] += 1
+        graphs.refresh(graph)
+        repo.save_graph(graph)
+        return {
+            "edit_id": edit_id,
+            "graph_id": graph_id,
+            "revision": graph["revision"],
+            "applied": applied,
+            "skipped": skipped,
+        }
+
+
 @router.get(
     "/graphs/{graph_id}/sites",
     tags=["geography"],

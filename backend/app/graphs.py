@@ -552,3 +552,184 @@ def review_claim(repo, identifier, review):
             graph["id"],
         )
     return public(claim)
+
+
+def fork_graph(graph, name=None):
+    """A scenario: a copy of the graph at its current revision that later research and
+    hypothetical edits change while the base stays the latest real version."""
+    copy = deepcopy(graph)
+    copy.update(
+        id=new_id("gph"),
+        name=name or f"{graph['name']} (scenario)",
+        parent_graph_id=graph["id"],
+        forked_from_revision=graph["revision"],
+        revision=0,
+        run_id=None,
+        mode="scenario",
+        created_at=now(),
+        updated_at=now(),
+        scenario_edits=[],
+    )
+    return copy
+
+
+def reset_scenario(scenario, base):
+    """Put the base graph's latest nodes, edges, and claims back into the scenario."""
+    scenario["nodes"] = deepcopy(base["nodes"])
+    scenario["edges"] = deepcopy(base["edges"])
+    scenario["_claims"] = deepcopy(base["_claims"])
+    scenario["root_node_id"] = base["root_node_id"]
+    scenario["forked_from_revision"] = base["revision"]
+    scenario["scenario_edits"] = []
+    scenario["revision"] += 1
+    refresh(scenario)
+    return scenario
+
+
+def apply_edits(repo, graph, edits, instruction, edit_id):
+    """Apply model-proposed hypothetical operations to a scenario graph. Every added edge goes
+    through add_claim_edge with the instruction as its source and span, labelled user_asserted;
+    removed and replaced nodes are recorded on the graph. Returns (applied, skipped)."""
+    from app.resolution import resolve_entity
+
+    if graph.get("mode") != "scenario":
+        raise invalid("Hypothetical edits apply to scenario graphs only")
+    source = make_source(
+        repo,
+        f"scenario://{graph['id']}/{edit_id}",
+        "Scenario instruction",
+        instruction,
+        kind="other",
+        publisher="scenario",
+        source_family_id=f"scenario:{graph['id']}",
+        license_notes="Hypothetical: the user's instruction, not public evidence.",
+    )
+    span = instruction[:600]
+    applied, skipped = [], []
+    hypothetical = {"hypothetical": {"edit_id": edit_id, "instruction": instruction}}
+
+    def node_for(label, kind=None, create=False):
+        if not label:
+            return None
+        for candidate_kind in (
+            [kind]
+            if kind
+            else ["component", "material", "organization", "facility", "geography", "product"]
+        ):
+            node, _ = resolve_entity(graph, candidate_kind, label)
+            if node:
+                return node
+        if create and kind:
+            node = make_node(
+                kind, label, status="user_asserted", data={"custom": dict(hypothetical)}
+            )
+            graph["nodes"].append(node)
+            return node
+        return None
+
+    for edit in edits:
+        op = edit.op
+        try:
+            if op == "add_node":
+                if not edit.kind:
+                    raise invalid("add_node needs a kind")
+                node = node_for(edit.label, edit.kind, create=True)
+                applied.append({"op": op, "node_id": node["id"], "label": node["label"]})
+            elif op == "add_edge":
+                subject = node_for(edit.label, edit.kind, create=bool(edit.kind))
+                obj = node_for(edit.object_label, edit.object_kind, create=bool(edit.object_kind))
+                if subject is None or obj is None or subject["id"] == obj["id"]:
+                    raise invalid("add_edge needs two existing or fully specified entities")
+                scope = (
+                    {"type": "generic"}
+                    if edit.predicate in {"LOCATED_IN", "OPERATES", "OWNED_BY", "SUPPLIES"}
+                    else {"type": "product", "product_node_id": graph["root_node_id"]}
+                )
+                edge, _ = add_claim_edge(
+                    repo,
+                    graph,
+                    subject["id"],
+                    obj["id"],
+                    edit.predicate,
+                    scope,
+                    source,
+                    span,
+                    "user_asserted",
+                    edit.rationale or "Hypothetical edit",
+                    "scenario instruction",
+                    {"custom": dict(hypothetical)},
+                )
+                edge.setdefault("data", {}).setdefault("custom", {}).update(hypothetical)
+                applied.append(
+                    {
+                        "op": op,
+                        "edge_id": edge["id"],
+                        "subject": subject["label"],
+                        "predicate": edit.predicate,
+                        "object": obj["label"],
+                    }
+                )
+            elif op == "remove_edge":
+                subject, obj = node_for(edit.label), node_for(edit.object_label)
+                before = len(graph["edges"])
+                graph["edges"] = [
+                    e
+                    for e in graph["edges"]
+                    if not (
+                        subject
+                        and obj
+                        and e["source_node_id"] == subject["id"]
+                        and e["target_node_id"] == obj["id"]
+                        and (not edit.predicate or e["predicate"] == edit.predicate)
+                    )
+                ]
+                if len(graph["edges"]) == before:
+                    raise invalid("no such edge")
+                applied.append(
+                    {
+                        "op": op,
+                        "subject": subject["label"],
+                        "object": obj["label"],
+                        "removed": before - len(graph["edges"]),
+                    }
+                )
+            elif op in {"remove_node", "replace_node"}:
+                old = node_for(edit.label, edit.kind)
+                if old is None or old["id"] == graph["root_node_id"]:
+                    raise invalid("no such node, or the product root")
+                if op == "replace_node":
+                    new = node_for(edit.new_label, edit.new_kind or old["kind"], create=True)
+                    if new is None or new["id"] == old["id"]:
+                        raise invalid("replace_node needs a different new_label")
+                    for e in graph["edges"]:
+                        if e["source_node_id"] == old["id"]:
+                            e["source_node_id"] = new["id"]
+                        if e["target_node_id"] == old["id"]:
+                            e["target_node_id"] = new["id"]
+                        if e["source_node_id"] == new["id"] or e["target_node_id"] == new["id"]:
+                            e.setdefault("data", {}).setdefault("custom", {}).update(hypothetical)
+                            e["support_label"] = "user_asserted"
+                    new["status"] = "user_asserted"
+                    new.setdefault("data", {}).setdefault("custom", {}).update(hypothetical)
+                graph["nodes"] = [n for n in graph["nodes"] if n["id"] != old["id"]]
+                graph["edges"] = [
+                    e
+                    for e in graph["edges"]
+                    if old["id"] not in (e["source_node_id"], e["target_node_id"])
+                ]
+                applied.append(
+                    {
+                        "op": op,
+                        "removed": old["label"],
+                        **(
+                            {"replacement": new["label"], "node_id": new["id"]}
+                            if op == "replace_node"
+                            else {}
+                        ),
+                    }
+                )
+            else:
+                raise invalid(f"unknown op {op}")
+        except APIError as exc:
+            skipped.append({"op": op, "label": edit.label, "reason": exc.message})
+    return applied, skipped

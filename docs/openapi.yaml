@@ -362,6 +362,139 @@ paths:
         '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Enrichment' } } } }
 
   # ------------------------------------------------------------ geography
+  /graphs/{graph_id}/research:
+    post:
+      tags: [runs]
+      operationId: createFollowupRun
+      summary: Deepen or refine an existing graph with a natural-language instruction
+      description: >-
+        Starts a run bound to this graph (a base graph or a scenario) instead of a new one. The
+        instruction steers the planner's queries and tells the extractor what to look for (for
+        example, "separate wafer fabrication from packaging and test for the A17 Pro as distinct
+        steps with their own plants"); it never relaxes the evidence rules. Only the target nodes
+        (the product root when omitted) and the nodes the run creates under them are researched,
+        within the hop limit. Same limits, events, and BOM view as any run.
+      parameters:
+        - $ref: '#/components/parameters/GraphId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [instruction]
+              properties:
+                instruction: { type: string, minLength: 3, maxLength: 1000 }
+                target_node_ids: { type: array, items: { type: string }, maxItems: 50 }
+                limits: { $ref: '#/components/schemas/RunLimits' }
+      responses:
+        '202':
+          description: Follow-up run accepted (mode followup, with instruction)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Run' }
+  /graphs/{graph_id}/scenarios:
+    post:
+      tags: [graphs]
+      operationId: createScenario
+      summary: Fork the graph into a scenario for hypothetical edits and sandboxed research
+      description: >-
+        A scenario is a copy of a base graph at its current revision (mode scenario, with
+        parent_graph_id and forked_from_revision). Every graph endpoint works on it, follow-up
+        research on it stays sandboxed, and hypothetical edits are allowed only on it. The base
+        graph remains the latest real version.
+      parameters:
+        - $ref: '#/components/parameters/GraphId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string, maxLength: 200 }
+      responses:
+        '201':
+          description: Scenario graph metadata
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/GraphMeta' }
+    get:
+      tags: [graphs]
+      operationId: listScenarios
+      parameters:
+        - $ref: '#/components/parameters/GraphId'
+      responses:
+        '200':
+          description: Scenarios of this graph
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items: { type: array, items: { $ref: '#/components/schemas/GraphMeta' } }
+  /graphs/{graph_id}/scenarios/{scenario_id}/reset:
+    post:
+      tags: [graphs]
+      operationId: resetScenario
+      summary: Revert the scenario to the base graph's latest real version
+      parameters:
+        - $ref: '#/components/parameters/GraphId'
+        - { name: scenario_id, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: Scenario graph metadata after reset
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/GraphMeta' }
+  /graphs/{graph_id}/scenarios/{scenario_id}:
+    delete:
+      tags: [graphs]
+      operationId: deleteScenario
+      parameters:
+        - $ref: '#/components/parameters/GraphId'
+        - { name: scenario_id, in: path, required: true, schema: { type: string } }
+      responses:
+        '204': { description: Scenario discarded }
+  /graphs/{graph_id}/edits:
+    post:
+      tags: [graphs]
+      operationId: applyHypotheticalEdit
+      summary: Apply a natural-language hypothetical to a scenario graph
+      description: >-
+        The agent translates the instruction ("replace TSMC with Samsung Foundry", "remove the
+        Zhengzhou plant", "add Corning as organization supplier of Ceramic Shield") into
+        structured operations: add_node, add_edge, remove_edge, remove_node, replace_node (the
+        new entity takes over every relation of the old one). Applied only to scenario graphs.
+        Added nodes and edges are labelled user_asserted and carry the instruction as their
+        source and span under data.custom.hypothetical, so a hypothetical is never mistaken for
+        evidence. Returns what was applied and what was skipped with a reason.
+      parameters:
+        - $ref: '#/components/parameters/GraphId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [instruction]
+              properties:
+                instruction: { type: string, minLength: 3, maxLength: 1000 }
+      responses:
+        '200':
+          description: Edit outcome
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  edit_id: { type: string }
+                  graph_id: { type: string }
+                  revision: { type: integer }
+                  applied: { type: array, items: { type: object, additionalProperties: true } }
+                  skipped: { type: array, items: { type: object, additionalProperties: true } }
+        '400': { description: Not a scenario graph }
+        '409': { description: The scenario changed while the edit was proposed }
   /graphs/{graph_id}/sites:
     get:
       tags: [geography]
