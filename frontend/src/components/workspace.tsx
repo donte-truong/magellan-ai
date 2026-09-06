@@ -422,7 +422,7 @@ export function Workspace() {
             )
           )}
           <footer className="main-footer">
-            <span>MAGELLAN</span>
+            <span>Magellan</span>
             <p>Follow the parts. Find the bigger picture.</p>
             <span>
               Built on public evidence <ShieldCheck size={12} />

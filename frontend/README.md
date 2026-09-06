@@ -1,6 +1,6 @@
 # Magellan frontend
 
-A dark navy product exploration experience: **iPhone 17 Pro → animated 3D decomposition → supplier connections on a 3D globe**. The existing API-backed research workspace is available at `/research`.
+A dark navy landing page at `/home` and product exploration experience at `/`: **iPhone 17 Pro → animated 3D decomposition → supplier connections on a 3D globe**. The existing API-backed research workspace is available at `/research`. The product name is **Magellan**, with a capital M and no AI suffix.
 
 ## Run locally
 
@@ -21,11 +21,12 @@ To run the entire MVP in containers, use `docker compose --env-file backend/.env
 
 ## What the MVP includes
 
-- A three-stage featured demo with a persistent, original Three.js phone model, six animated assemblies, source links, reassembly, and selection highlighting.
+- A landing page at `/home` with the shared iPhone decomposition and interactive globe, flowing SVG waves, source links, and entry points into the demo and live workspace. An animated compass logo covers initial scene and font loading, then fades away. Entering the globe section triggers one animation: each of the six components condenses into a single glowing dot, then glides along a curved path into a projected surface location; the flight runs independently of further scrolling and does not replay on a return scroll. Landing controls are independent of demo state. Reduced motion omits the sticky sequence and component flight; the hero's secondary button still reveals or reassembles the iPhone.
+- A three-stage featured demo with a persistent, original Three.js phone model, six animated assemblies, source links, reassembly, and selection highlighting. The housing has an open frame and rear panel; the shared `scenes/phone-motion.ts` timeline separates components in depth before spreading them laterally and reverses that path for reassembly.
 - A draggable spherical world map with 7,015 bright land points, coastline outlines, illuminated relationship arcs, moving particles, supplier selection, search, zoom, and view reset.
 - Location cards connected to map pins by SVG lines, showing each company, city, and component. Nearby cards are spaced apart; search also accepts cities and component categories.
 - Supplier details, headquarters coordinates/source links, and JSON export with provenance and limitations.
-- Responsive mobile layouts, keyboard navigation, native modal focus handling, reduced motion, an animation pause control, and WebGL fallback illustrations.
+- Responsive mobile layouts, keyboard navigation, native modal focus handling, reduced motion, an animation pause control in the demo, and WebGL fallback illustrations.
 
 The live research workspace retains:
 
