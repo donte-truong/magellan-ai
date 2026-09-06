@@ -623,6 +623,20 @@ def enrichment_events(
 
 
 @router.get(
+    "/graphs/{graph_id}/sites",
+    tags=["geography"],
+    operation_id="getGraphSites",
+    summary="Map pins with what each site makes, shares as distributions, and provenance",
+)
+def graph_sites(request: Request, ws: Workspace, graph_id: str, revision: Revision = None):
+    from app.geography import sites
+
+    with request.app.state.db.transaction(ws) as repo:
+        graph = repo.graph(graph_id, revision)
+        return sites(graph)
+
+
+@router.get(
     "/graphs/{graph_id}/geography",
     response_model=schemas.GeoFeatureCollection,
     tags=["geography"],

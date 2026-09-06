@@ -317,8 +317,9 @@ async def test_document_allowance_is_shared_across_queries_and_irrelevant_pages_
     assert "tin" in {n["label"] for n in graph["nodes"]}
     history = (await client.get(f"/v1/runs/{run['id']}/history")).json()["entries"]
     skipped = [e for e in history if e.get("skipped") == "no mention of product or target"]
-    # Four unrelated filings per "one" query (root and tin tasks) were skipped without a call.
-    assert len(skipped) == 8 and provider.analyzed.count("Widget") == 1
+    # Four unrelated filings per "one" query were skipped without a call, for the product, tin,
+    # and Acme Smelting (location) tasks.
+    assert len(skipped) == 12 and provider.analyzed.count("Widget") == 1
 
 
 class ReplanningProvider(PageProvider):
@@ -1182,3 +1183,144 @@ async def test_one_edge_per_relation_takes_the_strongest_scope(api):
         "generic",
         "product",
     ]
+
+
+def test_gazetteer_resolves_places_with_precision():
+    from app.gazetteer import Gazetteer
+
+    g = Gazetteer()
+    city = g.resolve("Harrodsburg, Kentucky")
+    assert (city["country_iso2"], city["precision"], city["city"]) == ("US", "city", "Harrodsburg")
+    assert g.resolve("Hsinchu Science Park")["city"] == "Hsinchu"
+    assert g.resolve("Pencoed, South Wales")["country_iso2"] == "GB"
+    region = g.resolve("Kentucky")
+    assert (region["precision"], region["admin1"]) == ("region", "Kentucky")
+    country = g.resolve("Taiwan")
+    assert (country["country_iso2"], country["precision"]) == ("TW", "country")
+    assert g.resolve("Somewhere", "US")["precision"] == "country"  # extractor's code, centroid
+    assert g.resolve("Nowhere") is None
+    # A city must agree with a named region or country: no French Paris in Texas.
+    texas = g.resolve("Paris, Texas")
+    assert (texas["country_iso2"], texas["precision"], texas["admin1"]) == ("US", "region", "Texas")
+
+
+class SiteProvider(PageProvider):
+    """A teardown names an assembler with a stated share; a press page names its plant and
+    the plant's city."""
+
+    name = "test_sites"
+    bodies = {
+        "one": "Pegatron assembles 30% of Widget units. Widget contains tin.",
+        "two": "Pegatron operates the Kunshan plant in Kunshan, Jiangsu. The Kunshan plant builds Widget.",
+    }
+
+    async def search_pages(self, query, count, budget, **kwargs):
+        budget.charge("searches")
+        which = query.rsplit(" ", 1)[-1]
+        return [Page(url=f"https://example.org/{which}", title=which, body=self.bodies[which])]
+
+    async def analyze(self, target, product, company, url, title, body, budget):
+        self.analyzed.append(target["label"])
+        findings = []
+        if url.endswith("one"):
+            findings = [
+                Finding(
+                    "Pegatron",
+                    "organization",
+                    "MANUFACTURES",
+                    "Pegatron assembles 30% of Widget units",
+                    "stated share",
+                    share=0.3,
+                ),
+                Finding("tin", "material", "INPUT_TO", "Widget contains tin", "stated"),
+            ]
+        else:
+            # Harvesting: the plant relations are on the page whatever the target.
+            findings = [
+                Finding(
+                    "Pegatron",
+                    "organization",
+                    "OPERATES",
+                    "Pegatron operates the Kunshan plant",
+                    "plant",
+                    object_label="Kunshan plant",
+                    object_kind="facility",
+                ),
+                Finding(
+                    "Kunshan plant",
+                    "facility",
+                    "LOCATED_IN",
+                    "Pegatron operates the Kunshan plant in Kunshan, Jiangsu",
+                    "place",
+                    scope_type="product",  # normalized to generic
+                    object_label="Kunshan, Jiangsu",
+                    object_kind="geography",
+                    country_iso2="CN",
+                ),
+                Finding(
+                    "Kunshan plant",
+                    "facility",
+                    "MANUFACTURES",
+                    "The Kunshan plant builds Widget",
+                    "plant makes the product",
+                    object_label="Widget",
+                    object_kind="product",
+                ),
+            ]
+        return Document(url, title, "example.org", body, findings=findings)
+
+
+async def test_makers_are_located_and_shares_become_distributions(api):
+    client, app = api
+    provider = SiteProvider()
+    app.state.worker.provider = provider
+    run, graph = await researched(api, "Widget")
+    labels = {n["label"]: n for n in graph["nodes"]}
+    # The organization became a research target at depth 1 (after the parts); its pages had
+    # already been analyzed for the product, so it reused them without a model call.
+    events = sse_events(await client.get(run["events_url"]))
+    planned = {
+        e["payload"]["target_node_id"]: e["payload"]["depth"]
+        for e in events
+        if e["type"] == "task.planned"
+    }
+    assert planned[labels["Pegatron"]["id"]] == 1
+    assert labels["Kunshan plant"]["id"] in planned  # the plant is a target too
+    assert "Kunshan, Jiangsu" not in {n["label"] for n in graph["nodes"] if n["id"] in planned}
+    assert provider.analyzed == ["Widget", "Widget"]
+    place = labels["Kunshan, Jiangsu"]
+    assert place["external_ids"]["iso2"] == "CN"
+    assert place["data"]["geography"]["precision"] == "city"
+    plant = labels["Kunshan plant"]
+    layer = plant["data"]["geography"]
+    assert (layer["country_iso2"], layer["address"], layer["lat"]) == ("CN", "Kunshan", 31.39)
+    located = next(e for e in graph["edges"] if e["predicate"] == "LOCATED_IN")
+    assert layer["claim_ids"] == located["claim_ids"] and located["scope"]["type"] == "generic"
+    # The stated share sits on the edge and in the distribution; the plant carries it as a
+    # labelled prior split over the operator's located plants.
+    makes = next(
+        e
+        for e in graph["edges"]
+        if e["predicate"] == "MANUFACTURES" and e["source_node_id"] == labels["Pegatron"]["id"]
+    )
+    assert makes["data"]["operational"]["weight"] == 0.3
+    assert makes["data"]["custom"]["share"]["basis"] == "stated"
+    sites = (await client.get(f"/v1/graphs/{run['graph_id']}/sites")).json()
+    dist = next(
+        d
+        for d in sites["distributions"]
+        if d["family"] == "makers" and d["target_label"] == "Widget"
+    )
+    assert dist["stated_total"] == 0.3 and dist["unassigned"] == 0.7
+    by_label = {e["label"]: e for e in dist["entries"]}
+    assert by_label["Pegatron"]["share"] == 0.3
+    assert by_label["Kunshan plant"]["share"] is None
+    assert by_label["Kunshan plant"]["share_estimate"] == 0.7  # the only unstated source
+    pin = next(s for s in sites["sites"] if s["label"] == "Kunshan plant")
+    assert (pin["country_iso2"], pin["city"], pin["precision"]) == ("CN", "Kunshan", "city")
+    assert pin["location_sources"] == ["https://example.org/two"]
+    assert pin["operators"][0]["label"] == "Pegatron"
+    widget_row = next(m for m in pin["makes"] if m["label"] == "Widget")
+    assert widget_row["share_basis"] in {"uniform_prior", "stated_over_plants"}
+    # Pegatron itself has no place of its own, so it is not a pin.
+    assert not any(s["label"] == "Pegatron" for s in sites["sites"])

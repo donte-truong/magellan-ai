@@ -65,6 +65,7 @@ def create_run(repo, request, provider):
         "usage": usage,
         "progress": {"tasks_done": 0, "tasks_total": 1},
         "frontier": {"0": 1},
+        "enrichment_ids": [],
         "pending_questions": [],
         "stop_reason": None,
         "open_questions": [

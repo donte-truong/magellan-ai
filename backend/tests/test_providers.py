@@ -121,6 +121,7 @@ async def test_live_provider_fetches_raw_text_and_checks_quotes_and_entailment(l
                             "entailed": True,
                             "scope_matches": True,
                             "quantity_supported": False,
+                            "share_supported": False,
                             "reason": "stated",
                         },
                         {
@@ -128,6 +129,7 @@ async def test_live_provider_fetches_raw_text_and_checks_quotes_and_entailment(l
                             "entailed": False,
                             "scope_matches": True,
                             "quantity_supported": False,
+                            "share_supported": False,
                             "reason": "stated",
                         },
                     ]
@@ -314,6 +316,7 @@ async def test_verification_sends_quote_windows_instead_of_the_whole_page():
                             "entailed": True,
                             "scope_matches": True,
                             "quantity_supported": False,
+                            "share_supported": False,
                             "reason": "stated",
                         }
                     ]

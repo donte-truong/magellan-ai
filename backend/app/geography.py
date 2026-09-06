@@ -212,3 +212,186 @@ class GeographyService:
             "revision": graph["revision"],
             "features": public(features),
         }
+
+
+MAKER_PREDICATES = {"MANUFACTURES", "PRODUCES"}
+PRECISION_RANK = {"address": 3, "city": 2, "region": 1, "country": 0}
+
+
+def distributions(graph):
+    """Who makes, and who supplies, each product, component, material, or organization, as a
+    distribution over sources. Stated shares come from verified claims (an edge's operational
+    weight). The rest of the mass is `unassigned`; sources with no stated share also carry a
+    uniform-prior estimate over that remainder, labelled as an estimate, never as evidence.
+    Distributions may sum to less than one when information is missing."""
+    nodes = {n["id"]: n for n in graph["nodes"]}
+    out = []
+    for target in graph["nodes"]:
+        for family, predicates, kinds in (
+            ("makers", MAKER_PREDICATES, {"product", "component", "material"}),
+            ("suppliers", {"SUPPLIES"}, {"organization", "facility"}),
+        ):
+            if target["kind"] not in kinds:
+                continue
+            edges = [
+                e
+                for e in graph["edges"]
+                if e["target_node_id"] == target["id"] and e["predicate"] in predicates
+            ]
+            if not edges:
+                continue
+            entries, stated_total = [], 0.0
+            for edge in edges:
+                source = nodes[edge["source_node_id"]]
+                weight = ((edge.get("data") or {}).get("operational") or {}).get("weight")
+                entries.append(
+                    {
+                        "node_id": source["id"],
+                        "label": source["label"],
+                        "kind": source["kind"],
+                        "predicate": edge["predicate"],
+                        "scope": edge["scope"]["type"],
+                        "share": weight,
+                        "share_basis": "stated" if weight is not None else None,
+                        "share_estimate": None,
+                        "estimate_basis": None,
+                        "claim_ids": list(edge["claim_ids"]),
+                    }
+                )
+                stated_total += weight or 0.0
+            unassigned = max(0.0, 1.0 - stated_total)
+            unstated = [e for e in entries if e["share"] is None]
+            for entry in unstated:
+                entry["share_estimate"] = round(unassigned / len(unstated), 4)
+                entry["estimate_basis"] = "uniform_prior"
+            out.append(
+                {
+                    "target_node_id": target["id"],
+                    "target_label": target["label"],
+                    "family": family,
+                    "entries": entries,
+                    "stated_total": round(min(1.0, stated_total), 4),
+                    "unassigned": round(unassigned, 4),
+                }
+            )
+    return out
+
+
+def sites(graph):
+    """Pins for a map: every facility or organization with a resolved place, what it makes or
+    supplies for this graph with its share (stated, or a uniform prior over the unassigned
+    remainder, and split evenly across an operator's located plants when only the operator's
+    share is known), the place's precision and method, and the claims and sources behind the
+    location and the relations."""
+    nodes = {n["id"]: n for n in graph["nodes"]}
+    claims = graph.get("_claims") or {c["id"]: c for c in graph.get("claims", [])}
+    dist = {(d["target_node_id"], d["family"]): d for d in distributions(graph)}
+    operators = {}  # facility id -> organization ids
+    plants = {}  # organization id -> located facility ids
+    for edge in graph["edges"]:
+        org, plant = None, None
+        if edge["predicate"] == "OPERATES":
+            org, plant = edge["source_node_id"], edge["target_node_id"]
+        elif edge["predicate"] == "OWNED_BY":
+            org, plant = edge["target_node_id"], edge["source_node_id"]
+        if org and plant and nodes.get(plant, {}).get("kind") == "facility":
+            operators.setdefault(plant, []).append(org)
+            if (nodes[plant].get("data") or {}).get("geography"):
+                plants.setdefault(org, []).append(plant)
+
+    def urls(claim_ids):
+        found = []
+        for cid in claim_ids:
+            for ev in (claims.get(cid) or {}).get("evidence", []):
+                url = (ev.get("source") or {}).get("url")
+                if url and url not in found:
+                    found.append(url)
+        return found
+
+    def makes_for(node_id, divide=1, basis_suffix=""):
+        rows = []
+        for edge in graph["edges"]:
+            if edge["source_node_id"] != node_id:
+                continue
+            family = (
+                "makers"
+                if edge["predicate"] in MAKER_PREDICATES
+                else "suppliers"
+                if edge["predicate"] == "SUPPLIES"
+                else None
+            )
+            if family is None:
+                continue
+            entry = next(
+                (
+                    e
+                    for e in dist.get((edge["target_node_id"], family), {}).get("entries", [])
+                    if e["node_id"] == node_id and e["predicate"] == edge["predicate"]
+                ),
+                None,
+            )
+            share = basis = None
+            if entry and entry["share"] is not None:
+                share, basis = entry["share"], "stated"
+            elif entry and entry["share_estimate"] is not None:
+                share, basis = entry["share_estimate"], "uniform_prior"
+            if share is not None and divide > 1:
+                share, basis = round(share / divide, 4), f"{basis}{basis_suffix}"
+            rows.append(
+                {
+                    "node_id": edge["target_node_id"],
+                    "label": nodes[edge["target_node_id"]]["label"],
+                    "kind": nodes[edge["target_node_id"]]["kind"],
+                    "predicate": edge["predicate"],
+                    "scope": edge["scope"]["type"],
+                    "share": share,
+                    "share_basis": basis,
+                    "claim_ids": list(edge["claim_ids"]),
+                    "sources": urls(edge["claim_ids"]),
+                }
+            )
+        return rows
+
+    out = []
+    for node in graph["nodes"]:
+        if node["kind"] not in {"facility", "organization"}:
+            continue
+        layer = (node.get("data") or {}).get("geography")
+        if not layer or layer.get("lat") is None or layer.get("lon") is None:
+            continue
+        makes = makes_for(node["id"])
+        if node["kind"] == "facility":
+            # A plant inherits what its operator makes, split evenly across the operator's
+            # located plants: which plant a given unit comes from is not knowable from public
+            # text, so the split is a labelled prior, not a claim.
+            for org in operators.get(node["id"], []):
+                count = max(1, len(plants.get(org, [])))
+                for row in makes_for(org, divide=count, basis_suffix="_over_plants"):
+                    if not any(
+                        r["node_id"] == row["node_id"] and r["predicate"] == row["predicate"]
+                        for r in makes
+                    ):
+                        row["via_organization_id"] = org
+                        makes.append(row)
+        out.append(
+            {
+                "node_id": node["id"],
+                "kind": node["kind"],
+                "label": node["label"],
+                "country_iso2": layer["country_iso2"],
+                "admin1": layer.get("admin1"),
+                "city": layer.get("address"),
+                "lat": layer["lat"],
+                "lon": layer["lon"],
+                "precision": layer.get("precision", "country"),
+                "geocoding": ((node.get("data") or {}).get("custom") or {}).get("geocoding"),
+                "location_claim_ids": list(layer.get("claim_ids", [])),
+                "location_sources": urls(layer.get("claim_ids", [])),
+                "operators": [
+                    {"node_id": o, "label": nodes[o]["label"]}
+                    for o in operators.get(node["id"], [])
+                ],
+                "makes": makes,
+            }
+        )
+    return {"sites": out, "distributions": list(dist.values())}

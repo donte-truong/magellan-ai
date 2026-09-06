@@ -448,6 +448,9 @@ class Run(Model):
     progress: dict[str, int]
     # Pending research tasks per tier (new field; progress stays a flat int map).
     frontier: dict[str, int] = Field(default_factory=dict)
+    # Follow-up jobs the run queued when it finished (geography for facilities without an
+    # evidenced location); poll them at /graphs/{graph_id}/enrichments/{id}.
+    enrichment_ids: list[str] = Field(default_factory=list)
     pending_questions: list[RunQuestion]
     stop_reason: str | None = None
     open_questions: list[str]

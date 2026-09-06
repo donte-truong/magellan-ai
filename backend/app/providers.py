@@ -192,6 +192,10 @@ class Finding:
     object_kind: str | None = None
     part_number: str | None = None
     manufacturer: str | None = None
+    # ISO 3166-1 alpha-2 of the geography endpoint when the span names a place; stated share
+    # (0-1) of the object's supply, production, or assembly the subject accounts for.
+    country_iso2: str | None = None
+    share: float | None = None
     # Model-assisted resolution hints, keyed "subject"/"object":
     # {"node_id", "verdict" ("same"|"unsure"), "rationale"}. Deterministic matches take precedence.
     resolved: dict = field(default_factory=dict)
@@ -528,6 +532,11 @@ class ExtractedFinding(Model):
     rationale: str
     quantity: float | None
     unit: str | None
+    # ISO 3166-1 alpha-2 for a geography endpoint (city, region, or country named in the span).
+    country_iso2: str | None = Field(default=None, pattern="^[A-Z]{2}$")
+    # Fraction (0-1) of the object's supply, production, or assembly the subject accounts for,
+    # only when the span states a percentage or share.
+    share: float | None = Field(default=None, ge=0, le=1)
 
 
 class Extraction(Model):
@@ -544,7 +553,7 @@ class PlannedQuery(Model):
 
 class Plan(Model):
     relation_sought: Literal[
-        "upstream_inputs", "manufacturer_or_facility", "material_origin", "supplier"
+        "upstream_inputs", "manufacturer_or_facility", "material_origin", "supplier", "location"
     ]
     queries: list[PlannedQuery] = Field(max_length=3)
     skip: bool
@@ -557,6 +566,8 @@ class VerificationItem(Model):
     entailed: bool
     scope_matches: bool
     quantity_supported: bool
+    # True only when the quote states the share (a percentage or fraction) for this subject.
+    share_supported: bool
     # Short reason, kept with the rejection so reviewers can see why the verifier disagreed.
     reason: str = Field(max_length=200)
 
@@ -908,7 +919,9 @@ class LiveProvider:
             "relationships already evidenced, the relation types still unanswered for the target, previous "
             "and failed queries, and the remaining budget, choose relation_sought and propose at most three "
             "short literal web-search queries with the source types they should reach (datasheets, "
-            "teardowns, filings such as SEC Form SD, supplier lists, government datasets). Prefer "
+            "teardowns, filings such as SEC Form SD, supplier lists, government datasets). For an "
+            "organization, relation location means the plants or sites where it makes the product's "
+            "parts and where they are; for a facility it means its city and country. Prefer "
             "unanswered relation types and primary sources. Do not repeat failed queries. Set skip=true "
             "with a reason when no public source is likely to add verified evidence. Do not state findings.",
             context,
@@ -957,7 +970,14 @@ class LiveProvider:
             "components, suppliers, facilities or raw materials. Each relationship has a subject (label, "
             "kind) and an object; object_label null means the target entity. Kinds: companies and "
             "brands are organization, plants and sites are facility, parts and chips are component, "
-            "raw materials are material; the researched product is the only product. Firmware images, "
+            "raw materials are material, cities, regions and countries are geography; the researched "
+            "product is the only product. A named plant or site is a facility: report the company "
+            "OPERATES it, the facility MANUFACTURES or PRODUCES what it makes, and the facility "
+            "LOCATED_IN its city, region, or country as a geography object, setting country_iso2 to "
+            "that place's ISO 3166-1 alpha-2 code. A company's headquarters is LOCATED_IN too, but "
+            "never stands in for a plant. When the span states what fraction or percentage of the "
+            "object's assembly, production, or supply the subject accounts for, set share as a "
+            "fraction between 0 and 1. Firmware images, "
             "drivers, kernel modules, software packages, and configuration files are not components or "
             "materials; omit them. Accessories, kits, bundles, and compatible add-ons are not parts of "
             "the product. Ports, slots, headers, connectors, and interface standards (USB 3.0, Wi-Fi 6, "
@@ -1013,6 +1033,8 @@ class LiveProvider:
                     object_kind=entry.object_kind,
                     part_number=entry.part_number,
                     manufacturer=entry.manufacturer,
+                    country_iso2=entry.country_iso2,
+                    share=entry.share,
                 )
             )
         for i, entry in enumerate(extraction.findings):
@@ -1046,7 +1068,8 @@ class LiveProvider:
                 "and scope. Product scope must identify the exact product. Company lists cannot prove "
                 "product or factory scope. A mentioned material or supplier is not necessarily an input. "
                 "A designer is not necessarily a manufacturer. Mark quantity_supported false unless both "
-                "quantity and unit are stated. Generic scope is satisfied when the context names both "
+                "quantity and unit are stated. Mark share_supported false unless the quote states the "
+                "share for this subject. Generic scope is satisfied when the context names both "
                 "entities; it does not require the product to be named. Return exactly one judgment "
                 "for each supplied index.",
                 {
@@ -1078,6 +1101,8 @@ class LiveProvider:
                     findings[i].rationale = f"{findings[i].rationale} | verifier: {reason}"
                 if not judgment or not judgment.quantity_supported:
                     findings[i].quantity = findings[i].unit = None
+                if not judgment or not judgment.share_supported:
+                    findings[i].share = None
         return Document(url, title or url, urlsplit(url).hostname or "", body, findings=findings)
 
     async def search_pages(

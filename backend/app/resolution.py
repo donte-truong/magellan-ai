@@ -27,7 +27,18 @@ RELATION_TYPES = {
     "manufacturer_or_facility": {"MANUFACTURES", "PRODUCES"},
     "material_origin": {"PROCESSED_BY", "PRODUCES"},
     "supplier": {"SUPPLIES"},
+    # Where an organization's plants are, and where a facility is: LOCATED_IN points at a
+    # geography node; OPERATES links a company to a named site.
+    "location": {"LOCATED_IN", "OPERATES"},
 }
+# Relations that describe an entity itself, not the researched product's supply of it.
+GENERIC_PREDICATES = {"LOCATED_IN", "OPERATES", "OWNED_BY"}
+
+
+def normalized_scope(predicate, scope_type):
+    return "generic" if predicate in GENERIC_PREDICATES else scope_type
+
+
 NON_DEPENDENCY_KINDS = {"organization", "facility", "geography"}
 
 

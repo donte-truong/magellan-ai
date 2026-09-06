@@ -12,7 +12,8 @@ from urllib.parse import urlsplit
 from app.config import Settings
 from app.db import Database, digest, new_id, now, public
 from app.errors import APIError
-from app.geography import GeographyService
+from app.gazetteer import Gazetteer
+from app.geography import PRECISION_RANK, GeographyService
 from app.graphs import (
     add_claim_edge,
     make_node,
@@ -26,6 +27,7 @@ from app.resolution import (
     near_duplicates,
     normalize_label,
     normalized_predicate,
+    normalized_scope,
     part_tokens,
     record_identity,
     resolution_candidates,
@@ -106,9 +108,45 @@ RELATIONS_BY_KIND = {
     "product": ["upstream_inputs", "manufacturer_or_facility"],
     "component": ["upstream_inputs", "manufacturer_or_facility"],
     "material": ["material_origin", "supplier"],
-    "organization": ["supplier"],
-    "facility": ["supplier"],
+    # Makers and sites are researched for where they are: an organization's plants and their
+    # places, a facility's city and country. Geography nodes are never researched.
+    "organization": ["location", "supplier"],
+    "facility": ["location"],
 }
+LOCATION_TASK_SEARCHES = 2
+
+
+def research_depth(node, graph):
+    """Hop count for scheduling: a part's tier; for a maker or site, one more than the nearest
+    tiered node it relates to; none for geography and for makers not yet tied to the graph."""
+    if node["kind"] in {"product", "component", "material"}:
+        return node["tier"]
+    if node["kind"] == "geography":
+        return None
+    tiers = {n["id"]: n["tier"] for n in graph["nodes"] if n.get("tier") is not None}
+    connected = [
+        tiers[other]
+        for e in graph["edges"]
+        for other in ((e["target_node_id"],) if e["source_node_id"] == node["id"] else ())
+        + ((e["source_node_id"],) if e["target_node_id"] == node["id"] else ())
+        if other in tiers
+    ]
+    return min(connected) + 1 if connected else None
+
+
+def nearest_tiered(node, graph):
+    tiers = {n["id"]: n["tier"] for n in graph["nodes"] if n.get("tier") is not None}
+    best = None
+    for e in graph["edges"]:
+        for a, b in (
+            (e["source_node_id"], e["target_node_id"]),
+            (e["target_node_id"], e["source_node_id"]),
+        ):
+            if a == node["id"] and b in tiers and (best is None or tiers[b] < tiers[best]):
+                best = b
+    return best
+
+
 PRIORITY_RANK = {"high": 0, "medium": 1, "low": 2}
 
 
@@ -148,6 +186,11 @@ class RunState:
     def branch(self, node, graph):
         if node["id"] == graph["root_node_id"]:
             return "root"
+        if node["id"] not in self.branch_of and node["kind"] in NON_DEPENDENCY_KINDS:
+            anchor = nearest_tiered(node, graph)
+            if anchor is not None:
+                anchor_node = next(n for n in graph["nodes"] if n["id"] == anchor)
+                self.branch_of[node["id"]] = self.branch(anchor_node, graph)
         return self.branch_of.get(node["id"], node["id"])
 
 
@@ -240,6 +283,7 @@ class Worker:
         self.db, self.settings = db, settings
         self.provider = provider or build_provider(settings)
         self.geography = geography or GeographyService(settings.production_data_path)
+        self.gazetteer = Gazetteer()
         self.identifier = new_id("worker")
 
     def emit(self, repo, job, kind, payload):
@@ -475,6 +519,7 @@ class Worker:
                 repo.put("run", current)
                 return
             graph = repo.graph(current["graph_id"])
+            self.queue_geography(repo, current, graph)
             current.update(
                 status="partial",
                 stop_reason=reason,
@@ -509,19 +554,24 @@ class Worker:
         )
 
     def pending_tasks(self, graph, run, state):
-        return [
-            n
-            for n in graph["nodes"]
-            if n["tier"] is not None
-            and n["tier"] < run["limits"]["max_hops"]
-            and n["id"] not in state.visited
-            and state.branch(n, graph) not in state.paused
-        ]
+        pending = []
+        for n in graph["nodes"]:
+            depth = research_depth(n, graph)
+            if depth is None or n["id"] in state.visited:
+                continue
+            # A part at the last hop cannot have children; a maker or site at the last hop
+            # can still be located, which adds no tier.
+            limit = run["limits"]["max_hops"] + (1 if n["kind"] in NON_DEPENDENCY_KINDS else 0)
+            if depth >= limit or state.branch(n, graph) in state.paused:
+                continue
+            pending.append(n)
+        return pending
 
     def frontier_counts(self, graph, run, state):
         counts = {}
         for node in self.pending_tasks(graph, run, state):
-            counts[str(node["tier"])] = counts.get(str(node["tier"]), 0) + 1
+            depth = str(research_depth(node, graph))
+            counts[depth] = counts.get(depth, 0) + 1
         return counts
 
     def next_task(self, workspace, identifier, run, state):
@@ -544,7 +594,9 @@ class Worker:
             return (
                 branch in busy,
                 fairness,
-                node["tier"],
+                research_depth(node, graph),
+                # Parts before makers at the same depth: their findings open new branches.
+                node["kind"] in NON_DEPENDENCY_KINDS,
                 -len(unanswered_relations(graph, node)),
                 node["label"],
             )
@@ -626,11 +678,12 @@ class Worker:
         branch = state.branch(target, graph)
         budget.check()
         plan = await self.plan_task(run, graph, target, budget, questions, state)
+        depth = research_depth(target, graph)
         task = {
             "task_id": new_id("task"),
             "target_node_id": target["id"],
             "relation_sought": plan["relation_sought"],
-            "depth": target["tier"],
+            "depth": depth,
         }
         with self.db.transaction(workspace, write=True) as repo:
             current = self.owned(repo, identifier)
@@ -659,11 +712,13 @@ class Worker:
             # Everything descends from the product task, so it gets twice the per-task allowance;
             # deep targets (tier 2 and below) get one search fewer, since the search cap is what
             # binds long before the document cap and their questions are narrower.
-            tier = target.get("tier") or 0
+            tier = depth or 0
             scale = 2 if tier == 0 else 1
             searches_cap = run["limits"]["max_searches_per_task"] * scale
             if tier >= 2:
                 searches_cap = max(1, searches_cap - 1)
+            if target["kind"] in NON_DEPENDENCY_KINDS:
+                searches_cap = min(searches_cap, LOCATION_TASK_SEARCHES)
             limits = {
                 **run["limits"],
                 "max_searches_per_task": searches_cap,
@@ -939,6 +994,97 @@ class Worker:
             )
             await asyncio.sleep(0)
         return found, docs
+
+    def place_fields(self, label, country_iso2=None):
+        """external_ids and data for a new geography node, from the gazetteer when it knows the
+        place, else from the extractor's country code alone (no coordinates)."""
+        place = self.gazetteer.resolve(label, country_iso2)
+        code = (place or {}).get("country_iso2") or country_iso2
+        if not code:
+            return {}
+        fields = {"external_ids": {"iso2": code}}
+        layer = {
+            "country_iso2": code,
+            "admin1": (place or {}).get("admin1"),
+            "lat": (place or {}).get("lat"),
+            "lon": (place or {}).get("lon"),
+            "address": (place or {}).get("city"),
+            "precision": (place or {}).get("precision", "country"),
+            "claim_ids": [],
+        }
+        fields["data"] = {
+            "geography": layer,
+            "custom": {
+                "geocoding": {
+                    "method": (place or {}).get("method", "extractor_country_code"),
+                    "precision": layer["precision"],
+                    "note": "Approximate centre from a reference gazetteer; not a facility address.",
+                }
+            },
+        }
+        return fields
+
+    def same_place(self, graph, label, country_iso2=None):
+        """An existing geography node for the same resolved place ('Harrodsburg, KY' and
+        'Harrodsburg, Kentucky'); only when the gazetteer resolves both to one city, region, or
+        country at the same precision."""
+        place = self.gazetteer.resolve(label, country_iso2)
+        if not place:
+            return None
+        for node in graph["nodes"]:
+            layer = (node.get("data") or {}).get("geography") or {}
+            if (
+                node["kind"] == "geography"
+                and layer.get("country_iso2") == place["country_iso2"]
+                and layer.get("precision") == place["precision"]
+                and (layer.get("address") or None) == place.get("city")
+                and (layer.get("admin1") or None) == place.get("admin1")
+            ):
+                return node
+        return None
+
+    @staticmethod
+    def place_subject(subject, place_node, claim_id):
+        """A facility or organization takes the place's layer when it has none or the new place
+        is more precise; the LOCATED_IN claim is the layer's evidence."""
+        layer = (place_node.get("data") or {}).get("geography")
+        if not layer or subject["kind"] not in {"facility", "organization"}:
+            return
+        current = (subject.get("data") or {}).get("geography")
+        if current and PRECISION_RANK.get(current.get("precision"), 0) >= PRECISION_RANK.get(
+            layer.get("precision"), 0
+        ):
+            if claim_id not in current.get("claim_ids", []) and current.get(
+                "country_iso2"
+            ) == layer.get("country_iso2"):
+                current.setdefault("claim_ids", []).append(claim_id)
+            return
+        subject.setdefault("data", {})["geography"] = {**deepcopy(layer), "claim_ids": [claim_id]}
+        subject["data"].setdefault("custom", {})["geocoding"] = deepcopy(
+            ((place_node.get("data") or {}).get("custom") or {}).get("geocoding")
+        )
+
+    def queue_geography(self, repo, run, graph):
+        """Facilities still without an evidenced location get a follow-up geography job."""
+        if not hasattr(self.provider, "locate"):
+            return
+        from app import jobs
+        from app.schemas import EnrichmentCreate
+
+        missing = [
+            n["id"]
+            for n in graph["nodes"]
+            if n["kind"] == "facility" and not self.geography.evidenced_location(graph, n)
+        ]
+        if not missing:
+            return
+        try:
+            job = jobs.create_enrichment(
+                repo, graph["id"], EnrichmentCreate(kinds=["geography"], node_ids=missing[:150])
+            )
+        except APIError:
+            return
+        run.setdefault("enrichment_ids", []).append(job["id"])
 
     def retry_orphans(self, workspace, identifier, budget, state):
         """Re-commit findings whose whole was missing, now that the graph has grown. Still
@@ -1375,6 +1521,7 @@ class Worker:
                 finding.predicate = normalized_predicate(
                     finding.predicate, finding.kind, object_kind
                 )
+                finding.scope_type = normalized_scope(finding.predicate, finding.scope_type)
                 rejected = finding.rejection
                 if finding.span not in document.body:
                     rejected = "span_not_found"
@@ -1412,6 +1559,8 @@ class Worker:
                         obj, o_review = target_node, None
                     else:
                         obj, o_review = resolve_entity(graph, object_kind, object_label)
+                        if obj is None and o_review is None and object_kind == "geography":
+                            obj = self.same_place(graph, object_label, finding.country_iso2)
                     hinted = []
                     if s_review == "identifier_conflict" and finding.resolved.get("subject"):
                         hint = finding.resolved["subject"]
@@ -1576,7 +1725,16 @@ class Worker:
                         graph["nodes"].append(subject)
                         added.append(subject)
                     if obj is None:
-                        obj = make_node(object_kind, object_label, status=finding.support_label)
+                        obj = make_node(
+                            object_kind,
+                            object_label,
+                            status=finding.support_label,
+                            **(
+                                self.place_fields(object_label, finding.country_iso2)
+                                if object_kind == "geography"
+                                else {}
+                            ),
+                        )
                         graph["nodes"].append(obj)
                         added.append(obj)
                     if state is not None:
@@ -1618,8 +1776,25 @@ class Worker:
                         finding.support_label,
                         finding.rationale,
                         f"{document.locator}; chars {document.body.find(finding.span)}:{document.body.find(finding.span) + len(finding.span)}",
-                        {"operational": {"quantity": finding.quantity, "unit": finding.unit}},
+                        {
+                            "operational": {
+                                "quantity": finding.quantity,
+                                "unit": finding.unit,
+                                "weight": finding.share,
+                            }
+                        },
                     )
+                    if finding.share is not None:
+                        operational = edge.setdefault("data", {}).setdefault("operational", {})
+                        if operational.get("weight") is None:
+                            operational["weight"] = finding.share
+                        edge["data"].setdefault("custom", {})["share"] = {
+                            "value": finding.share,
+                            "basis": "stated",
+                            "claim_id": claim["id"],
+                        }
+                    if finding.predicate == "LOCATED_IN":
+                        self.place_subject(subject, obj, claim["id"])
                     # Save before events so the event revision is the committed snapshot revision.
                     graph["revision"] += 1
                     refresh(graph)
