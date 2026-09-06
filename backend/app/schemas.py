@@ -851,6 +851,9 @@ class EditCreate(Model):
     base graph; the instruction is the provenance of what it adds."""
 
     instruction: str = Field(min_length=3, max_length=1000)
+    revision: int | None = Field(default=None, ge=0)
+    target_node_ids: list[str] = Field(default_factory=list, max_length=50)
+    target_edge_ids: list[str] = Field(default_factory=list, max_length=50)
 
 
 class EditResult(Model):

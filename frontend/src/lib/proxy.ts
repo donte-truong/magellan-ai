@@ -7,7 +7,7 @@ const readPaths = [
 const writePaths = [
   /^bom\/decompose$/,
   new RegExp(`^runs/${identifier}/(?:cancel|answers)$`),
-  new RegExp(`^graphs/${identifier}/(?:research|scenarios|edits)$`),
+  new RegExp(`^graphs/${identifier}/(?:chat|research|scenarios|edits)$`),
   new RegExp(`^graphs/${identifier}/scenarios/${identifier}/reset$`),
 ];
 const deletePaths = [new RegExp(`^graphs/${identifier}/scenarios/${identifier}$`)];
@@ -35,7 +35,7 @@ export async function proxyRequest(request: Request, segments: string[]) {
   const path = segments.join("/");
   if (!allowedPath(path, request.method)) return failure("Resource not found", 404, "not_found");
   const origin = request.headers.get("origin");
-  if (request.method === "POST" && origin) {
+  if (["POST", "DELETE"].includes(request.method) && origin) {
     // Next may construct request.url with an internal hostname. Host retains the
     // browser-facing authority, including its port, through the local server.
     const host = request.headers.get("host") || new URL(request.url).host;
@@ -74,7 +74,7 @@ export async function proxyRequest(request: Request, segments: string[]) {
           const { done, value } = await reader.read();
           if (done) break;
           length += value.byteLength;
-          if (length > 16_384) {
+          if (length > (path.endsWith("/chat") ? 65_536 : 16_384)) {
             await reader.cancel();
             return failure("Request is too large", 413, "invalid_input");
           }
@@ -90,7 +90,10 @@ export async function proxyRequest(request: Request, segments: string[]) {
       body: body || undefined,
       cache: "no-store",
       redirect: "error",
-      signal: AbortSignal.any([request.signal, AbortSignal.timeout(20_000)]),
+      signal: AbortSignal.any([
+        request.signal,
+        AbortSignal.timeout(/\/(chat|edits)$/.test(path) ? 100_000 : 20_000),
+      ]),
     });
     const responseHeaders = new Headers({ "Cache-Control": "no-store" });
     for (const key of ["content-type", "content-disposition", "retry-after", "x-request-id"]) {

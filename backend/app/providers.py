@@ -3,9 +3,12 @@
 import asyncio
 import ipaddress
 import json
+import math
 import time
 from collections.abc import AsyncIterator
 from dataclasses import dataclass, field
+from datetime import UTC, datetime
+from email.utils import parsedate_to_datetime
 from importlib.resources import files
 from typing import Literal
 from urllib.parse import urlsplit
@@ -115,8 +118,98 @@ VERIFY_BATCH = 10
 
 
 class ProviderFailure(Exception):
-    def __init__(self, code, message):
+    def __init__(self, code: str, message: str, *, http_status: int | None = None):
+        super().__init__(message)
         self.code, self.message = code, message
+        self.http_status = http_status
+
+
+def response_failure(url, status, payload):
+    """Classify provider errors without retaining or exposing their untrusted response text."""
+    host = urlsplit(url).hostname
+    provider = {
+        "openrouter.ai": "OpenRouter",
+        "api.openai.com": "OpenAI",
+        "api.tavily.com": "Tavily",
+    }.get(host, "The research provider")
+    error = payload.get("error") if isinstance(payload, dict) else None
+    error_code = error.get("code") if isinstance(error, dict) else None
+    # Some gateways report errors in a successful HTTP response. The error envelope, not
+    # a missing model choice or usage record, explains these failures.
+    effective_status = status
+    if status < 400 and (
+        type(error_code) is int or (isinstance(error_code, str) and error_code.isdigit())
+    ):
+        effective_status = int(error_code)
+    text = error if isinstance(error, str) else ""
+    if isinstance(error, dict):
+        message = error.get("message")
+        metadata = error.get("metadata")
+        raw = metadata.get("raw") if isinstance(metadata, dict) else None
+        # OpenRouter puts upstream daily-cap errors in metadata.raw, sometimes as JSON text.
+        text = " ".join(v[:4000] for v in (message, raw) if isinstance(v, str))
+    text = text.casefold()
+    quota = error_code in ("insufficient_quota", "quota_exhausted", "daily_limit_exceeded") or (
+        effective_status == 429
+        and any(phrase in text for phrase in ("daily limit", "daily quota", "requests per day"))
+        and any(word in text for word in ("reached", "exceed", "exhaust"))
+    )
+    if host == "api.tavily.com" and (effective_status == 432 or quota):
+        code = "provider_quota_exhausted"
+        message = (
+            "Tavily has reached its search usage limit. Check the Tavily account limit or "
+            "wait for the allowance to reset before retrying research."
+        )
+    elif quota:
+        code = "provider_quota_exhausted"
+        message = (
+            f"{provider} reports that the configured model or account has exhausted its quota. "
+            "Retry after the quota resets or configure an available model."
+        )
+    elif effective_status in (401, 403):
+        code = "provider_auth_failed"
+        message = f"{provider} rejected its credentials or access. Check the backend provider configuration."
+    elif effective_status == 402:
+        code = "provider_quota_exhausted"
+        message = (
+            f"{provider} has insufficient credits. Check the provider account before retrying."
+        )
+    elif effective_status == 404 and host in ("openrouter.ai", "api.openai.com"):
+        code = "provider_model_unavailable"
+        message = f"{provider} has no available route for the configured model. Check the backend model configuration."
+    elif effective_status == 429:
+        code = "provider_rate_limited"
+        message = f"{provider} is temporarily rate limited. Wait before retrying research."
+    elif effective_status == 400:
+        code = "provider_request_invalid"
+        message = (
+            f"{provider} rejected the request. Check the configured model and supported parameters."
+        )
+    elif effective_status >= 500 or status < 400:
+        code = "provider_unavailable"
+        message = f"{provider} is currently unavailable. Try research again shortly."
+    else:
+        code = "source_unavailable"
+        message = f"{provider} could not complete the request."
+    return ProviderFailure(code, message, http_status=status)
+
+
+def retry_delay(value):
+    """Retry-After supports seconds or an HTTP date; malformed values use the bounded default."""
+    if value:
+        try:
+            seconds = float(value)
+        except ValueError:
+            try:
+                when = parsedate_to_datetime(value)
+                if when.tzinfo is None:
+                    when = when.replace(tzinfo=UTC)
+                seconds = (when - datetime.now(UTC)).total_seconds()
+            except (ValueError, TypeError, OverflowError):
+                seconds = RATE_LIMIT_WAIT_SECONDS
+        if math.isfinite(seconds):
+            return max(0.0, seconds)
+    return RATE_LIMIT_WAIT_SECONDS
 
 
 def public_url(url):
@@ -705,20 +798,29 @@ class LiveProvider:
         try:
             for attempt in range(RATE_LIMIT_RETRIES + 1):
                 response = await self.post(url, token, body)
-                # A 429 is rejected before any generation, so waiting and retrying cannot bill
-                # twice. Shared free pools return these transiently; honour Retry-After, bounded.
-                if response.status_code != 429 or attempt == RATE_LIMIT_RETRIES:
-                    break
                 try:
-                    wait = float(response.headers.get("retry-after") or RATE_LIMIT_WAIT_SECONDS)
+                    payload = response.json()
                 except ValueError:
-                    wait = RATE_LIMIT_WAIT_SECONDS
-                await asyncio.sleep(min(max(wait, 1.0), RATE_LIMIT_MAX_WAIT_SECONDS))
-            response.raise_for_status()
-            payload = response.json()
-            if not isinstance(payload, dict):
-                raise ValueError("Provider response must be an object")
-            return payload
+                    payload = None
+                if response.is_error or (isinstance(payload, dict) and payload.get("error")):
+                    failure = response_failure(url, response.status_code, payload)
+                    # Retry only an actual, transient HTTP 429 rejected before generation.
+                    # Daily caps cannot recover in seconds. Never retry earlier than Retry-After;
+                    # a delay longer than the call's retry window ends with an actionable error.
+                    if (
+                        response.status_code == 429
+                        and failure.code == "provider_rate_limited"
+                        and attempt < RATE_LIMIT_RETRIES
+                    ):
+                        wait = retry_delay(response.headers.get("retry-after"))
+                        if wait <= RATE_LIMIT_MAX_WAIT_SECONDS:
+                            await asyncio.sleep(wait)
+                            continue
+                    raise failure
+                response.raise_for_status()
+                if not isinstance(payload, dict):
+                    raise ValueError("Provider response must be an object")
+                return payload
         except httpx.TimeoutException as exc:
             raise ProviderFailure("provider_timeout", "Research provider timed out") from exc
         except (httpx.HTTPError, ValueError) as exc:
@@ -754,32 +856,45 @@ class LiveProvider:
         if max_output < 128:
             raise BudgetExceeded("max_output_tokens")
         selected = self.settings.model_for(role)
-        if self.settings.llm_provider == "openrouter":
-            response = await self.openrouter_request(
-                model, instructions, payload, schema, max_output, selected, images, role
+        entry = {"stage": model.__name__, "role": role, "model": selected}
+        try:
+            if self.settings.llm_provider == "openrouter":
+                response = await self.openrouter_request(
+                    model, instructions, payload, schema, max_output, selected, images, role
+                )
+                input_key, output_key = "prompt_tokens", "completion_tokens"
+            else:
+                response = await self.openai_request(
+                    model, instructions, payload, schema, max_output, images, selected
+                )
+                input_key, output_key = "input_tokens", "output_tokens"
+            usage = response.get("usage") or {}
+            if not isinstance(usage, dict):
+                raise ProviderFailure("source_unavailable", "Invalid model usage response")
+            actual_input = usage.get(input_key, reservation)
+            actual_output = usage.get(output_key, max_output)
+            if any(type(value) is not int or value < 0 for value in (actual_input, actual_output)):
+                raise ProviderFailure("source_unavailable", "Invalid model usage response")
+        except ProviderFailure as exc:
+            # Transport failures happen before a model output can be recorded. Keep a useful
+            # trace without response bodies, credentials, or pretending reserved tokens were used.
+            budget.trace(
+                {
+                    **entry,
+                    "failure": exc.code,
+                    "http_status": exc.http_status,
+                    "usage": {"input_tokens_reserved": reservation},
+                    "output": None,
+                }
             )
-            input_key, output_key = "prompt_tokens", "completion_tokens"
-        else:
-            response = await self.openai_request(
-                model, instructions, payload, schema, max_output, images, selected
-            )
-            input_key, output_key = "input_tokens", "output_tokens"
-        usage = response.get("usage") or {}
-        if not isinstance(usage, dict):
-            raise ProviderFailure("source_unavailable", "Invalid model usage response")
-        actual_input = usage.get(input_key, reservation)
-        actual_output = usage.get(output_key, max_output)
-        if any(type(value) is not int or value < 0 for value in (actual_input, actual_output)):
-            raise ProviderFailure("source_unavailable", "Invalid model usage response")
+            raise
         budget.usage["input_tokens"] += actual_input - reservation
         budget.charge("output_tokens", actual_output)
         if budget.usage["input_tokens"] > budget.limits["max_input_tokens"]:
             raise BudgetExceeded("max_input_tokens")
         output = None
         entry = {
-            "stage": model.__name__,
-            "role": role,
-            "model": selected,
+            **entry,
             "request_id": response.get("id"),
             "usage": {"input_tokens": actual_input, "output_tokens": actual_output},
         }

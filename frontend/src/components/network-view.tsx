@@ -20,7 +20,7 @@ import {
   SlidersHorizontal,
   X,
 } from "lucide-react";
-import { useWorkspace } from "@/lib/store";
+import { useWorkspace, visibleGraph } from "@/lib/store";
 import { kindLabels, layoutGraph, nodeColors, type SupplyNode } from "@/lib/graph-layout";
 import { useReducedMotion } from "@/lib/use-reduced-motion";
 import type { Graph } from "@/lib/types";
@@ -44,7 +44,7 @@ function SupplyPoint({ data, selected }: NodeProps<SupplyNode>) {
 }
 const nodeTypes = { supply: SupplyPoint };
 export function NetworkView() {
-  const graph = useWorkspace((state) => state.graph);
+  const graph = useWorkspace(visibleGraph);
   return graph ? (
     <section className="studio-network" aria-label="The supply network">
       <ReactFlowProvider>

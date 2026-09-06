@@ -187,9 +187,12 @@ async def test_provider_errors_are_stable_and_do_not_leak_response_bodies(failur
             async for _ in provider.research({"label": "test"}, "test", None, budget()):
                 pass
     assert "secret" not in error.value.message
-    assert error.value.code == (
-        "provider_timeout" if failure == "timeout" else "source_unavailable"
-    )
+    expected = {
+        "timeout": "provider_timeout",
+        "http_error": "provider_unavailable",
+        "malformed": "source_unavailable",
+    }
+    assert error.value.code == expected[failure]
 
 
 @pytest.mark.parametrize("llm_provider", ["openai", "openrouter"])
@@ -269,7 +272,7 @@ async def test_rate_limits_are_retried_with_bounded_waits_then_fail_closed(monke
     async with httpx.AsyncClient(transport=httpx.MockTransport(always_busy)) as client:
         with pytest.raises(ProviderFailure) as caught:
             await LiveProvider(settings(), client).search_pages("Widget", 3, budget())
-    assert caught.value.code == "source_unavailable" and len(calls) == 4
+    assert caught.value.code == "provider_rate_limited" and len(calls) == 4
 
 
 async def test_verification_sends_quote_windows_instead_of_the_whole_page():

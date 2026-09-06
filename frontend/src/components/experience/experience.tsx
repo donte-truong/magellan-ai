@@ -71,19 +71,26 @@ export function Experience() {
   const reduced = useReducedMotion();
 
   useEffect(() => {
-    const hash = window.location.hash.slice(1);
-    if (hash === "bom" || hash === "network") useDemo.getState().setStage(hash);
     const navigate = () => {
       const next = window.location.hash.slice(1);
       useDemo.getState().setStage(next === "bom" || next === "network" ? next : "input");
     };
+    // Read the URL before subscribing. An effect from the initial "input" render
+    // must never erase a deep link arriving while the page is hydrating.
+    navigate();
+    const unsubscribe = useDemo.subscribe((state, previous) => {
+      if (state.stage === previous.stage) return;
+      const url = new URL(window.location.href);
+      url.hash = state.stage === "input" ? "" : state.stage;
+      window.history.replaceState(window.history.state, "", url);
+    });
     window.addEventListener("hashchange", navigate);
-    return () => window.removeEventListener("hashchange", navigate);
+    return () => {
+      unsubscribe();
+      window.removeEventListener("hashchange", navigate);
+    };
   }, []);
   useEffect(() => {
-    const url = new URL(window.location.href);
-    url.hash = stage === "input" ? "" : stage;
-    window.history.replaceState({}, "", url);
     window.scrollTo(0, 0);
     if (stage !== "input") heading.current?.focus({ preventScroll: true });
   }, [stage]);

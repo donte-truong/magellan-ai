@@ -1,4 +1,16 @@
-import type { BOM, EdgeDetail, EditResult, Graph, GraphMeta, Run, RunLimits, Sites } from "./types";
+import type {
+  AgentSelection,
+  BOM,
+  ChatReply,
+  ChatTurn,
+  EdgeDetail,
+  EditResult,
+  Graph,
+  GraphMeta,
+  Run,
+  RunLimits,
+  Sites,
+} from "./types";
 
 export class APIError extends Error {
   constructor(
@@ -28,6 +40,7 @@ export async function apiRequest<T>(path: string, init: RequestInit = {}): Promi
       "connection_failed",
     );
   }
+  if (response.ok && response.status === 204) return undefined as T;
   const payload = await response.json().catch(() => null);
   if (!response.ok) {
     const error = payload?.error;
@@ -48,6 +61,19 @@ export async function apiRequest<T>(path: string, init: RequestInit = {}): Promi
 }
 
 export const api = {
+  chat: (
+    graph: string,
+    message: string,
+    revision: number,
+    selection: AgentSelection,
+    history: ChatTurn[],
+    signal?: AbortSignal,
+  ) =>
+    apiRequest<ChatReply>(`graphs/${graph}/chat`, {
+      method: "POST",
+      signal,
+      body: JSON.stringify({ message, revision, selection, history }),
+    }),
   decompose: (product: string, company: string, key: string, signal?: AbortSignal) =>
     apiRequest<Run>("bom/decompose", {
       method: "POST",
@@ -66,9 +92,11 @@ export const api = {
     instruction: string,
     target_node_ids?: string[],
     limits?: Partial<RunLimits>,
+    key?: string,
   ) =>
     apiRequest<Run>(`graphs/${graph}/research`, {
       method: "POST",
+      headers: key ? { "Idempotency-Key": key } : undefined,
       body: JSON.stringify({
         instruction,
         ...(target_node_ids ? { target_node_ids } : {}),
@@ -89,10 +117,15 @@ export const api = {
   deleteScenario: (graph: string, scenario: string) =>
     apiRequest<void>(`graphs/${graph}/scenarios/${scenario}`, { method: "DELETE" }),
   /** Apply a natural-language hypothetical to a scenario graph; the agent proposes the edits. */
-  edit: (scenario: string, instruction: string) =>
+  edit: (scenario: string, instruction: string, revision?: number, selection?: AgentSelection) =>
     apiRequest<EditResult>(`graphs/${scenario}/edits`, {
       method: "POST",
-      body: JSON.stringify({ instruction }),
+      body: JSON.stringify({
+        instruction,
+        revision,
+        target_node_ids: selection?.node_ids,
+        target_edge_ids: selection?.edge_ids,
+      }),
     }),
   edge: (graph: string, edge: string, revision: number, signal?: AbortSignal) =>
     apiRequest<EdgeDetail>(`graphs/${graph}/edges/${edge}?revision=${revision}`, { signal }),

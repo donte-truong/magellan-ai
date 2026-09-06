@@ -130,6 +130,8 @@ describe("workspace API boundary", () => {
     expect(allowedPath("graphs/g_1/sites", "GET")).toBe(true);
     expect(allowedPath("graphs/g_1/sites", "POST")).toBe(false);
     expect(allowedPath("graphs/g_1/research", "POST")).toBe(true);
+    expect(allowedPath("graphs/g_1/chat", "POST")).toBe(true);
+    expect(allowedPath("graphs/g_1/chat", "GET")).toBe(false);
     expect(allowedPath("graphs/g_1/scenarios", "POST")).toBe(true);
     expect(allowedPath("graphs/g_1/scenarios", "GET")).toBe(true);
     expect(allowedPath("graphs/g_1/scenarios/g_2/reset", "POST")).toBe(true);
@@ -137,5 +139,18 @@ describe("workspace API boundary", () => {
     expect(allowedPath("graphs/g_1/edits", "POST")).toBe(true);
     expect(allowedPath("graphs/g_1/edits", "GET")).toBe(false);
     expect(allowedPath("runs/run_1", "DELETE")).toBe(false);
+  });
+  it("rejects cross-origin scenario deletion", async () => {
+    const fetch = vi.fn();
+    vi.stubGlobal("fetch", fetch);
+    const response = await proxyRequest(
+      new Request("http://localhost:3000/api/backend/graphs/g_1/scenarios/g_2", {
+        method: "DELETE",
+        headers: { Origin: "https://elsewhere.test" },
+      }),
+      ["graphs", "g_1", "scenarios", "g_2"],
+    );
+    expect(response.status).toBe(403);
+    expect(fetch).not.toHaveBeenCalled();
   });
 });

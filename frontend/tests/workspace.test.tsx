@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ProductForm } from "@/components/product-form";
 import { BOMView } from "@/components/bom-view";
 import { api, safeSourceUrl } from "@/lib/api";
-import { useWorkspace } from "@/lib/store";
+import { useWorkspace, visibleGraph } from "@/lib/store";
 import { useResearch } from "@/lib/use-research";
 import { layoutGraph } from "@/lib/graph-layout";
 import { bom, graph, run } from "./fixtures";
@@ -14,6 +14,34 @@ beforeEach(() => {
 });
 
 describe("exploration state", () => {
+  it("keeps a scenario visible during base polling and isolates follow-up generations", () => {
+    useWorkspace.getState().begin(run);
+    const previous = useWorkspace.getState().generation;
+    useWorkspace.getState().update(previous, run, graph, bom);
+    const scenario = {
+      ...graph,
+      id: "gph_scenario",
+      mode: "scenario" as const,
+      parent_graph_id: graph.id,
+    };
+    useWorkspace.getState().viewScenario(scenario);
+    useWorkspace.getState().update(previous, run, { ...graph, revision: graph.revision + 1 }, bom);
+    expect(visibleGraph(useWorkspace.getState())).toBe(scenario);
+    const followup = {
+      ...run,
+      id: "run_followup",
+      graph_id: scenario.id,
+      mode: "followup" as const,
+    };
+    useWorkspace.getState().continueRun(followup);
+    expect(visibleGraph(useWorkspace.getState())).toBe(scenario);
+    expect(useWorkspace.getState().bom).toBeNull();
+    useWorkspace.getState().update(previous, run, graph, bom);
+    expect(useWorkspace.getState().run).toBe(followup);
+    expect(visibleGraph(useWorkspace.getState())).toBe(scenario);
+    useWorkspace.getState().reset();
+    expect(visibleGraph(useWorkspace.getState())).toBeNull();
+  });
   it("ignores a late result even when the same run is reopened", () => {
     useWorkspace.getState().begin(run);
     const previous = useWorkspace.getState().generation;

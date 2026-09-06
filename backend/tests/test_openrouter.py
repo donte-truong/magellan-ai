@@ -93,7 +93,13 @@ async def test_openrouter_rejects_invalid_refused_or_truncated_outputs(payload):
             await provider.structured(Extraction, "Extract.", {}, budget())
     # Malformed or refused model text is classified separately from transport/usage failures.
     usage_only = "usage" in payload and "choices" not in payload
-    expected = "source_unavailable" if usage_only else "model_output_invalid"
+    expected = (
+        "source_unavailable"
+        if usage_only
+        else "provider_unavailable"
+        if payload.get("error")
+        else "model_output_invalid"
+    )
     assert caught.value.code == expected
     assert "private" not in caught.value.message and "sensitive" not in caught.value.message
 

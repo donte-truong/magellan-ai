@@ -92,6 +92,7 @@ export interface Graph {
   mode: "live" | "replay" | "scenario";
   /** Scenarios: the base graph they were forked from. */
   parent_graph_id?: string | null;
+  run_id?: string | null;
   nodes: GraphNode[];
   edges: GraphEdge[];
   stats: { node_count: number; edge_count: number; max_tier: number };
@@ -264,4 +265,22 @@ export interface EditResult {
   revision: number;
   applied: Record<string, unknown>[];
   skipped: Record<string, unknown>[];
+}
+
+export interface AgentSelection {
+  node_ids: string[];
+  edge_ids: string[];
+}
+export interface ChatTurn {
+  role: "user" | "assistant";
+  content: string;
+}
+export interface ChatReply {
+  content: string;
+  node_ids: string[];
+  edge_ids: string[];
+  graph_id: string;
+  revision: number;
+  provider: string;
+  context_truncated: boolean;
 }

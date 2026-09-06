@@ -3,6 +3,7 @@ import "@xyflow/react/dist/style.css";
 import "./globals.css";
 import "./experience.css";
 import "./research.css";
+import "./agent.css";
 
 export const metadata: Metadata = {
   title: "Magellan — A world within",

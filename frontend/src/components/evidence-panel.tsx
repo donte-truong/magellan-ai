@@ -11,14 +11,14 @@ import {
   X,
 } from "lucide-react";
 import { api, errorMessage } from "@/lib/api";
-import { useWorkspace } from "@/lib/store";
+import { useWorkspace, visibleGraph } from "@/lib/store";
 import { nodeColors } from "@/lib/graph-layout";
 import type { Graph, GraphNode } from "@/lib/types";
 import type { EdgeDetail } from "@/lib/types";
 import { ErrorNotice, SourceLink, Spinner, SupportBadge } from "./ui";
 
-export function EvidencePanel() {
-  const graph = useWorkspace((state) => state.graph);
+export function EvidencePanel({ onAsk }: { onAsk?: () => void }) {
+  const graph = useWorkspace(visibleGraph);
   const selectedEdge = useWorkspace((state) => state.selectedEdge);
   const selectedNode = useWorkspace((state) => state.selectedNode);
   const inspect = useWorkspace((state) => state.inspect);
@@ -78,6 +78,11 @@ export function EvidencePanel() {
         </button>
       </header>
       <div className="evidence-content">
+        {onAsk && (
+          <button className="studio-secondary studio-inspector-ask" onClick={onAsk}>
+            Ask Magellan About This <ArrowUpRight size={14} />
+          </button>
+        )}
         {!selectedEdge && node && graph && <NodeOverview node={node} graph={graph} />}
         {selectedEdge && node && (
           <button className="studio-inspector-back" onClick={() => inspect(null, node.id)}>

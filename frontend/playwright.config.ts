@@ -43,11 +43,12 @@ export default defineConfig({
       },
     },
     {
-      command: "bun run dev --port 3100",
+      command: "node node_modules/next/dist/bin/next dev --hostname 127.0.0.1 --port 3100",
       url: "http://127.0.0.1:3100",
       timeout: 90_000,
       reuseExistingServer: false,
       env: {
+        MAGELLAN_E2E: "1",
         MAGELLAN_API_URL: "http://127.0.0.1:8100",
         MAGELLAN_API_TOKEN: "e2e-token",
         NEXT_TELEMETRY_DISABLED: "1",

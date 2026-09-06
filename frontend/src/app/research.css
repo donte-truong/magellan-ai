@@ -618,6 +618,9 @@
 .studio-run-status.is-live {
   color: #a6cfff;
 }
+.studio-run-status.is-interrupted {
+  color: #dbb99a;
+}
 .studio-run-status button {
   display: grid;
   place-items: center;
@@ -1008,6 +1011,57 @@
   border-radius: 8px;
   padding: 18px;
   margin-bottom: 16px;
+}
+.studio-provider-failure {
+  display: flex;
+  align-items: flex-start;
+  gap: 13px;
+  flex-shrink: 0;
+  margin-bottom: 16px;
+  padding: 18px;
+  border: 1px solid #d8b18a33;
+  border-radius: 8px;
+  background: radial-gradient(ellipse at top left, #d8b18a0d, transparent 75%), #0c1728;
+  color: #dbb99a;
+}
+.studio-provider-failure > svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.studio-provider-failure h2 {
+  color: #e6d1ba;
+  font-size: 13px;
+  font-weight: 500;
+}
+.studio-provider-failure p {
+  max-width: 76ch;
+  margin-top: 7px;
+  color: #b2b7c5;
+  font-size: 11px;
+  line-height: 1.65;
+}
+.studio-provider-failure .studio-provider-preserved {
+  color: #8e9db5;
+}
+.studio-provider-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 14px;
+}
+.studio-provider-actions a {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: #a8bfdb;
+  font-size: 10px;
+}
+.studio-provider-actions a:hover {
+  color: #d8e7fa;
+}
+.studio-provider-failure .studio-provider-retry-error {
+  color: #e2abaa;
 }
 .studio-clarification > div {
   display: flex;
@@ -1881,7 +1935,8 @@
     font-size: 7px;
   }
   .studio-graph-message {
-    bottom: 120px;
+    top: 62px;
+    bottom: auto;
     font-size: 10px;
   }
   .studio-result-footer {

@@ -11,6 +11,7 @@ import {
   Check,
   ChevronRight,
   Clock3,
+  CloudOff,
   Compass,
   FileText,
   GitBranch,
@@ -20,15 +21,20 @@ import {
   Plus,
   ShieldCheck,
   Square,
+  Sparkles,
 } from "lucide-react";
 import { MagellanMark } from "./magellan-mark";
 import { api, errorMessage } from "@/lib/api";
-import { useWorkspace } from "@/lib/store";
+import { useWorkspace, visibleGraph } from "@/lib/store";
 import { useResearch } from "@/lib/use-research";
 import { isActive, type Run } from "@/lib/types";
 import { BOMView } from "./bom-view";
 import { EvidencePanel } from "./evidence-panel";
 import { ProductForm } from "./product-form";
+import { AgentPanel } from "./agent-panel";
+import { ScenarioControl } from "./scenario-control";
+import { ResearchFailureNotice } from "./research-failure-notice";
+import { researchFailure } from "@/lib/research-failure";
 import { ErrorNotice, Spinner } from "./ui";
 
 const NetworkView = dynamic(() => import("./network-view").then((module) => module.NetworkView), {
@@ -41,7 +47,9 @@ const NetworkView = dynamic(() => import("./network-view").then((module) => modu
 });
 
 export function Workspace() {
-  const { stage, run, graph, bom, selectedEdge, selectedNode, setStage, reset } = useWorkspace();
+  const { stage, run, bom, scenario, generation, selectedEdge, selectedNode, setStage, reset } =
+    useWorkspace();
+  const graph = useWorkspace(visibleGraph);
   const { error: syncError, refresh } = useResearch();
   const [recent, setRecent] = useState<Run[]>([]);
   const [recentError, setRecentError] = useState(false);
@@ -49,8 +57,10 @@ export function Workspace() {
   const [action, setAction] = useState<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [recentRetry, setRecentRetry] = useState(0);
+  const [chatOpen, setChatOpen] = useState(false);
   const active = isActive(run?.status);
-  const hasInspector = Boolean(graph && (selectedEdge || selectedNode));
+  const providerFailure = run ? researchFailure(run) : null;
+  const hasInspector = Boolean(graph && (selectedEdge || selectedNode) && !chatOpen);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -72,17 +82,34 @@ export function Workspace() {
       return;
     }
     const runId = new URL(window.location.href).searchParams.get("run");
+    const scenarioId = new URL(window.location.href).searchParams.get("scenario");
     if (!runId || !/^run_[a-zA-Z0-9_-]+$/.test(runId)) return;
     const controller = new AbortController();
     const generation = useWorkspace.getState().generation;
     api
       .run(runId, controller.signal)
-      .then((run) => {
-        if (!controller.signal.aborted && useWorkspace.getState().generation === generation)
+      .then(async (run) => {
+        if (!controller.signal.aborted && useWorkspace.getState().generation === generation) {
           useWorkspace.getState().begin(run);
+          if (scenarioId && /^gph_[a-zA-Z0-9_-]+$/.test(scenarioId)) {
+            const view = await api.graph(scenarioId, controller.signal);
+            if (
+              !controller.signal.aborted &&
+              useWorkspace.getState().generation === generation + 1 &&
+              view.mode === "scenario" &&
+              view.parent_graph_id === run.graph_id
+            )
+              useWorkspace.getState().viewScenario(view);
+          }
+        }
       })
       .catch((error) => {
-        if (!controller.signal.aborted && useWorkspace.getState().generation === generation)
+        if (
+          !controller.signal.aborted &&
+          (useWorkspace.getState().generation === generation ||
+            (useWorkspace.getState().generation === generation + 1 &&
+              useWorkspace.getState().run?.id === runId))
+        )
           setActionError(errorMessage(error));
       });
     return () => controller.abort();
@@ -92,8 +119,10 @@ export function Workspace() {
     if (!run) return;
     const url = new URL(window.location.href);
     url.searchParams.set("run", run.id);
+    if (scenario) url.searchParams.set("scenario", scenario.id);
+    else url.searchParams.delete("scenario");
     window.history.replaceState({}, "", url);
-  }, [run]);
+  }, [run, scenario]);
 
   async function openRecent(run: Run) {
     setSidebarOpen(false);
@@ -106,6 +135,7 @@ export function Workspace() {
     setActionError(null);
     const url = new URL(window.location.href);
     url.searchParams.delete("run");
+    url.searchParams.delete("scenario");
     window.history.replaceState({}, "", url);
   }
   async function cancel() {
@@ -157,7 +187,9 @@ export function Workspace() {
   }
 
   return (
-    <div className={`studio ${hasInspector ? "studio-inspecting" : ""}`}>
+    <div
+      className={`studio ${hasInspector ? "studio-inspecting" : ""} ${chatOpen && graph ? "studio-chatting" : ""}`}
+    >
       <a className="experience-skip" href="#main-content">
         Skip to exploration
       </a>
@@ -308,6 +340,15 @@ export function Workspace() {
                   {run.company && <p>{run.company}</p>}
                 </div>
                 <div className="studio-research-actions">
+                  <button
+                    className={`studio-secondary studio-ask ${chatOpen ? "is-active" : ""}`}
+                    aria-expanded={chatOpen}
+                    disabled={!graph}
+                    onClick={() => setChatOpen(!chatOpen)}
+                  >
+                    <Sparkles size={15} />
+                    <span>Ask Magellan</span>
+                  </button>
                   {run.provider === "curated_fixture" && (
                     <span className="studio-tag">Curated Example</span>
                   )}
@@ -322,6 +363,7 @@ export function Workspace() {
                   </button>
                 </div>
               </div>
+              {graph && <ScenarioControl key={graph.parent_graph_id ?? graph.id} />}
               <div className="studio-viewbar">
                 <nav aria-label="Research views">
                   <button
@@ -335,15 +377,26 @@ export function Workspace() {
                   <button
                     className={stage === "bom" ? "is-active" : ""}
                     aria-pressed={stage === "bom"}
+                    disabled={Boolean(scenario)}
+                    title={
+                      scenario
+                        ? "Return to the original graph to view its bill of materials"
+                        : undefined
+                    }
                     onClick={() => setStage("bom")}
                   >
                     <Layers3 size={16} />
                     Bill of Materials<span>{bom?.items.length ?? 0}</span>
                   </button>
                 </nav>
-                <span className={`studio-run-status ${active ? "is-live" : ""}`} role="status">
+                <span
+                  className={`studio-run-status ${active ? "is-live" : ""} ${providerFailure ? "is-interrupted" : ""}`}
+                  role="status"
+                >
                   {active ? (
                     <LoaderCircle className="spin" size={13} />
+                  ) : providerFailure ? (
+                    <CloudOff size={13} />
                   ) : run.status === "completed" ? (
                     <Check size={13} />
                   ) : (
@@ -353,13 +406,15 @@ export function Workspace() {
                     ? "Needs Your Input"
                     : active
                       ? "Following Sources"
-                      : run.status === "partial"
-                        ? "Partial Findings"
-                        : run.status === "failed"
-                          ? "Research Interrupted"
-                          : run.status === "cancelled"
-                            ? "Research Stopped"
-                            : "Research Complete"}
+                      : providerFailure
+                        ? "Research Interrupted"
+                        : run.status === "partial"
+                          ? "Partial Findings"
+                          : run.status === "failed"
+                            ? "Research Interrupted"
+                            : run.status === "cancelled"
+                              ? "Research Stopped"
+                              : "Research Complete"}
                   {active && (
                     <button onClick={cancel} disabled={Boolean(action)} aria-label="Stop research">
                       <Square size={12} />
@@ -368,6 +423,9 @@ export function Workspace() {
                 </span>
               </div>
               {syncError && <ErrorNotice message={syncError} retry={refresh} />}
+              {providerFailure && (!graph || graph.id === run.graph_id) && (
+                <ResearchFailureNotice key={`${run.id}:${generation}`} run={run} graph={graph} />
+              )}
               {run.pending_questions.map((question) => (
                 <section className="studio-clarification" key={question.question_id}>
                   <div>
@@ -423,7 +481,9 @@ export function Workspace() {
               <footer className="studio-result-footer">
                 <span>
                   <ShieldCheck size={12} />
-                  Built on public evidence
+                  {graph?.mode === "scenario"
+                    ? "Hypothetical Scenario"
+                    : "Built on public evidence"}
                 </span>
                 <span>
                   {graph?.nodes.length ?? 0} entities · {graph?.edges.length ?? 0} connections
@@ -432,7 +492,15 @@ export function Workspace() {
             </>
           )}
         </main>
-        {hasInspector && <EvidencePanel />}
+        {hasInspector && <EvidencePanel onAsk={() => setChatOpen(true)} />}
+        {graph && (
+          <AgentPanel
+            key={graph.parent_graph_id ?? graph.id}
+            open={chatOpen}
+            onClose={() => setChatOpen(false)}
+            onInspect={() => setChatOpen(false)}
+          />
+        )}
       </div>
     </div>
   );

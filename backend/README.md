@@ -129,6 +129,25 @@ Efficiency controls for deeper graphs: research tasks run as a fair bounded pool
 
 Model roles are consistent across providers: `OPENAI_MODEL` / `OPENROUTER_MODEL` extract, `*_VERIFIER_MODEL` verifies, and `*_PLANNER_MODEL` plans, each falling back to the previous. Routing price ceilings (OpenRouter `max_price` from the billing rates) remain distinct from `cost_minor`, which estimates a whole run's spend. Default limits have not been raised; that waits on the evaluation set described in the plan.
 
+## Troubleshoot interrupted research
+
+If a run contains only its product root, inspect `stop_reason`, `open_questions`, and `GET /v1/runs/{run_id}/history`. A failed planner can stop before any searches occur; input-token reservations alone do not prove that a model generated a response. Failed calls now record their stage, model, HTTP status, and reserved-token count in private history, without exposing raw provider errors or credentials.
+
+- `provider_quota_exhausted`: the model/account quota is exhausted, or Tavily returned its HTTP 432 usage-limit response. Restore the affected service's allowance or update its configuration/key. Switching the model does not restore search quota.
+- `provider_rate_limited`: temporary throttling. The backend retries briefly, honors `Retry-After`, and does not repeatedly retry a daily quota failure.
+- `provider_auth_failed`, `provider_model_unavailable`, `provider_request_invalid`: check the credentials, selected model, and supported response format.
+- `model_output_invalid`: the model returned text that did not satisfy the schema or refused/truncated the response. The evidence-validation rules still apply.
+
+After changing `backend/.env`, restart the API and worker so they load the new configuration. In the frontend, **Retry Research** starts a follow-up on the existing graph and preserves committed findings. It cannot reset provider quotas. The deterministic iPhone demo remains available at `/demo` without provider access. Never paste API keys into chat or commit environment files.
+
+## Graph assistant
+
+`POST /v1/graphs/{graph_id}/chat` answers questions about a saved graph revision. It accepts `message` (3–1000 characters), `revision`, optional `selection: {node_ids: [], edge_ids: []}`, and up to eight `history` turns (`role: user|assistant`, `content`). The response includes `content`, validated `node_ids`/`edge_ids` for inspection, `graph_id`, `revision`, `provider`, and `context_truncated`. The endpoint authenticates with the same workspace token and is read-only.
+
+The configured live model receives a bounded graph excerpt, selected entities, relationship support labels, exact evidence excerpts and conversation context. Unknown reference IDs are discarded; answers are model-generated explanations, not new verified graph claims. A credential-free fixture responds with an explicitly labelled deterministic graph preview. Model failures and timeouts return `503 agent_unavailable`; they never silently fall back to fixture answers.
+
+The frontend's **Research** mode calls the existing `/research` endpoint with selected node IDs and an idempotency key. **Edit Scenario** forks the original when needed, then calls `/edits`. Edits additionally accept optional `revision`, `target_node_ids`, and `target_edge_ids`; stale revisions return 409 and foreign selections are rejected. Hypothetical writes still apply only to scenarios. This focused chat endpoint does not implement the future session/proposal protocol in API_SPEC §2.10. See the running `/docs` for its generated OpenAPI schema.
+
 ## Edge provenance and confidence
 
 Every edge carries `source` (all cited sources with their `support_types`), the UTC `date` and `time` of its latest recorded evidence observation, a numeric `confidence` in `[0, 0.95]`, and `confidence_details` naming the method (`edge_evidence_v1`), the factors, and data-quality notes. The score is a deterministic projection of the claim ledger, never a model self-rating: a support-label base (directly supported 0.70, user asserted 0.25), up to +0.20 for additional independent supporting source groups (deduplicated by source family and content hash), a freshness adjustment when the supporting publication date is unknown or old, and a −0.45 penalty with a 0.25 cap whenever contradictory or disputed evidence exists. Rejected claims stop counting; missing claim or source lineage forces zero. It is recomputed on every graph refresh, so each saved revision carries the score as of that revision, and snapshots saved before this feature are enriched on read. Details and worked examples: [docs/EDGE_METADATA.md](docs/EDGE_METADATA.md). Support labels remain the primary signal; the frontend does not yet render the number.

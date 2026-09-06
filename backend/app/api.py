@@ -10,7 +10,7 @@ from fastapi.responses import JSONResponse, StreamingResponse
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from starlette.concurrency import run_in_threadpool
 
-from app import estimate, graphs, jobs, schemas
+from app import agent, estimate, graphs, jobs, schemas
 from app.db import new_id, now, public
 from app.errors import APIError, invalid, not_found
 from app.uploads import MAX_UPLOAD_BYTES, parse_upload
@@ -623,6 +623,19 @@ def enrichment_events(
 
 
 @router.post(
+    "/graphs/{graph_id}/chat",
+    response_model=agent.ChatResponse,
+    tags=["agent"],
+    operation_id="chatAboutGraph",
+    summary="Answer a question using a graph revision and the current selection",
+)
+async def chat_about_graph(request: Request, ws: Workspace, graph_id: str, body: agent.ChatRequest):
+    with request.app.state.db.transaction(ws) as repo:
+        graph = repo.graph(graph_id, body.revision)
+    return await agent.answer_graph(request.app.state.provider, graph, body)
+
+
+@router.post(
     "/graphs/{graph_id}/research",
     response_model=schemas.Run,
     status_code=202,
@@ -710,7 +723,7 @@ def delete_scenario(request: Request, ws: Workspace, graph_id: str, scenario_id:
     summary="Apply a natural-language hypothetical to a scenario graph",
 )
 async def apply_edit(request: Request, ws: Workspace, graph_id: str, body: schemas.EditCreate):
-    from app.providers import Budget
+    from app.providers import Budget, BudgetExceeded, ProviderFailure
 
     worker = request.app.state.worker
     with request.app.state.db.transaction(ws) as repo:
@@ -719,9 +732,22 @@ async def apply_edit(request: Request, ws: Workspace, graph_id: str, body: schem
             raise APIError(
                 400, "invalid_request", "Hypothetical edits apply to scenario graphs only"
             )
+        if body.revision is not None and graph["revision"] != body.revision:
+            raise APIError(409, "conflict", "The scenario has changed. Refresh it before editing.")
         names = {n["id"]: n["label"] for n in graph["nodes"]}
+        edge_ids = {e["id"] for e in graph["edges"]}
+        if set(body.target_node_ids) - names.keys() or set(body.target_edge_ids) - edge_ids:
+            raise invalid("The selected entities or connections are no longer in this scenario")
+        focus = set(body.target_node_ids)
+        for edge in graph["edges"]:
+            if edge["id"] in body.target_edge_ids:
+                focus.update([edge["source_node_id"], edge["target_node_id"]])
         summary = {
-            "entities": [{"label": n["label"], "kind": n["kind"]} for n in graph["nodes"]][:150],
+            "selection": [names[i] for i in sorted(focus)],
+            "entities": [
+                {"label": n["label"], "kind": n["kind"]}
+                for n in sorted(graph["nodes"], key=lambda n: n["id"] not in focus)
+            ][:150],
             "relations": [
                 f"{names[e['source_node_id']]} {e['predicate']} {names[e['target_node_id']]}"
                 for e in graph["edges"]
@@ -733,7 +759,15 @@ async def apply_edit(request: Request, ws: Workspace, graph_id: str, body: schem
     )
     if not hasattr(worker.provider, "propose_edits"):
         raise APIError(400, "invalid_request", "The configured provider cannot propose edits")
-    edits = await worker.provider.propose_edits(body.instruction, summary, budget)
+    try:
+        async with asyncio.timeout(85):
+            edits = await worker.provider.propose_edits(body.instruction, summary, budget)
+    except (ProviderFailure, BudgetExceeded, TimeoutError) as exc:
+        raise APIError(
+            503,
+            "agent_unavailable",
+            "The AI provider could not prepare the edit. Please try again shortly.",
+        ) from exc
     edit_id = new_id("edit")
     with request.app.state.db.transaction(ws, write=True) as repo:
         graph = repo.graph(graph_id)
