@@ -564,7 +564,7 @@ async def test_pagination_filter_and_errors_are_consistent(api):
         assert response.json()["error"]["request_id"] == response.headers["x-request-id"]
     for body in (
         {"product": " "},
-        {"product": "x", "limits": {"max_hops": 5}},
+        {"product": "x", "limits": {"max_hops": 99}},
         {"product": "x", "unexpected": True},
     ):
         assert (await client.post("/v1/runs", json=body)).status_code == 400
