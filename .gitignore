@@ -1,8 +1,34 @@
+# Node / Next.js
 node_modules/
 .next/
 *.tsbuildinfo
+next-env.d.ts
+dist/
+coverage/
+playwright-report/
+test-results/
+
+# Environment files (keep the examples)
+.env
 .env*
 !.env.example
+
+# Backend runtime data
 backend/runs/
 backend/coverage/
+
+# Python (legacy)
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+.coverage
+htmlcov/
+*.db
+*.db-shm
+*.db-wal
+
+# OS
 .DS_Store
