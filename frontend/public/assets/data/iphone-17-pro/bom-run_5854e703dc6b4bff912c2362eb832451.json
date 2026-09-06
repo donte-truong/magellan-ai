@@ -1,0 +1,4237 @@
+{
+ "run_id": "run_5854e703dc6b4bff912c2362eb832451",
+ "graph_id": "gph_cc4d2242e894451c8391965c2d298cdd",
+ "revision": 119,
+ "product": "iPhone 17 Pro",
+ "status": "partial",
+ "mode": "live",
+ "provider": "tavily_openrouter",
+ "items": [
+  {
+   "node_id": "nd_508195653c4943dd8becccd378a2e784",
+   "name": "100% recycled cobalt in the battery",
+   "kind": "material",
+   "tier": 1,
+   "parent_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+   "edge_id": "ed_bfdb6388eac147dd958df16d071b3b94",
+   "quantity": null,
+   "unit": null,
+   "quantity_support_label": null,
+   "support_label": "directly_supported",
+   "scope": {
+    "type": "product",
+    "product_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+    "organization_node_id": null
+   },
+   "claim_ids": [
+    "clm_3079272d550b48eba646873f50b89c9b"
+   ],
+   "evidence": [
+    {
+     "id": "ev_d61a324dcd3749dab1ff27505fd873bf",
+     "source_id": "src_a035b97e63a74b3fa43711d23bca9aa2",
+     "span": "100% recycled cobalt in the battery",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 2025:2060",
+     "extracted_at": "2026-09-06T14:17:53.699396Z",
+     "source": {
+      "id": "src_a035b97e63a74b3fa43711d23bca9aa2",
+      "url": "https://www.apple.com/environment/pdf/products/iphone/iPhone_17_Pro_and_iPhone_17_Pro_Max_PER_Sept2025.pdf",
+      "retrieved_at": "2026-09-06T14:17:53.662050Z",
+      "content_hash": "51f461807a621834fa379465c81b2c304b50ee0159547415d44a848bd9a008b7",
+      "title": "iPhone 17 Pro and iPhone 17 Pro Max",
+      "publisher": "www.apple.com",
+      "published_at": null,
+      "source_family_id": "www.apple.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    }
+   ]
+  },
+  {
+   "node_id": "nd_a10d17029d1e4e4fb9d399a4d3b4b497",
+   "name": "A19 Pro",
+   "kind": "component",
+   "tier": 1,
+   "parent_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+   "edge_id": "ed_acc90dc3b8d74a7eb890046212d4aae9",
+   "quantity": null,
+   "unit": null,
+   "quantity_support_label": null,
+   "support_label": "directly_supported",
+   "scope": {
+    "type": "product",
+    "product_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+    "organization_node_id": null
+   },
+   "claim_ids": [
+    "clm_38def9f0947346db83cc08d7f4e164e0",
+    "clm_b719b725a0da4b51a03f82c72580fea5",
+    "clm_b81f9ade625b461b976399bb3de923f2",
+    "clm_fdac71145c5b41dc8b75c551c4c3dbc8"
+   ],
+   "evidence": [
+    {
+     "id": "ev_ee4d5390b69147b4b799676b7ace9874",
+     "source_id": "src_f0af53c7f8044edaa3a2ae0572132e61",
+     "span": "The chamber is found on top of the A19 Pro, and was shown on thermal cameras to pull heat away enough to avoid throttling, unlike the comparative iPhone 16 Pro Max.",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 2290:2454",
+     "extracted_at": "2026-09-06T14:16:49.807385Z",
+     "source": {
+      "id": "src_f0af53c7f8044edaa3a2ae0572132e61",
+      "url": "https://appleinsider.com/articles/25/09/24/iphone-17-pro-teardown-reveals-vapor-chamber-explains-scratches",
+      "retrieved_at": "2026-09-06T14:16:49.802308Z",
+      "content_hash": "507ff315c66f537817aafe7c05a5369528ef035347b8fefd3ee3dda6b09dd12e",
+      "title": "iPhone 17 Pro teardown reveals vapor chamber design",
+      "publisher": "appleinsider.com",
+      "published_at": null,
+      "source_family_id": "appleinsider.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    },
+    {
+     "id": "ev_840542e602964b179b6a07f05dfcb2d1",
+     "source_id": "src_492b438602aa465f90439c9c29d2716f",
+     "span": "The Apple A19 Pro is a 64-bitARM-based system on a chip (SoC) designed by Apple and fabricated by TSMC. It is used in the iPhone 17 Pro, 17 Pro Max, and iPhone Air.",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 6903:7067",
+     "extracted_at": "2026-09-06T14:18:32.045374Z",
+     "source": {
+      "id": "src_492b438602aa465f90439c9c29d2716f",
+      "url": "https://apple.fandom.com/wiki/Apple_A19_Pro",
+      "retrieved_at": "2026-09-06T14:18:32.036926Z",
+      "content_hash": "c08ffdb7c80fb2f43615a6b9cbde2a5cdd6b1302262deaabc1f4d24cc8ec52d2",
+      "title": "Apple A19 Pro",
+      "publisher": "apple.fandom.com",
+      "published_at": null,
+      "source_family_id": "apple.fandom.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    },
+    {
+     "id": "ev_74392515a1de420eb90db70c1e650931",
+     "source_id": "src_0c82e3edc09f46198c2547a3f616afbf",
+     "span": "The A19 is used in the iPhone 17 and iPhone 17e, while the A19 Pro is used in the iPhone 17 Pro, iPhone 17 Pro Max, and iPhone Air.",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 1954:2085",
+     "extracted_at": "2026-09-06T14:18:37.636187Z",
+     "source": {
+      "id": "src_0c82e3edc09f46198c2547a3f616afbf",
+      "url": "https://en.wikipedia.org/wiki/Apple_A19",
+      "retrieved_at": "2026-09-06T14:18:37.594037Z",
+      "content_hash": "598c29cb215e71a50ccfcdfa9cd37033f2f5c64beba0cd9d93e6188a0a2ea746",
+      "title": "Apple A19 - Wikipedia",
+      "publisher": "en.wikipedia.org",
+      "published_at": null,
+      "source_family_id": "en.wikipedia.org",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    },
+    {
+     "id": "ev_876f1197add5482b95112c1069ba8659",
+     "source_id": "src_ec51a1797a8545e08190c8f7e0eb5269",
+     "span": "A19 Pro chip from iPhone 17 Pro",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 1401:1432",
+     "extracted_at": "2026-09-06T14:19:26.234694Z",
+     "source": {
+      "id": "src_ec51a1797a8545e08190c8f7e0eb5269",
+      "url": "https://www.apple.com/iphone-17-pro",
+      "retrieved_at": "2026-09-06T14:19:26.191939Z",
+      "content_hash": "0e4b315db548e31d1759f882f19e857dfbfeefdc12cb3e1e3e2400794b481419",
+      "title": "iPhone 17 Pro and iPhone 17 Pro Max",
+      "publisher": "www.apple.com",
+      "published_at": null,
+      "source_family_id": "www.apple.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    }
+   ]
+  },
+  {
+   "node_id": "nd_a10d17029d1e4e4fb9d399a4d3b4b497",
+   "name": "A19 Pro",
+   "kind": "component",
+   "tier": 1,
+   "parent_node_id": "nd_d39dd52c74c54d538f0d249c73e58c91",
+   "edge_id": "ed_adb922f8ee824e01a5986eec4ca6da6d",
+   "quantity": null,
+   "unit": null,
+   "quantity_support_label": null,
+   "support_label": "directly_supported",
+   "scope": {
+    "type": "product",
+    "product_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+    "organization_node_id": null
+   },
+   "claim_ids": [
+    "clm_a94f85c55a6049f18c8377433cc6eddf"
+   ],
+   "evidence": [
+    {
+     "id": "ev_57015422f7424f6fa8c97a81a4e31efc",
+     "source_id": "src_0f9edba565d64aaa8ffc468dbc139262",
+     "span": "denser packaging for chips including the new A19 Pro processor",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 1396:1458",
+     "extracted_at": "2026-09-06T14:20:24.079298Z",
+     "source": {
+      "id": "src_0f9edba565d64aaa8ffc468dbc139262",
+      "url": "https://www.ithinkdiff.com/iphone-17-pro-teardown",
+      "retrieved_at": "2026-09-06T14:20:24.020768Z",
+      "content_hash": "41a1a94e86d41072ef1dfc57f3f0995c7da8d814400b88f9e0ba8cc2cb371324",
+      "title": "iPhone 17 Pro teardown shows smaller logic board and Scratchgate flaws",
+      "publisher": "www.ithinkdiff.com",
+      "published_at": null,
+      "source_family_id": "www.ithinkdiff.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    }
+   ]
+  },
+  {
+   "node_id": "nd_03d05237194f4ee9b5664ac83a91c56f",
+   "name": "Action button",
+   "kind": "component",
+   "tier": 1,
+   "parent_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+   "edge_id": "ed_cc090ff123c5415cbb24910d57a5c47c",
+   "quantity": null,
+   "unit": null,
+   "quantity_support_label": null,
+   "support_label": "directly_supported",
+   "scope": {
+    "type": "product",
+    "product_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+    "organization_node_id": null
+   },
+   "claim_ids": [
+    "clm_1d1a6fceb75f4c7aa5c1017a50d00082"
+   ],
+   "evidence": [
+    {
+     "id": "ev_e3eeff319837495b8ad2d00cdfed360e",
+     "source_id": "src_ec51a1797a8545e08190c8f7e0eb5269",
+     "span": "Action button. A customizable fast track to your favorite feature.",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 4117:4183",
+     "extracted_at": "2026-09-06T14:19:26.363499Z",
+     "source": {
+      "id": "src_ec51a1797a8545e08190c8f7e0eb5269",
+      "url": "https://www.apple.com/iphone-17-pro",
+      "retrieved_at": "2026-09-06T14:19:26.191939Z",
+      "content_hash": "0e4b315db548e31d1759f882f19e857dfbfeefdc12cb3e1e3e2400794b481419",
+      "title": "iPhone 17 Pro and iPhone 17 Pro Max",
+      "publisher": "www.apple.com",
+      "published_at": null,
+      "source_family_id": "www.apple.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    }
+   ]
+  },
+  {
+   "node_id": "nd_a9bb4b1d5c434d3b8f2399bb8897f006",
+   "name": "Analog Devices MAX11390A",
+   "kind": "component",
+   "tier": 1,
+   "parent_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+   "edge_id": "ed_7cdffdbf36684c219abf77564c402488",
+   "quantity": null,
+   "unit": null,
+   "quantity_support_label": null,
+   "support_label": "directly_supported",
+   "scope": {
+    "type": "product",
+    "product_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+    "organization_node_id": null
+   },
+   "claim_ids": [
+    "clm_fd3d2ee367f84fe9a400d9fb7958b6bf"
+   ],
+   "evidence": [
+    {
+     "id": "ev_11d0d72823174e63b61b5580fddce860",
+     "source_id": "src_b264970dac684557a65508f53dc75cf6",
+     "span": "Analog Devices MAX11390A analog to digital converter",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 2524:2576",
+     "extracted_at": "2026-09-06T14:24:28.769965Z",
+     "source": {
+      "id": "src_b264970dac684557a65508f53dc75cf6",
+      "url": "https://www.ifixit.com/Guide/iPhone+17+Pro+Chip+ID/196117",
+      "retrieved_at": "2026-09-06T14:24:28.286810Z",
+      "content_hash": "8b67f49f7074a21d01175978619fc11b927357f87d54fd2359b8646ac726a292",
+      "title": "iPhone 17 Pro Chip ID - iFixit",
+      "publisher": "www.ifixit.com",
+      "published_at": null,
+      "source_family_id": "www.ifixit.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    }
+   ]
+  },
+  {
+   "node_id": "nd_73840a0ab3d447b094dfd7996b85cf84",
+   "name": "Analog Devices MAX20348P",
+   "kind": "component",
+   "tier": 1,
+   "parent_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+   "edge_id": "ed_bbef8683db384568b91a1470b2ebb6ac",
+   "quantity": null,
+   "unit": null,
+   "quantity_support_label": null,
+   "support_label": "directly_supported",
+   "scope": {
+    "type": "product",
+    "product_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+    "organization_node_id": null
+   },
+   "claim_ids": [
+    "clm_7c2e5097f7c3448785a812238da00b16"
+   ],
+   "evidence": [
+    {
+     "id": "ev_1f8b3d9e13a44a6b9c717be14b07a9f0",
+     "source_id": "src_b264970dac684557a65508f53dc75cf6",
+     "span": "Analog Devices MAX20348P DC-DC converter",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 3031:3071",
+     "extracted_at": "2026-09-06T14:24:28.834291Z",
+     "source": {
+      "id": "src_b264970dac684557a65508f53dc75cf6",
+      "url": "https://www.ifixit.com/Guide/iPhone+17+Pro+Chip+ID/196117",
+      "retrieved_at": "2026-09-06T14:24:28.286810Z",
+      "content_hash": "8b67f49f7074a21d01175978619fc11b927357f87d54fd2359b8646ac726a292",
+      "title": "iPhone 17 Pro Chip ID - iFixit",
+      "publisher": "www.ifixit.com",
+      "published_at": null,
+      "source_family_id": "www.ifixit.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    }
+   ]
+  },
+  {
+   "node_id": "nd_738f9e0e22804a96a2f92e4609ac6adc",
+   "name": "Apple 338S00616",
+   "kind": "component",
+   "tier": 1,
+   "parent_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+   "edge_id": "ed_ae0b16d65046411ab4f7e5e1d82d3213",
+   "quantity": null,
+   "unit": null,
+   "quantity_support_label": null,
+   "support_label": "directly_supported",
+   "scope": {
+    "type": "product",
+    "product_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+    "organization_node_id": null
+   },
+   "claim_ids": [
+    "clm_c03f366e445640528ee171242ff67bd8"
+   ],
+   "evidence": [
+    {
+     "id": "ev_b666e1ddc0ea4a70a89a760d7ca6b2d7",
+     "source_id": "src_b264970dac684557a65508f53dc75cf6",
+     "span": "Apple 338S00616 DC-DC converter",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 2615:2646",
+     "extracted_at": "2026-09-06T14:24:28.812393Z",
+     "source": {
+      "id": "src_b264970dac684557a65508f53dc75cf6",
+      "url": "https://www.ifixit.com/Guide/iPhone+17+Pro+Chip+ID/196117",
+      "retrieved_at": "2026-09-06T14:24:28.286810Z",
+      "content_hash": "8b67f49f7074a21d01175978619fc11b927357f87d54fd2359b8646ac726a292",
+      "title": "iPhone 17 Pro Chip ID - iFixit",
+      "publisher": "www.ifixit.com",
+      "published_at": null,
+      "source_family_id": "www.ifixit.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    }
+   ]
+  },
+  {
+   "node_id": "nd_0a8e079b03e842f780c63d2e86967997",
+   "name": "Apple 338S01153-B1",
+   "kind": "component",
+   "tier": 1,
+   "parent_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+   "edge_id": "ed_2feeb17514d840638fcc7da59d207e3e",
+   "quantity": null,
+   "unit": null,
+   "quantity_support_label": null,
+   "support_label": "directly_supported",
+   "scope": {
+    "type": "product",
+    "product_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+    "organization_node_id": null
+   },
+   "claim_ids": [
+    "clm_b28af259737b4a9181a797f82199627b"
+   ],
+   "evidence": [
+    {
+     "id": "ev_4a85e029fada4196802f6d4ae8407242",
+     "source_id": "src_b264970dac684557a65508f53dc75cf6",
+     "span": "Apple 338S01153-B1 power management",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 2578:2613",
+     "extracted_at": "2026-09-06T14:24:28.791212Z",
+     "source": {
+      "id": "src_b264970dac684557a65508f53dc75cf6",
+      "url": "https://www.ifixit.com/Guide/iPhone+17+Pro+Chip+ID/196117",
+      "retrieved_at": "2026-09-06T14:24:28.286810Z",
+      "content_hash": "8b67f49f7074a21d01175978619fc11b927357f87d54fd2359b8646ac726a292",
+      "title": "iPhone 17 Pro Chip ID - iFixit",
+      "publisher": "www.ifixit.com",
+      "published_at": null,
+      "source_family_id": "www.ifixit.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    }
+   ]
+  },
+  {
+   "node_id": "nd_37e073d678f1427c8d1ce1a0bdb7c022",
+   "name": "Apple/Cirrus Logic 338S00967",
+   "kind": "component",
+   "tier": 1,
+   "parent_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+   "edge_id": "ed_1454c35743ea41a3b8e0c8c83bc6dc53",
+   "quantity": null,
+   "unit": null,
+   "quantity_support_label": null,
+   "support_label": "directly_supported",
+   "scope": {
+    "type": "product",
+    "product_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+    "organization_node_id": null
+   },
+   "claim_ids": [
+    "clm_f8b3e5df4a444bb0a271370cec76d080"
+   ],
+   "evidence": [
+    {
+     "id": "ev_2d71f136686a44eba46f1de302aed646",
+     "source_id": "src_b264970dac684557a65508f53dc75cf6",
+     "span": "Apple/Cirrus Logic 338S00967 audio codec",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 2262:2302",
+     "extracted_at": "2026-09-06T14:24:28.705186Z",
+     "source": {
+      "id": "src_b264970dac684557a65508f53dc75cf6",
+      "url": "https://www.ifixit.com/Guide/iPhone+17+Pro+Chip+ID/196117",
+      "retrieved_at": "2026-09-06T14:24:28.286810Z",
+      "content_hash": "8b67f49f7074a21d01175978619fc11b927357f87d54fd2359b8646ac726a292",
+      "title": "iPhone 17 Pro Chip ID - iFixit",
+      "publisher": "www.ifixit.com",
+      "published_at": null,
+      "source_family_id": "www.ifixit.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    }
+   ]
+  },
+  {
+   "node_id": "nd_498b1f66d09646a18db30f668a263255",
+   "name": "Apple/Cirrus Logic 338S01087",
+   "kind": "component",
+   "tier": 1,
+   "parent_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+   "edge_id": "ed_fc2f83ae91c64cf5974cefa1835348c8",
+   "quantity": null,
+   "unit": null,
+   "quantity_support_label": null,
+   "support_label": "directly_supported",
+   "scope": {
+    "type": "product",
+    "product_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+    "organization_node_id": null
+   },
+   "claim_ids": [
+    "clm_abb8fa818823413ea2f87f075260abce"
+   ],
+   "evidence": [
+    {
+     "id": "ev_351d0dc9cafe43fc950f0e63d568426f",
+     "source_id": "src_b264970dac684557a65508f53dc75cf6",
+     "span": "Apple/Cirrus Logic 338S01087 audio amplifier",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 2304:2348",
+     "extracted_at": "2026-09-06T14:24:28.726473Z",
+     "source": {
+      "id": "src_b264970dac684557a65508f53dc75cf6",
+      "url": "https://www.ifixit.com/Guide/iPhone+17+Pro+Chip+ID/196117",
+      "retrieved_at": "2026-09-06T14:24:28.286810Z",
+      "content_hash": "8b67f49f7074a21d01175978619fc11b927357f87d54fd2359b8646ac726a292",
+      "title": "iPhone 17 Pro Chip ID - iFixit",
+      "publisher": "www.ifixit.com",
+      "published_at": null,
+      "source_family_id": "www.ifixit.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    }
+   ]
+  },
+  {
+   "node_id": "nd_b01dd858839e46e0b5759706fc018c22",
+   "name": "Apple/Cirrus Logic 338S01148",
+   "kind": "component",
+   "tier": 1,
+   "parent_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+   "edge_id": "ed_437c0832aa5f4660aa35bf62e7143d1c",
+   "quantity": null,
+   "unit": null,
+   "quantity_support_label": null,
+   "support_label": "directly_supported",
+   "scope": {
+    "type": "product",
+    "product_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+    "organization_node_id": null
+   },
+   "claim_ids": [
+    "clm_a1c7b8e9def74d69a70b00fbf5247bd4"
+   ],
+   "evidence": [
+    {
+     "id": "ev_322b944ce09847a780704e961791dfad",
+     "source_id": "src_b264970dac684557a65508f53dc75cf6",
+     "span": "Apple/Cirrus Logic 338S01148 audio amplifier",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 2350:2394",
+     "extracted_at": "2026-09-06T14:24:28.748335Z",
+     "source": {
+      "id": "src_b264970dac684557a65508f53dc75cf6",
+      "url": "https://www.ifixit.com/Guide/iPhone+17+Pro+Chip+ID/196117",
+      "retrieved_at": "2026-09-06T14:24:28.286810Z",
+      "content_hash": "8b67f49f7074a21d01175978619fc11b927357f87d54fd2359b8646ac726a292",
+      "title": "iPhone 17 Pro Chip ID - iFixit",
+      "publisher": "www.ifixit.com",
+      "published_at": null,
+      "source_family_id": "www.ifixit.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    }
+   ]
+  },
+  {
+   "node_id": "nd_fca2ffa2b59e46b5902fb500994a7d20",
+   "name": "Broadcom AFEM-8257",
+   "kind": "component",
+   "tier": 1,
+   "parent_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+   "edge_id": "ed_8638cb14f7b8436e957633e28fd7ec01",
+   "quantity": null,
+   "unit": null,
+   "quantity_support_label": null,
+   "support_label": "directly_supported",
+   "scope": {
+    "type": "product",
+    "product_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+    "organization_node_id": null
+   },
+   "claim_ids": [
+    "clm_67627dfbbfd643a0b7ee573c926d76ef"
+   ],
+   "evidence": [
+    {
+     "id": "ev_0e36a38fb7944887af59ea17987f0c61",
+     "source_id": "src_b264970dac684557a65508f53dc75cf6",
+     "span": "Broadcom AFEM-8257 front-end module",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 3395:3430",
+     "extracted_at": "2026-09-06T14:24:28.457701Z",
+     "source": {
+      "id": "src_b264970dac684557a65508f53dc75cf6",
+      "url": "https://www.ifixit.com/Guide/iPhone+17+Pro+Chip+ID/196117",
+      "retrieved_at": "2026-09-06T14:24:28.286810Z",
+      "content_hash": "8b67f49f7074a21d01175978619fc11b927357f87d54fd2359b8646ac726a292",
+      "title": "iPhone 17 Pro Chip ID - iFixit",
+      "publisher": "www.ifixit.com",
+      "published_at": null,
+      "source_family_id": "www.ifixit.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    }
+   ]
+  },
+  {
+   "node_id": "nd_06e0d6f256e544e49326095a1071db5b",
+   "name": "Broadcom AFEM-8267",
+   "kind": "component",
+   "tier": 1,
+   "parent_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+   "edge_id": "ed_a10d5fbe78b04002af2d36ae1b4f43b4",
+   "quantity": null,
+   "unit": null,
+   "quantity_support_label": null,
+   "support_label": "directly_supported",
+   "scope": {
+    "type": "product",
+    "product_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+    "organization_node_id": null
+   },
+   "claim_ids": [
+    "clm_419dddd469c545f58af454aa110e1e6a"
+   ],
+   "evidence": [
+    {
+     "id": "ev_b699235ff97a43138ebcdfaac14508ab",
+     "source_id": "src_b264970dac684557a65508f53dc75cf6",
+     "span": "Broadcom AFEM-8267 front-end module",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 4226:4261",
+     "extracted_at": "2026-09-06T14:24:28.586896Z",
+     "source": {
+      "id": "src_b264970dac684557a65508f53dc75cf6",
+      "url": "https://www.ifixit.com/Guide/iPhone+17+Pro+Chip+ID/196117",
+      "retrieved_at": "2026-09-06T14:24:28.286810Z",
+      "content_hash": "8b67f49f7074a21d01175978619fc11b927357f87d54fd2359b8646ac726a292",
+      "title": "iPhone 17 Pro Chip ID - iFixit",
+      "publisher": "www.ifixit.com",
+      "published_at": null,
+      "source_family_id": "www.ifixit.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    }
+   ]
+  },
+  {
+   "node_id": "nd_f1056e1b30274db18eb9ecb5bc12ddc2",
+   "name": "Broadcom BCM59367A1IUBG",
+   "kind": "component",
+   "tier": 1,
+   "parent_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+   "edge_id": "ed_62a18a025bb84ab292206707dd510670",
+   "quantity": null,
+   "unit": null,
+   "quantity_support_label": null,
+   "support_label": "directly_supported",
+   "scope": {
+    "type": "product",
+    "product_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+    "organization_node_id": null
+   },
+   "claim_ids": [
+    "clm_d97cda2675ff4dc2aafdcebaecbec94b"
+   ],
+   "evidence": [
+    {
+     "id": "ev_33a7fbecde7b4220a3904a3b751a8fc0",
+     "source_id": "src_b264970dac684557a65508f53dc75cf6",
+     "span": "Broadcom BCM59367A1IUBG wireless charging controller",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 3695:3747",
+     "extracted_at": "2026-09-06T14:24:28.494050Z",
+     "source": {
+      "id": "src_b264970dac684557a65508f53dc75cf6",
+      "url": "https://www.ifixit.com/Guide/iPhone+17+Pro+Chip+ID/196117",
+      "retrieved_at": "2026-09-06T14:24:28.286810Z",
+      "content_hash": "8b67f49f7074a21d01175978619fc11b927357f87d54fd2359b8646ac726a292",
+      "title": "iPhone 17 Pro Chip ID - iFixit",
+      "publisher": "www.ifixit.com",
+      "published_at": null,
+      "source_family_id": "www.ifixit.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    }
+   ]
+  },
+  {
+   "node_id": "nd_285dc321fd054d84a60ecd41a5bc806c",
+   "name": "Ceramic Shield",
+   "kind": "component",
+   "tier": 1,
+   "parent_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+   "edge_id": "ed_5f75a5417c5649bcaea2349a0828afd6",
+   "quantity": null,
+   "unit": null,
+   "quantity_support_label": null,
+   "support_label": "directly_supported",
+   "scope": {
+    "type": "product",
+    "product_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+    "organization_node_id": null
+   },
+   "claim_ids": [
+    "clm_24395d37e7934def95062e622b5de6e2"
+   ],
+   "evidence": [
+    {
+     "id": "ev_fb101003f8d1441ab707c45daec25f5c",
+     "source_id": "src_ec51a1797a8545e08190c8f7e0eb5269",
+     "span": "Ceramic Shield. Protects the back of iPhone 17 Pro, making it 4x more resistant to cracks.",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 3703:3793",
+     "extracted_at": "2026-09-06T14:19:26.260485Z",
+     "source": {
+      "id": "src_ec51a1797a8545e08190c8f7e0eb5269",
+      "url": "https://www.apple.com/iphone-17-pro",
+      "retrieved_at": "2026-09-06T14:19:26.191939Z",
+      "content_hash": "0e4b315db548e31d1759f882f19e857dfbfeefdc12cb3e1e3e2400794b481419",
+      "title": "iPhone 17 Pro and iPhone 17 Pro Max",
+      "publisher": "www.apple.com",
+      "published_at": null,
+      "source_family_id": "www.apple.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    }
+   ]
+  },
+  {
+   "node_id": "nd_f5e5696ace8e41e9bc78e92bef0a5313",
+   "name": "Ceramic Shield 2",
+   "kind": "component",
+   "tier": 1,
+   "parent_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+   "edge_id": "ed_3de1a75670de46b29690a28169813828",
+   "quantity": null,
+   "unit": null,
+   "quantity_support_label": null,
+   "support_label": "directly_supported",
+   "scope": {
+    "type": "product",
+    "product_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+    "organization_node_id": null
+   },
+   "claim_ids": [
+    "clm_b2077eb99a79450296f54d5daecdff40",
+    "clm_5aab88a9776048a19ad2f970cae5381c"
+   ],
+   "evidence": [
+    {
+     "id": "ev_74b5b1d1b6444e9d8c4f31b5419b7d55",
+     "source_id": "src_ce29e1c3974d42e483fe11e0bb095ad5",
+     "span": "Both models feature the Ceramic Shield 2 front cover with 3x better scratch resistance",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 2610:2696",
+     "extracted_at": "2026-09-06T14:22:38.734682Z",
+     "source": {
+      "id": "src_ce29e1c3974d42e483fe11e0bb095ad5",
+      "url": "https://www.apple.com/cf/newsroom/2025/09/apple-unveils-iphone-17-pro-and-iphone-17-pro-max-the-most-powerful-and-advanced-pro-models-ever",
+      "retrieved_at": "2026-09-06T14:22:38.686491Z",
+      "content_hash": "5cfdc76bb7641d67abb80386ab11baa18e3cadf66a62115356e952a7728c06b5",
+      "title": "Apple unveils iPhone 17 Pro and iPhone 17 Pro Max - Apple (CF)",
+      "publisher": "www.apple.com",
+      "published_at": null,
+      "source_family_id": "www.apple.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    },
+    {
+     "id": "ev_c45240d85f5445cfb60c637c06e196cc",
+     "source_id": "src_ec51a1797a8545e08190c8f7e0eb5269",
+     "span": "New Ceramic Shield 2 on the front has 3x better scratch resistance.",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 3795:3862",
+     "extracted_at": "2026-09-06T14:19:26.273134Z",
+     "source": {
+      "id": "src_ec51a1797a8545e08190c8f7e0eb5269",
+      "url": "https://www.apple.com/iphone-17-pro",
+      "retrieved_at": "2026-09-06T14:19:26.191939Z",
+      "content_hash": "0e4b315db548e31d1759f882f19e857dfbfeefdc12cb3e1e3e2400794b481419",
+      "title": "iPhone 17 Pro and iPhone 17 Pro Max",
+      "publisher": "www.apple.com",
+      "published_at": null,
+      "source_family_id": "www.apple.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    }
+   ]
+  },
+  {
+   "node_id": "nd_55672904995342c7879992e87c70b315",
+   "name": "Front sensor array",
+   "kind": "component",
+   "tier": 1,
+   "parent_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+   "edge_id": "ed_66f34bb8948749bf90e22362f593cca6",
+   "quantity": null,
+   "unit": null,
+   "quantity_support_label": null,
+   "support_label": "directly_supported",
+   "scope": {
+    "type": "product",
+    "product_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+    "organization_node_id": null
+   },
+   "claim_ids": [
+    "clm_3c7a933c3eb04491888f7a2f1bb43c4b",
+    "clm_ae42833dfe7b46a8b5e8683fb6aa25e6",
+    "clm_9e8b40559b7e48c89d154a033d93fb15",
+    "clm_0f2290a1b1344ae6929d62fb405fe261"
+   ],
+   "evidence": [
+    {
+     "id": "ev_83f078ef2c514a47b2e0c8a996d52656",
+     "source_id": "src_38a66fab4da44c20aa8c11c0985fd541",
+     "span": "The front sensor array is secured by two press connectors",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 2961:3018",
+     "extracted_at": "2026-09-06T14:19:51.171159Z",
+     "source": {
+      "id": "src_38a66fab4da44c20aa8c11c0985fd541",
+      "url": "https://www.gadgets360.com/mobiles/news/iphone-17-pro-teardown-ifixit-repairability-score-features-battery-video-apple-9332829",
+      "retrieved_at": "2026-09-06T14:19:51.087401Z",
+      "content_hash": "2650c109b8e499836dfffeaac56d84507014061dc1e24eff27ea6ee697eadff2",
+      "title": "iPhone 17 Pro Teardown Video Shows New Vapour Chamber, Explains Reason Behind 'Scratchgate' | Technology News",
+      "publisher": "www.gadgets360.com",
+      "published_at": null,
+      "source_family_id": "www.gadgets360.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    },
+    {
+     "id": "ev_227bb58765724800a9280a40992b10b9",
+     "source_id": "src_f0af53c7f8044edaa3a2ae0572132e61",
+     "span": "The upper assembly's front sensor array is removed by unplugging two press sensors, while three cables hold the rear camera section in place.",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 3355:3496",
+     "extracted_at": "2026-09-06T14:16:49.831410Z",
+     "source": {
+      "id": "src_f0af53c7f8044edaa3a2ae0572132e61",
+      "url": "https://appleinsider.com/articles/25/09/24/iphone-17-pro-teardown-reveals-vapor-chamber-explains-scratches",
+      "retrieved_at": "2026-09-06T14:16:49.802308Z",
+      "content_hash": "507ff315c66f537817aafe7c05a5369528ef035347b8fefd3ee3dda6b09dd12e",
+      "title": "iPhone 17 Pro teardown reveals vapor chamber design",
+      "publisher": "appleinsider.com",
+      "published_at": null,
+      "source_family_id": "appleinsider.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    },
+    {
+     "id": "ev_0bae518200f84ba4b7a33a6ed634a424",
+     "source_id": "src_2a57bf735ee646f2be1a3edea5f917ef",
+     "span": "for the front camera module, Apple has swapped the positions of the dot projector and flood illuminator compared to the iPhone 16 Pro.",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 1080:1214",
+     "extracted_at": "2026-09-06T14:18:18.956912Z",
+     "source": {
+      "id": "src_2a57bf735ee646f2be1a3edea5f917ef",
+      "url": "https://www.newsbytesapp.com/news/science/iphone-17-pro-teardown-reveals-larger-camera-sensors/story",
+      "retrieved_at": "2026-09-06T14:18:18.905108Z",
+      "content_hash": "b0785102d9fc3bafc1a4ca99b51feebcb6b884a2730f29818600a7e8cc48d964",
+      "title": "iPhone 17 Pro teardown reveals repair-friendly design, larger camera sensors",
+      "publisher": "www.newsbytesapp.com",
+      "published_at": null,
+      "source_family_id": "www.newsbytesapp.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    },
+    {
+     "id": "ev_4576d8269eb24a8d9c610f1bbd264cf3",
+     "source_id": "src_2a57bf735ee646f2be1a3edea5f917ef",
+     "span": "Apple has used larger sensors in both the rear and front camera modules of this new model.",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 980:1070",
+     "extracted_at": "2026-09-06T14:18:18.916063Z",
+     "source": {
+      "id": "src_2a57bf735ee646f2be1a3edea5f917ef",
+      "url": "https://www.newsbytesapp.com/news/science/iphone-17-pro-teardown-reveals-larger-camera-sensors/story",
+      "retrieved_at": "2026-09-06T14:18:18.905108Z",
+      "content_hash": "b0785102d9fc3bafc1a4ca99b51feebcb6b884a2730f29818600a7e8cc48d964",
+      "title": "iPhone 17 Pro teardown reveals repair-friendly design, larger camera sensors",
+      "publisher": "www.newsbytesapp.com",
+      "published_at": null,
+      "source_family_id": "www.newsbytesapp.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    }
+   ]
+  },
+  {
+   "node_id": "nd_e69b0be693b54089bd27980e024e67e1",
+   "name": "Kioxia K5A4CG1685",
+   "kind": "component",
+   "tier": 1,
+   "parent_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+   "edge_id": "ed_32b75ae0ea844535b2efb3fcd7463c04",
+   "quantity": null,
+   "unit": null,
+   "quantity_support_label": null,
+   "support_label": "directly_supported",
+   "scope": {
+    "type": "product",
+    "product_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+    "organization_node_id": null
+   },
+   "claim_ids": [
+    "clm_a9f7bda1920444688d9b5352c62a6ac3"
+   ],
+   "evidence": [
+    {
+     "id": "ev_df38c275a9d0432da0c07531d53104e5",
+     "source_id": "src_b264970dac684557a65508f53dc75cf6",
+     "span": "Kioxia K5A4CG1685 ? 256 GB NAND flash memory",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 1609:1653",
+     "extracted_at": "2026-09-06T14:24:28.357507Z",
+     "source": {
+      "id": "src_b264970dac684557a65508f53dc75cf6",
+      "url": "https://www.ifixit.com/Guide/iPhone+17+Pro+Chip+ID/196117",
+      "retrieved_at": "2026-09-06T14:24:28.286810Z",
+      "content_hash": "8b67f49f7074a21d01175978619fc11b927357f87d54fd2359b8646ac726a292",
+      "title": "iPhone 17 Pro Chip ID - iFixit",
+      "publisher": "www.ifixit.com",
+      "published_at": null,
+      "source_family_id": "www.ifixit.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    }
+   ]
+  },
+  {
+   "node_id": "nd_d39dd52c74c54d538f0d249c73e58c91",
+   "name": "Logic board",
+   "kind": "component",
+   "tier": 1,
+   "parent_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+   "edge_id": "ed_d77a25b5a61c408eaba7db1e2dcfd229",
+   "quantity": null,
+   "unit": null,
+   "quantity_support_label": null,
+   "support_label": "directly_supported",
+   "scope": {
+    "type": "product",
+    "product_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+    "organization_node_id": null
+   },
+   "claim_ids": [
+    "clm_ee9bd7c01af94bfcba38444f9aa2c4f7",
+    "clm_bc9609efdda842138cb52b0cd5f2a819",
+    "clm_9b44710b58d842a88b3f5d15f0af0eeb"
+   ],
+   "evidence": [
+    {
+     "id": "ev_94776f665019477abe7614e026641d6c",
+     "source_id": "src_0f9edba565d64aaa8ffc468dbc139262",
+     "span": "The logic board has been reduced in size, with denser packaging for chips including the new A19 Pro processor.",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 1349:1459",
+     "extracted_at": "2026-09-06T14:20:24.064842Z",
+     "source": {
+      "id": "src_0f9edba565d64aaa8ffc468dbc139262",
+      "url": "https://www.ithinkdiff.com/iphone-17-pro-teardown",
+      "retrieved_at": "2026-09-06T14:20:24.020768Z",
+      "content_hash": "41a1a94e86d41072ef1dfc57f3f0995c7da8d814400b88f9e0ba8cc2cb371324",
+      "title": "iPhone 17 Pro teardown shows smaller logic board and Scratchgate flaws",
+      "publisher": "www.ithinkdiff.com",
+      "published_at": null,
+      "source_family_id": "www.ithinkdiff.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    },
+    {
+     "id": "ev_289c0f48bcae4510b8a3217a5faaffd6",
+     "source_id": "src_38a66fab4da44c20aa8c11c0985fd541",
+     "span": "Similar to the iPhone Air, the logic board is tucked in the top half of the iPhone using press connectors",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 2454:2559",
+     "extracted_at": "2026-09-06T14:19:51.120125Z",
+     "source": {
+      "id": "src_38a66fab4da44c20aa8c11c0985fd541",
+      "url": "https://www.gadgets360.com/mobiles/news/iphone-17-pro-teardown-ifixit-repairability-score-features-battery-video-apple-9332829",
+      "retrieved_at": "2026-09-06T14:19:51.087401Z",
+      "content_hash": "2650c109b8e499836dfffeaac56d84507014061dc1e24eff27ea6ee697eadff2",
+      "title": "iPhone 17 Pro Teardown Video Shows New Vapour Chamber, Explains Reason Behind 'Scratchgate' | Technology News",
+      "publisher": "www.gadgets360.com",
+      "published_at": null,
+      "source_family_id": "www.gadgets360.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    },
+    {
+     "id": "ev_a336eb2af9ae4746b6e5bef0c448e6b4",
+     "source_id": "src_f0af53c7f8044edaa3a2ae0572132e61",
+     "span": "Lastly, the logic board is removed, with press connectors getting in the way. It's a sandwiched board, again located in the top section, which has a little more space thanks to the expanded camera bump, or \"plateau.\"",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 3497:3713",
+     "extracted_at": "2026-09-06T14:16:49.815420Z",
+     "source": {
+      "id": "src_f0af53c7f8044edaa3a2ae0572132e61",
+      "url": "https://appleinsider.com/articles/25/09/24/iphone-17-pro-teardown-reveals-vapor-chamber-explains-scratches",
+      "retrieved_at": "2026-09-06T14:16:49.802308Z",
+      "content_hash": "507ff315c66f537817aafe7c05a5369528ef035347b8fefd3ee3dda6b09dd12e",
+      "title": "iPhone 17 Pro teardown reveals vapor chamber design",
+      "publisher": "appleinsider.com",
+      "published_at": null,
+      "source_family_id": "appleinsider.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    }
+   ]
+  },
+  {
+   "node_id": "nd_34bbabff6a16423fb235ac1c25b9522e",
+   "name": "MagSafe coil",
+   "kind": "component",
+   "tier": 1,
+   "parent_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+   "edge_id": "ed_0a2b346849f64f28bbda60b95518dc31",
+   "quantity": null,
+   "unit": null,
+   "quantity_support_label": null,
+   "support_label": "directly_supported",
+   "scope": {
+    "type": "product",
+    "product_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+    "organization_node_id": null
+   },
+   "claim_ids": [
+    "clm_c28111bb07594390af47f508725b8e48"
+   ],
+   "evidence": [
+    {
+     "id": "ev_b30e29e4f0c548deb55df86ae23d41b9",
+     "source_id": "src_38a66fab4da44c20aa8c11c0985fd541",
+     "span": "There is a single ribbon connector attached to the back plate for the MagSafe coil.",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 1669:1752",
+     "extracted_at": "2026-09-06T14:19:51.180958Z",
+     "source": {
+      "id": "src_38a66fab4da44c20aa8c11c0985fd541",
+      "url": "https://www.gadgets360.com/mobiles/news/iphone-17-pro-teardown-ifixit-repairability-score-features-battery-video-apple-9332829",
+      "retrieved_at": "2026-09-06T14:19:51.087401Z",
+      "content_hash": "2650c109b8e499836dfffeaac56d84507014061dc1e24eff27ea6ee697eadff2",
+      "title": "iPhone 17 Pro Teardown Video Shows New Vapour Chamber, Explains Reason Behind 'Scratchgate' | Technology News",
+      "publisher": "www.gadgets360.com",
+      "published_at": null,
+      "source_family_id": "www.gadgets360.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    }
+   ]
+  },
+  {
+   "node_id": "nd_183f70e95c6a4194bd0fccf4681bb718",
+   "name": "NXP Semiconductors CBTL1701B0",
+   "kind": "component",
+   "tier": 1,
+   "parent_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+   "edge_id": "ed_8039ef0f78bb4a76b545da5b2a60af42",
+   "quantity": null,
+   "unit": null,
+   "quantity_support_label": null,
+   "support_label": "directly_supported",
+   "scope": {
+    "type": "product",
+    "product_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+    "organization_node_id": null
+   },
+   "claim_ids": [
+    "clm_078460a64be94e1d9933146f41972c1e"
+   ],
+   "evidence": [
+    {
+     "id": "ev_d8836cf3d57b4d2d9759b0d4b5fca639",
+     "source_id": "src_b264970dac684557a65508f53dc75cf6",
+     "span": "NXP Semiconductors CBTL1701B0 USB Type-C port controller",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 2158:2214",
+     "extracted_at": "2026-09-06T14:24:28.647541Z",
+     "source": {
+      "id": "src_b264970dac684557a65508f53dc75cf6",
+      "url": "https://www.ifixit.com/Guide/iPhone+17+Pro+Chip+ID/196117",
+      "retrieved_at": "2026-09-06T14:24:28.286810Z",
+      "content_hash": "8b67f49f7074a21d01175978619fc11b927357f87d54fd2359b8646ac726a292",
+      "title": "iPhone 17 Pro Chip ID - iFixit",
+      "publisher": "www.ifixit.com",
+      "published_at": null,
+      "source_family_id": "www.ifixit.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    }
+   ]
+  },
+  {
+   "node_id": "nd_642a63bb63674c96938d004410334d54",
+   "name": "NXP Semiconductors SN300",
+   "kind": "component",
+   "tier": 1,
+   "parent_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+   "edge_id": "ed_65d522fc3d9f4da986d6641df699c5d7",
+   "quantity": null,
+   "unit": null,
+   "quantity_support_label": null,
+   "support_label": "directly_supported",
+   "scope": {
+    "type": "product",
+    "product_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+    "organization_node_id": null
+   },
+   "claim_ids": [
+    "clm_fac54cc7537f4a5399ed263990062d2e"
+   ],
+   "evidence": [
+    {
+     "id": "ev_a4b9c1ccf6744213848ef73cdfe9d06c",
+     "source_id": "src_b264970dac684557a65508f53dc75cf6",
+     "span": "NXP Semiconductors SN300 NFC controller w/ eSIM & secure element",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 4160:4224",
+     "extracted_at": "2026-09-06T14:24:28.567605Z",
+     "source": {
+      "id": "src_b264970dac684557a65508f53dc75cf6",
+      "url": "https://www.ifixit.com/Guide/iPhone+17+Pro+Chip+ID/196117",
+      "retrieved_at": "2026-09-06T14:24:28.286810Z",
+      "content_hash": "8b67f49f7074a21d01175978619fc11b927357f87d54fd2359b8646ac726a292",
+      "title": "iPhone 17 Pro Chip ID - iFixit",
+      "publisher": "www.ifixit.com",
+      "published_at": null,
+      "source_family_id": "www.ifixit.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    }
+   ]
+  },
+  {
+   "node_id": "nd_141039d7d222449b9323ad13025c50ef",
+   "name": "Qorvo QM76308",
+   "kind": "component",
+   "tier": 1,
+   "parent_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+   "edge_id": "ed_4ff1b40663b94937a9f2eca89c957636",
+   "quantity": null,
+   "unit": null,
+   "quantity_support_label": null,
+   "support_label": "directly_supported",
+   "scope": {
+    "type": "product",
+    "product_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+    "organization_node_id": null
+   },
+   "claim_ids": [
+    "clm_e892e3c5c4834ed481a8eea2929d6dbb"
+   ],
+   "evidence": [
+    {
+     "id": "ev_af4a04bf73424d65b088698004f3d736",
+     "source_id": "src_b264970dac684557a65508f53dc75cf6",
+     "span": "Qorvo QM76308 front-end module",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 4263:4293",
+     "extracted_at": "2026-09-06T14:24:28.606717Z",
+     "source": {
+      "id": "src_b264970dac684557a65508f53dc75cf6",
+      "url": "https://www.ifixit.com/Guide/iPhone+17+Pro+Chip+ID/196117",
+      "retrieved_at": "2026-09-06T14:24:28.286810Z",
+      "content_hash": "8b67f49f7074a21d01175978619fc11b927357f87d54fd2359b8646ac726a292",
+      "title": "iPhone 17 Pro Chip ID - iFixit",
+      "publisher": "www.ifixit.com",
+      "published_at": null,
+      "source_family_id": "www.ifixit.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    }
+   ]
+  },
+  {
+   "node_id": "nd_785fc2caae044e738f358ac063816cf1",
+   "name": "Qorvo QM76309",
+   "kind": "component",
+   "tier": 1,
+   "parent_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+   "edge_id": "ed_1f748fc9af61462bae4ecec4858b16d0",
+   "quantity": null,
+   "unit": null,
+   "quantity_support_label": null,
+   "support_label": "directly_supported",
+   "scope": {
+    "type": "product",
+    "product_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+    "organization_node_id": null
+   },
+   "claim_ids": [
+    "clm_b939ca0ff7ed49ae84c0b0ad88951779"
+   ],
+   "evidence": [
+    {
+     "id": "ev_a7a7083278584461bad08ce7928f8098",
+     "source_id": "src_b264970dac684557a65508f53dc75cf6",
+     "span": "Qorvo QM76309 front-end module",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 3432:3462",
+     "extracted_at": "2026-09-06T14:24:28.475903Z",
+     "source": {
+      "id": "src_b264970dac684557a65508f53dc75cf6",
+      "url": "https://www.ifixit.com/Guide/iPhone+17+Pro+Chip+ID/196117",
+      "retrieved_at": "2026-09-06T14:24:28.286810Z",
+      "content_hash": "8b67f49f7074a21d01175978619fc11b927357f87d54fd2359b8646ac726a292",
+      "title": "iPhone 17 Pro Chip ID - iFixit",
+      "publisher": "www.ifixit.com",
+      "published_at": null,
+      "source_family_id": "www.ifixit.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    }
+   ]
+  },
+  {
+   "node_id": "nd_fa9ecbeeb094439f8ecd870375778b9f",
+   "name": "Qualcomm PMX75-001",
+   "kind": "component",
+   "tier": 1,
+   "parent_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+   "edge_id": "ed_9b133f120be94dbb8d21c8973fbba7f7",
+   "quantity": null,
+   "unit": null,
+   "quantity_support_label": null,
+   "support_label": "directly_supported",
+   "scope": {
+    "type": "product",
+    "product_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+    "organization_node_id": null
+   },
+   "claim_ids": [
+    "clm_442a531e15804ba2a39232aee92a283d"
+   ],
+   "evidence": [
+    {
+     "id": "ev_0a058f8b405c4c0ebe4c9c7506a230c4",
+     "source_id": "src_b264970dac684557a65508f53dc75cf6",
+     "span": "Qualcomm PMX75-001 power management",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 3749:3784",
+     "extracted_at": "2026-09-06T14:24:28.512265Z",
+     "source": {
+      "id": "src_b264970dac684557a65508f53dc75cf6",
+      "url": "https://www.ifixit.com/Guide/iPhone+17+Pro+Chip+ID/196117",
+      "retrieved_at": "2026-09-06T14:24:28.286810Z",
+      "content_hash": "8b67f49f7074a21d01175978619fc11b927357f87d54fd2359b8646ac726a292",
+      "title": "iPhone 17 Pro Chip ID - iFixit",
+      "publisher": "www.ifixit.com",
+      "published_at": null,
+      "source_family_id": "www.ifixit.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    }
+   ]
+  },
+  {
+   "node_id": "nd_f3aba224958445e2a40c0f43722f0169",
+   "name": "Qualcomm QET7100A-002",
+   "kind": "component",
+   "tier": 1,
+   "parent_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+   "edge_id": "ed_db985b6db6c04dd4a5c0ee84779aa626",
+   "quantity": null,
+   "unit": null,
+   "quantity_support_label": null,
+   "support_label": "directly_supported",
+   "scope": {
+    "type": "product",
+    "product_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+    "organization_node_id": null
+   },
+   "claim_ids": [
+    "clm_47103e5a5d8f49c1a21523fd5b92c2c1"
+   ],
+   "evidence": [
+    {
+     "id": "ev_b6e1a3fc4da0429488901c9e72ee371c",
+     "source_id": "src_b264970dac684557a65508f53dc75cf6",
+     "span": "Qualcomm QET7100A-002 wideband envelope tracker",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 3837:3884",
+     "extracted_at": "2026-09-06T14:24:28.548810Z",
+     "source": {
+      "id": "src_b264970dac684557a65508f53dc75cf6",
+      "url": "https://www.ifixit.com/Guide/iPhone+17+Pro+Chip+ID/196117",
+      "retrieved_at": "2026-09-06T14:24:28.286810Z",
+      "content_hash": "8b67f49f7074a21d01175978619fc11b927357f87d54fd2359b8646ac726a292",
+      "title": "iPhone 17 Pro Chip ID - iFixit",
+      "publisher": "www.ifixit.com",
+      "published_at": null,
+      "source_family_id": "www.ifixit.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    }
+   ]
+  },
+  {
+   "node_id": "nd_988b1efde3794f22b81071c53f91b753",
+   "name": "Qualcomm SDR875-004",
+   "kind": "component",
+   "tier": 1,
+   "parent_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+   "edge_id": "ed_0bb783f9344745459133462681fcf7c3",
+   "quantity": null,
+   "unit": null,
+   "quantity_support_label": null,
+   "support_label": "directly_supported",
+   "scope": {
+    "type": "product",
+    "product_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+    "organization_node_id": null
+   },
+   "claim_ids": [
+    "clm_afe93896724e4facaa808845efab23ed"
+   ],
+   "evidence": [
+    {
+     "id": "ev_1290cc0b9dab4a769546d0bad5d0bad6",
+     "source_id": "src_b264970dac684557a65508f53dc75cf6",
+     "span": "Qualcomm SDR875-004 RF transceiver",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 3252:3286",
+     "extracted_at": "2026-09-06T14:24:28.390260Z",
+     "source": {
+      "id": "src_b264970dac684557a65508f53dc75cf6",
+      "url": "https://www.ifixit.com/Guide/iPhone+17+Pro+Chip+ID/196117",
+      "retrieved_at": "2026-09-06T14:24:28.286810Z",
+      "content_hash": "8b67f49f7074a21d01175978619fc11b927357f87d54fd2359b8646ac726a292",
+      "title": "iPhone 17 Pro Chip ID - iFixit",
+      "publisher": "www.ifixit.com",
+      "published_at": null,
+      "source_family_id": "www.ifixit.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    }
+   ]
+  },
+  {
+   "node_id": "nd_d214269834734c8e8265ee0f03bb386c",
+   "name": "Qualcomm SDX80M-001",
+   "kind": "component",
+   "tier": 1,
+   "parent_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+   "edge_id": "ed_8a48f8acb886425fb76160e393aa0b67",
+   "quantity": null,
+   "unit": null,
+   "quantity_support_label": null,
+   "support_label": "directly_supported",
+   "scope": {
+    "type": "product",
+    "product_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+    "organization_node_id": null
+   },
+   "claim_ids": [
+    "clm_27625a0298c54c8e9b8447c440705906"
+   ],
+   "evidence": [
+    {
+     "id": "ev_7e145f160b3a47ac9415bb22217662d3",
+     "source_id": "src_b264970dac684557a65508f53dc75cf6",
+     "span": "Qualcomm SDX80M-001 5G Modem",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 3222:3250",
+     "extracted_at": "2026-09-06T14:24:28.374373Z",
+     "source": {
+      "id": "src_b264970dac684557a65508f53dc75cf6",
+      "url": "https://www.ifixit.com/Guide/iPhone+17+Pro+Chip+ID/196117",
+      "retrieved_at": "2026-09-06T14:24:28.286810Z",
+      "content_hash": "8b67f49f7074a21d01175978619fc11b927357f87d54fd2359b8646ac726a292",
+      "title": "iPhone 17 Pro Chip ID - iFixit",
+      "publisher": "www.ifixit.com",
+      "published_at": null,
+      "source_family_id": "www.ifixit.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    }
+   ]
+  },
+  {
+   "node_id": "nd_44a2e777ee964555b842e37e7279bde4",
+   "name": "Rear camera section",
+   "kind": "component",
+   "tier": 1,
+   "parent_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+   "edge_id": "ed_449de31d1389432d971b662ea36248e2",
+   "quantity": null,
+   "unit": null,
+   "quantity_support_label": null,
+   "support_label": "directly_supported",
+   "scope": {
+    "type": "product",
+    "product_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+    "organization_node_id": null
+   },
+   "claim_ids": [
+    "clm_04fbd5805e484746921d7876e102f6c5",
+    "clm_99b4f0d84aa44ade9c3a6f9cdaf1ecc8",
+    "clm_d7bad44239f74bd2b546b9d0325b512e"
+   ],
+   "evidence": [
+    {
+     "id": "ev_3b97d3419d214cb282f2d1ac367ed58d",
+     "source_id": "src_f0af53c7f8044edaa3a2ae0572132e61",
+     "span": "while three cables hold the rear camera section in place.",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 3439:3496",
+     "extracted_at": "2026-09-06T14:16:49.827463Z",
+     "source": {
+      "id": "src_f0af53c7f8044edaa3a2ae0572132e61",
+      "url": "https://appleinsider.com/articles/25/09/24/iphone-17-pro-teardown-reveals-vapor-chamber-explains-scratches",
+      "retrieved_at": "2026-09-06T14:16:49.802308Z",
+      "content_hash": "507ff315c66f537817aafe7c05a5369528ef035347b8fefd3ee3dda6b09dd12e",
+      "title": "iPhone 17 Pro teardown reveals vapor chamber design",
+      "publisher": "appleinsider.com",
+      "published_at": null,
+      "source_family_id": "appleinsider.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    },
+    {
+     "id": "ev_de94909bef6a4a66952efab9b5193c9a",
+     "source_id": "src_38a66fab4da44c20aa8c11c0985fd541",
+     "span": "three cables hold the rear camera portion in place",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 3026:3076",
+     "extracted_at": "2026-09-06T14:19:51.158410Z",
+     "source": {
+      "id": "src_38a66fab4da44c20aa8c11c0985fd541",
+      "url": "https://www.gadgets360.com/mobiles/news/iphone-17-pro-teardown-ifixit-repairability-score-features-battery-video-apple-9332829",
+      "retrieved_at": "2026-09-06T14:19:51.087401Z",
+      "content_hash": "2650c109b8e499836dfffeaac56d84507014061dc1e24eff27ea6ee697eadff2",
+      "title": "iPhone 17 Pro Teardown Video Shows New Vapour Chamber, Explains Reason Behind 'Scratchgate' | Technology News",
+      "publisher": "www.gadgets360.com",
+      "published_at": null,
+      "source_family_id": "www.gadgets360.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    },
+    {
+     "id": "ev_56cf0fff8ffe4a6fa5959e0309e69b01",
+     "source_id": "src_0f9edba565d64aaa8ffc468dbc139262",
+     "span": "The teardown also confirmed that the camera module is easier to access than in previous Pro models",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 3457:3555",
+     "extracted_at": "2026-09-06T14:20:24.095289Z",
+     "source": {
+      "id": "src_0f9edba565d64aaa8ffc468dbc139262",
+      "url": "https://www.ithinkdiff.com/iphone-17-pro-teardown",
+      "retrieved_at": "2026-09-06T14:20:24.020768Z",
+      "content_hash": "41a1a94e86d41072ef1dfc57f3f0995c7da8d814400b88f9e0ba8cc2cb371324",
+      "title": "iPhone 17 Pro teardown shows smaller logic board and Scratchgate flaws",
+      "publisher": "www.ithinkdiff.com",
+      "published_at": null,
+      "source_family_id": "www.ithinkdiff.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    }
+   ]
+  },
+  {
+   "node_id": "nd_6c1305207d67453995457272c4fccdfa",
+   "name": "STMicroelectronics STPMIA3A",
+   "kind": "component",
+   "tier": 1,
+   "parent_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+   "edge_id": "ed_46c90b9df2ea4455a87421049ff3517f",
+   "quantity": null,
+   "unit": null,
+   "quantity_support_label": null,
+   "support_label": "directly_supported",
+   "scope": {
+    "type": "product",
+    "product_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+    "organization_node_id": null
+   },
+   "claim_ids": [
+    "clm_0fc273e927af49b9ad37cace6438d646"
+   ],
+   "evidence": [
+    {
+     "id": "ev_8c9eb9ebf13d4eeeb15bada36489baef",
+     "source_id": "src_b264970dac684557a65508f53dc75cf6",
+     "span": "STMicroelectronics STPMIA3A power management",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 2216:2260",
+     "extracted_at": "2026-09-06T14:24:28.668201Z",
+     "source": {
+      "id": "src_b264970dac684557a65508f53dc75cf6",
+      "url": "https://www.ifixit.com/Guide/iPhone+17+Pro+Chip+ID/196117",
+      "retrieved_at": "2026-09-06T14:24:28.286810Z",
+      "content_hash": "8b67f49f7074a21d01175978619fc11b927357f87d54fd2359b8646ac726a292",
+      "title": "iPhone 17 Pro Chip ID - iFixit",
+      "publisher": "www.ifixit.com",
+      "published_at": null,
+      "source_family_id": "www.ifixit.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    }
+   ]
+  },
+  {
+   "node_id": "nd_75c990055bd2483f8ea1f58c0cff99eb",
+   "name": "Samsung K3KLMLM0FM-HGGV",
+   "kind": "component",
+   "tier": 1,
+   "parent_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+   "edge_id": "ed_6d2a120ecc2c4894b3abe027988969d6",
+   "quantity": null,
+   "unit": null,
+   "quantity_support_label": null,
+   "support_label": "directly_supported",
+   "scope": {
+    "type": "product",
+    "product_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+    "organization_node_id": null
+   },
+   "claim_ids": [
+    "clm_34679f43249649e2b9e5764eeef113b2"
+   ],
+   "evidence": [
+    {
+     "id": "ev_c6c474facd7c4ba2995386b16fd1b03b",
+     "source_id": "src_b264970dac684557a65508f53dc75cf6",
+     "span": "Apple APL1V12/339S01837 A19 Pro hexa-core applications processor w/ GPU & Neural Engine layered under a Samsung K3KLMLM0FM-HGGV 12 GB LPDDR5X SDRAM",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 1963:2110",
+     "extracted_at": "2026-09-06T14:24:28.338944Z",
+     "source": {
+      "id": "src_b264970dac684557a65508f53dc75cf6",
+      "url": "https://www.ifixit.com/Guide/iPhone+17+Pro+Chip+ID/196117",
+      "retrieved_at": "2026-09-06T14:24:28.286810Z",
+      "content_hash": "8b67f49f7074a21d01175978619fc11b927357f87d54fd2359b8646ac726a292",
+      "title": "iPhone 17 Pro Chip ID - iFixit",
+      "publisher": "www.ifixit.com",
+      "published_at": null,
+      "source_family_id": "www.ifixit.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    }
+   ]
+  },
+  {
+   "node_id": "nd_48aa454b6169472b8d82b93000913b52",
+   "name": "Skyworks SKY58480-14",
+   "kind": "component",
+   "tier": 1,
+   "parent_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+   "edge_id": "ed_2e08d090c117424fb913e54fce9e7bee",
+   "quantity": null,
+   "unit": null,
+   "quantity_support_label": null,
+   "support_label": "directly_supported",
+   "scope": {
+    "type": "product",
+    "product_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+    "organization_node_id": null
+   },
+   "claim_ids": [
+    "clm_3898e3fda82c4c13a4b31718be1fe3aa"
+   ],
+   "evidence": [
+    {
+     "id": "ev_bde98da9179f4957acd9df40b172de44",
+     "source_id": "src_b264970dac684557a65508f53dc75cf6",
+     "span": "Skyworks SKY58480-14 front-end module",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 3356:3393",
+     "extracted_at": "2026-09-06T14:24:28.440296Z",
+     "source": {
+      "id": "src_b264970dac684557a65508f53dc75cf6",
+      "url": "https://www.ifixit.com/Guide/iPhone+17+Pro+Chip+ID/196117",
+      "retrieved_at": "2026-09-06T14:24:28.286810Z",
+      "content_hash": "8b67f49f7074a21d01175978619fc11b927357f87d54fd2359b8646ac726a292",
+      "title": "iPhone 17 Pro Chip ID - iFixit",
+      "publisher": "www.ifixit.com",
+      "published_at": null,
+      "source_family_id": "www.ifixit.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    }
+   ]
+  },
+  {
+   "node_id": "nd_181e7884e3ab4c5398eff51efc1121e2",
+   "name": "Speaker module",
+   "kind": "component",
+   "tier": 1,
+   "parent_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+   "edge_id": "ed_67b291cd161343bcabe32d88306a63e1",
+   "quantity": null,
+   "unit": null,
+   "quantity_support_label": null,
+   "support_label": "directly_supported",
+   "scope": {
+    "type": "product",
+    "product_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+    "organization_node_id": null
+   },
+   "claim_ids": [
+    "clm_06bcdae1afd7464e85fa3847c3169171",
+    "clm_badb9c9223134f1cbf2107d70c42ca4e",
+    "clm_1b70c4a206c14492ac505b09b546a5d0"
+   ],
+   "evidence": [
+    {
+     "id": "ev_1d9fb0d0ee064f299d3ca131941d1aef",
+     "source_id": "src_f0af53c7f8044edaa3a2ae0572132e61",
+     "span": "A mix of tri-point, Phillips, and standoff screws hold the Taptic Engine in place, as well as the speaker module.",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 2970:3083",
+     "extracted_at": "2026-09-06T14:16:49.823501Z",
+     "source": {
+      "id": "src_f0af53c7f8044edaa3a2ae0572132e61",
+      "url": "https://appleinsider.com/articles/25/09/24/iphone-17-pro-teardown-reveals-vapor-chamber-explains-scratches",
+      "retrieved_at": "2026-09-06T14:16:49.802308Z",
+      "content_hash": "507ff315c66f537817aafe7c05a5369528ef035347b8fefd3ee3dda6b09dd12e",
+      "title": "iPhone 17 Pro teardown reveals vapor chamber design",
+      "publisher": "appleinsider.com",
+      "published_at": null,
+      "source_family_id": "appleinsider.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    },
+    {
+     "id": "ev_9c8f8994319a4af69a2a7e1d8bf827af",
+     "source_id": "src_38a66fab4da44c20aa8c11c0985fd541",
+     "span": "The Taptic Engine and speaker module are placed beneath the battery",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 2682:2749",
+     "extracted_at": "2026-09-06T14:19:51.144894Z",
+     "source": {
+      "id": "src_38a66fab4da44c20aa8c11c0985fd541",
+      "url": "https://www.gadgets360.com/mobiles/news/iphone-17-pro-teardown-ifixit-repairability-score-features-battery-video-apple-9332829",
+      "retrieved_at": "2026-09-06T14:19:51.087401Z",
+      "content_hash": "2650c109b8e499836dfffeaac56d84507014061dc1e24eff27ea6ee697eadff2",
+      "title": "iPhone 17 Pro Teardown Video Shows New Vapour Chamber, Explains Reason Behind 'Scratchgate' | Technology News",
+      "publisher": "www.gadgets360.com",
+      "published_at": null,
+      "source_family_id": "www.gadgets360.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    },
+    {
+     "id": "ev_ee437ac984a74d34a1a2dc00283ff61d",
+     "source_id": "src_a035b97e63a74b3fa43711d23bca9aa2",
+     "span": "80% recycled steel in the display support plate, speaker, and receiver",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 2385:2455",
+     "extracted_at": "2026-09-06T14:17:53.790607Z",
+     "source": {
+      "id": "src_a035b97e63a74b3fa43711d23bca9aa2",
+      "url": "https://www.apple.com/environment/pdf/products/iphone/iPhone_17_Pro_and_iPhone_17_Pro_Max_PER_Sept2025.pdf",
+      "retrieved_at": "2026-09-06T14:17:53.662050Z",
+      "content_hash": "51f461807a621834fa379465c81b2c304b50ee0159547415d44a848bd9a008b7",
+      "title": "iPhone 17 Pro and iPhone 17 Pro Max",
+      "publisher": "www.apple.com",
+      "published_at": null,
+      "source_family_id": "www.apple.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    }
+   ]
+  },
+  {
+   "node_id": "nd_b948780d1568423face8bcfe7bd2f6b8",
+   "name": "Super Retina XDR display",
+   "kind": "component",
+   "tier": 1,
+   "parent_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+   "edge_id": "ed_c48cfb3843014f448e08aae672503a29",
+   "quantity": null,
+   "unit": null,
+   "quantity_support_label": null,
+   "support_label": "directly_supported",
+   "scope": {
+    "type": "product",
+    "product_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+    "organization_node_id": null
+   },
+   "claim_ids": [
+    "clm_4b6d0f47431b442d84dc7c54001d4023"
+   ],
+   "evidence": [
+    {
+     "id": "ev_1905c7f828764a2da3cff60d2cd581f7",
+     "source_id": "src_ec51a1797a8545e08190c8f7e0eb5269",
+     "span": "Immersive pro display. Our best\u2011ever 6.3\u2011inch and 6.9\u2011inch Super Retina XDR displays.",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 3864:3949",
+     "extracted_at": "2026-09-06T14:19:26.283575Z",
+     "source": {
+      "id": "src_ec51a1797a8545e08190c8f7e0eb5269",
+      "url": "https://www.apple.com/iphone-17-pro",
+      "retrieved_at": "2026-09-06T14:19:26.191939Z",
+      "content_hash": "0e4b315db548e31d1759f882f19e857dfbfeefdc12cb3e1e3e2400794b481419",
+      "title": "iPhone 17 Pro and iPhone 17 Pro Max",
+      "publisher": "www.apple.com",
+      "published_at": null,
+      "source_family_id": "www.apple.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    }
+   ]
+  },
+  {
+   "node_id": "nd_a2ea61e8a018481dbe87bf56ddd403be",
+   "name": "Taptic Engine",
+   "kind": "component",
+   "tier": 1,
+   "parent_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+   "edge_id": "ed_65642f2698f8412aad7dd68cbe366e5a",
+   "quantity": null,
+   "unit": null,
+   "quantity_support_label": null,
+   "support_label": "directly_supported",
+   "scope": {
+    "type": "product",
+    "product_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+    "organization_node_id": null
+   },
+   "claim_ids": [
+    "clm_35d956f906eb4cd3bf6b9b0d000f149b",
+    "clm_a3f0c19d4a0c4b2986e0f7b2c62e0932",
+    "clm_97f2ce830e7a4d13b7d3ac6fd75c3bbb"
+   ],
+   "evidence": [
+    {
+     "id": "ev_d5f8e68cb39f40b9b0a3a9459c5a562d",
+     "source_id": "src_f0af53c7f8044edaa3a2ae0572132e61",
+     "span": "A mix of tri-point, Phillips, and standoff screws hold the Taptic Engine in place, as well as the speaker module.",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 2970:3083",
+     "extracted_at": "2026-09-06T14:16:49.819651Z",
+     "source": {
+      "id": "src_f0af53c7f8044edaa3a2ae0572132e61",
+      "url": "https://appleinsider.com/articles/25/09/24/iphone-17-pro-teardown-reveals-vapor-chamber-explains-scratches",
+      "retrieved_at": "2026-09-06T14:16:49.802308Z",
+      "content_hash": "507ff315c66f537817aafe7c05a5369528ef035347b8fefd3ee3dda6b09dd12e",
+      "title": "iPhone 17 Pro teardown reveals vapor chamber design",
+      "publisher": "appleinsider.com",
+      "published_at": null,
+      "source_family_id": "appleinsider.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    },
+    {
+     "id": "ev_d19b237e66384d11865a2b190e02945e",
+     "source_id": "src_38a66fab4da44c20aa8c11c0985fd541",
+     "span": "The Taptic Engine and speaker module are placed beneath the battery",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 2682:2749",
+     "extracted_at": "2026-09-06T14:19:51.133246Z",
+     "source": {
+      "id": "src_38a66fab4da44c20aa8c11c0985fd541",
+      "url": "https://www.gadgets360.com/mobiles/news/iphone-17-pro-teardown-ifixit-repairability-score-features-battery-video-apple-9332829",
+      "retrieved_at": "2026-09-06T14:19:51.087401Z",
+      "content_hash": "2650c109b8e499836dfffeaac56d84507014061dc1e24eff27ea6ee697eadff2",
+      "title": "iPhone 17 Pro Teardown Video Shows New Vapour Chamber, Explains Reason Behind 'Scratchgate' | Technology News",
+      "publisher": "www.gadgets360.com",
+      "published_at": null,
+      "source_family_id": "www.gadgets360.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    },
+    {
+     "id": "ev_84b0a886444e441d9fbf81a7f2467068",
+     "source_id": "src_a035b97e63a74b3fa43711d23bca9aa2",
+     "span": "100% recycled tungsten and copper wire in the Taptic Engine",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 2456:2515",
+     "extracted_at": "2026-09-06T14:17:53.816584Z",
+     "source": {
+      "id": "src_a035b97e63a74b3fa43711d23bca9aa2",
+      "url": "https://www.apple.com/environment/pdf/products/iphone/iPhone_17_Pro_and_iPhone_17_Pro_Max_PER_Sept2025.pdf",
+      "retrieved_at": "2026-09-06T14:17:53.662050Z",
+      "content_hash": "51f461807a621834fa379465c81b2c304b50ee0159547415d44a848bd9a008b7",
+      "title": "iPhone 17 Pro and iPhone 17 Pro Max",
+      "publisher": "www.apple.com",
+      "published_at": null,
+      "source_family_id": "www.apple.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    }
+   ]
+  },
+  {
+   "node_id": "nd_7e5867a598d142629066e7c88865ef43",
+   "name": "Texas Instruments CP3200C1K4",
+   "kind": "component",
+   "tier": 1,
+   "parent_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+   "edge_id": "ed_d38cbe3c41d04b1698fe17b9be44a0f0",
+   "quantity": null,
+   "unit": null,
+   "quantity_support_label": null,
+   "support_label": "directly_supported",
+   "scope": {
+    "type": "product",
+    "product_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+    "organization_node_id": null
+   },
+   "claim_ids": [
+    "clm_9201757a8f674b10ad0fcd474dd85fa8"
+   ],
+   "evidence": [
+    {
+     "id": "ev_223e1cf54e744dffa5fd3a4987bb0aa5",
+     "source_id": "src_b264970dac684557a65508f53dc75cf6",
+     "span": "Texas Instruments CP3200C1K4 battery charger",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 2112:2156",
+     "extracted_at": "2026-09-06T14:24:28.626998Z",
+     "source": {
+      "id": "src_b264970dac684557a65508f53dc75cf6",
+      "url": "https://www.ifixit.com/Guide/iPhone+17+Pro+Chip+ID/196117",
+      "retrieved_at": "2026-09-06T14:24:28.286810Z",
+      "content_hash": "8b67f49f7074a21d01175978619fc11b927357f87d54fd2359b8646ac726a292",
+      "title": "iPhone 17 Pro Chip ID - iFixit",
+      "publisher": "www.ifixit.com",
+      "published_at": null,
+      "source_family_id": "www.ifixit.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    }
+   ]
+  },
+  {
+   "node_id": "nd_6fd3956979d54a7ebff0aaf1dd3c1ff6",
+   "name": "Texas Instruments TPS65658A0",
+   "kind": "component",
+   "tier": 1,
+   "parent_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+   "edge_id": "ed_00e83a6fc5b0456897b681fec8c10d79",
+   "quantity": null,
+   "unit": null,
+   "quantity_support_label": null,
+   "support_label": "directly_supported",
+   "scope": {
+    "type": "product",
+    "product_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+    "organization_node_id": null
+   },
+   "claim_ids": [
+    "clm_f486ce93bd094c1f97047c88cb29b5a6"
+   ],
+   "evidence": [
+    {
+     "id": "ev_7fb6ffadfb01490580b147afdf37357d",
+     "source_id": "src_b264970dac684557a65508f53dc75cf6",
+     "span": "Texas Instruments TPS65658A0 display power supply",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 3786:3835",
+     "extracted_at": "2026-09-06T14:24:28.530265Z",
+     "source": {
+      "id": "src_b264970dac684557a65508f53dc75cf6",
+      "url": "https://www.ifixit.com/Guide/iPhone+17+Pro+Chip+ID/196117",
+      "retrieved_at": "2026-09-06T14:24:28.286810Z",
+      "content_hash": "8b67f49f7074a21d01175978619fc11b927357f87d54fd2359b8646ac726a292",
+      "title": "iPhone 17 Pro Chip ID - iFixit",
+      "publisher": "www.ifixit.com",
+      "published_at": null,
+      "source_family_id": "www.ifixit.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    }
+   ]
+  },
+  {
+   "node_id": "nd_cf6c5174ea584b8aa1efee45f56ee803",
+   "name": "USI 339M00399",
+   "kind": "component",
+   "tier": 1,
+   "parent_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+   "edge_id": "ed_0a21abcba2814dcd9b93dde9b349c0ff",
+   "quantity": null,
+   "unit": null,
+   "quantity_support_label": null,
+   "support_label": "directly_supported",
+   "scope": {
+    "type": "product",
+    "product_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+    "organization_node_id": null
+   },
+   "claim_ids": [
+    "clm_7c1e4f9cbcbd4a98affee548d3825489"
+   ],
+   "evidence": [
+    {
+     "id": "ev_764e1d45c6724a9cbf492f33b4e280a9",
+     "source_id": "src_b264970dac684557a65508f53dc75cf6",
+     "span": "USI 339M00399 WiFi 7/Bluetooth 6/Thread module (contains Apple N1)",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 3288:3354",
+     "extracted_at": "2026-09-06T14:24:28.406492Z",
+     "source": {
+      "id": "src_b264970dac684557a65508f53dc75cf6",
+      "url": "https://www.ifixit.com/Guide/iPhone+17+Pro+Chip+ID/196117",
+      "retrieved_at": "2026-09-06T14:24:28.286810Z",
+      "content_hash": "8b67f49f7074a21d01175978619fc11b927357f87d54fd2359b8646ac726a292",
+      "title": "iPhone 17 Pro Chip ID - iFixit",
+      "publisher": "www.ifixit.com",
+      "published_at": null,
+      "source_family_id": "www.ifixit.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    }
+   ]
+  },
+  {
+   "node_id": "nd_c6357dd5c00e45879eecf88119941871",
+   "name": "Vapor chamber",
+   "kind": "component",
+   "tier": 1,
+   "parent_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+   "edge_id": "ed_08eccb7662994018870bd560483b1b8f",
+   "quantity": null,
+   "unit": null,
+   "quantity_support_label": null,
+   "support_label": "directly_supported",
+   "scope": {
+    "type": "product",
+    "product_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+    "organization_node_id": null
+   },
+   "claim_ids": [
+    "clm_60489400df1f476a80b6938a4d6ed620",
+    "clm_6b3176bbbf1c4706b386bb77220deb01",
+    "clm_04c56872625e4325880456a23e4fcef2",
+    "clm_b884aa1b64234d3e82c0ed7fff579b63"
+   ],
+   "evidence": [
+    {
+     "id": "ev_e887798f0cd74025b4c749bdf24f3e28",
+     "source_id": "src_0c82e3edc09f46198c2547a3f616afbf",
+     "span": "The A19 Pro includes enhanced thermal management in the iPhone 17 Pro and Pro Max models, featuring a vapor chamber containing deionized water, laser-welded into the aluminum unibody.",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 5255:5438",
+     "extracted_at": "2026-09-06T14:18:37.676715Z",
+     "source": {
+      "id": "src_0c82e3edc09f46198c2547a3f616afbf",
+      "url": "https://en.wikipedia.org/wiki/Apple_A19",
+      "retrieved_at": "2026-09-06T14:18:37.594037Z",
+      "content_hash": "598c29cb215e71a50ccfcdfa9cd37033f2f5c64beba0cd9d93e6188a0a2ea746",
+      "title": "Apple A19 - Wikipedia",
+      "publisher": "en.wikipedia.org",
+      "published_at": null,
+      "source_family_id": "en.wikipedia.org",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    },
+    {
+     "id": "ev_8a3dd8a7428243ac9140edf21f0050de",
+     "source_id": "src_f0af53c7f8044edaa3a2ae0572132e61",
+     "span": "One of the massive selling points of the iPhone 17 Pro is the use of vapor chamber cooling for the first time in an iPhone.",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 1856:1979",
+     "extracted_at": "2026-09-06T14:16:49.810938Z",
+     "source": {
+      "id": "src_f0af53c7f8044edaa3a2ae0572132e61",
+      "url": "https://appleinsider.com/articles/25/09/24/iphone-17-pro-teardown-reveals-vapor-chamber-explains-scratches",
+      "retrieved_at": "2026-09-06T14:16:49.802308Z",
+      "content_hash": "507ff315c66f537817aafe7c05a5369528ef035347b8fefd3ee3dda6b09dd12e",
+      "title": "iPhone 17 Pro teardown reveals vapor chamber design",
+      "publisher": "appleinsider.com",
+      "published_at": null,
+      "source_family_id": "appleinsider.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    },
+    {
+     "id": "ev_a68930d6e67649ec9d90428409d645ca",
+     "source_id": "src_a035b97e63a74b3fa43711d23bca9aa2",
+     "span": "100% recycled copper in the vapor chamber enclosure",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 2061:2112",
+     "extracted_at": "2026-09-06T14:17:53.716997Z",
+     "source": {
+      "id": "src_a035b97e63a74b3fa43711d23bca9aa2",
+      "url": "https://www.apple.com/environment/pdf/products/iphone/iPhone_17_Pro_and_iPhone_17_Pro_Max_PER_Sept2025.pdf",
+      "retrieved_at": "2026-09-06T14:17:53.662050Z",
+      "content_hash": "51f461807a621834fa379465c81b2c304b50ee0159547415d44a848bd9a008b7",
+      "title": "iPhone 17 Pro and iPhone 17 Pro Max",
+      "publisher": "www.apple.com",
+      "published_at": null,
+      "source_family_id": "www.apple.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    },
+    {
+     "id": "ev_0820e3ffd8284032b75e6056f3988353",
+     "source_id": "src_ec51a1797a8545e08190c8f7e0eb5269",
+     "span": "Vapor chamber. Deionized water sealed inside moves heat away from the A19 Pro chip, allowing for even higher sustained performance.",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 3571:3702",
+     "extracted_at": "2026-09-06T14:19:26.219425Z",
+     "source": {
+      "id": "src_ec51a1797a8545e08190c8f7e0eb5269",
+      "url": "https://www.apple.com/iphone-17-pro",
+      "retrieved_at": "2026-09-06T14:19:26.191939Z",
+      "content_hash": "0e4b315db548e31d1759f882f19e857dfbfeefdc12cb3e1e3e2400794b481419",
+      "title": "iPhone 17 Pro and iPhone 17 Pro Max",
+      "publisher": "www.apple.com",
+      "published_at": null,
+      "source_family_id": "www.apple.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    }
+   ]
+  },
+  {
+   "node_id": "nd_0c0cc8f2a0b44e54b5c86570f2f9722d",
+   "name": "aluminum",
+   "kind": "material",
+   "tier": 1,
+   "parent_node_id": "nd_32c11da79d7246148d318bc30adb1e30",
+   "edge_id": "ed_783761c9a1d4440f8682c186ef0d7e05",
+   "quantity": null,
+   "unit": null,
+   "quantity_support_label": null,
+   "support_label": "directly_supported",
+   "scope": {
+    "type": "product",
+    "product_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+    "organization_node_id": null
+   },
+   "claim_ids": [
+    "clm_c47cdf0b90ec491ba468276e8e4c4fdd"
+   ],
+   "evidence": [
+    {
+     "id": "ev_0033516b7722430ba3f7d1806a04e6ef",
+     "source_id": "src_bb424b9331344e23b81f2753e443c478",
+     "span": "an all-aluminum design for the iPhone 17 Pro midframe",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 1025:1078",
+     "extracted_at": "2026-09-06T14:20:07.224950Z",
+     "source": {
+      "id": "src_bb424b9331344e23b81f2753e443c478",
+      "url": "https://appleinsider.com/articles/25/09/05/iphone-17-pro-rumored-to-ditch-titanium-frame-and-go-back-to-aluminum",
+      "retrieved_at": "2026-09-06T14:20:07.176921Z",
+      "content_hash": "baccd116b51df80de03276893b2f3bdbbc068cca73d983417f304ec3693cde8c",
+      "title": "iPhone 17 Pro to feature aluminum frame, repeat rumor claims",
+      "publisher": "appleinsider.com",
+      "published_at": null,
+      "source_family_id": "appleinsider.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    }
+   ]
+  },
+  {
+   "node_id": "nd_0c0cc8f2a0b44e54b5c86570f2f9722d",
+   "name": "aluminum",
+   "kind": "material",
+   "tier": 1,
+   "parent_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+   "edge_id": "ed_f5a7aa7334db48f4baba501c5e766ba1",
+   "quantity": null,
+   "unit": null,
+   "quantity_support_label": null,
+   "support_label": "directly_supported",
+   "scope": {
+    "type": "product",
+    "product_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+    "organization_node_id": null
+   },
+   "claim_ids": [
+    "clm_00d42d9be1c9476da47438dd7582bd0c",
+    "clm_adc491099b9246cfbfb68613a51ec7b4"
+   ],
+   "evidence": [
+    {
+     "id": "ev_4c41ed4959e5458c9e9fd5e729d2b761",
+     "source_id": "src_62ad67de832f47848ab9cc3c67b1d4ab",
+     "span": "The new brushed aluminum unibody design is crafted with a lightweight aerospace-grade 7000-series aluminum alloy to deliver the best-ever thermal performance in an iPhone.",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 3606:3777",
+     "extracted_at": "2026-09-06T14:21:41.150756Z",
+     "source": {
+      "id": "src_62ad67de832f47848ab9cc3c67b1d4ab",
+      "url": "https://www.apple.com/newsroom/2025/09/apple-unveils-iphone-17-pro-and-iphone-17-pro-max",
+      "retrieved_at": "2026-09-06T14:21:41.135412Z",
+      "content_hash": "e1805488d95c0625d87841d49d2d17239888df5079e4a566a7994046148a17cf",
+      "title": "Apple unveils iPhone 17 Pro and iPhone 17 Pro Max",
+      "publisher": "www.apple.com",
+      "published_at": null,
+      "source_family_id": "www.apple.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    },
+    {
+     "id": "ev_0e7c1839036740979997b3686c582c1c",
+     "source_id": "src_bcfa8c1aef274d39a6c330968ee44c5f",
+     "span": "revealing shiny aluminum underneath",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 2558:2593",
+     "extracted_at": "2026-09-06T14:23:34.109147Z",
+     "source": {
+      "id": "src_bcfa8c1aef274d39a6c330968ee44c5f",
+      "url": "https://9to5mac.com/2025/09/23/iphone-17-pro-teardown-reveals-vapor-chamber-internals-scratchgate-details-more",
+      "retrieved_at": "2026-09-06T14:23:34.015561Z",
+      "content_hash": "905a27e212ffb060a819d568defea3e39ec02c9c55352465798d43fe62797085",
+      "title": "iPhone 17 Pro teardown looks at vapor chamber, scratchgate, more",
+      "publisher": "9to5mac.com",
+      "published_at": null,
+      "source_family_id": "9to5mac.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    }
+   ]
+  },
+  {
+   "node_id": "nd_1c595e07abd94aa686d56d13e02f7f9b",
+   "name": "anodized coating",
+   "kind": "material",
+   "tier": 1,
+   "parent_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+   "edge_id": "ed_8d5da73a8fd346d68369224ca203ed42",
+   "quantity": null,
+   "unit": null,
+   "quantity_support_label": null,
+   "support_label": "directly_supported",
+   "scope": {
+    "type": "product",
+    "product_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+    "organization_node_id": null
+   },
+   "claim_ids": [
+    "clm_b5f54e52fb6f465383610fd8c2ed1f1f"
+   ],
+   "evidence": [
+    {
+     "id": "ev_dc096d485005406db76cb38a71ff0254",
+     "source_id": "src_bcfa8c1aef274d39a6c330968ee44c5f",
+     "span": "the iPhone 17 Pro\u2019s anodized coating chips away",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 2509:2556",
+     "extracted_at": "2026-09-06T14:23:34.121223Z",
+     "source": {
+      "id": "src_bcfa8c1aef274d39a6c330968ee44c5f",
+      "url": "https://9to5mac.com/2025/09/23/iphone-17-pro-teardown-reveals-vapor-chamber-internals-scratchgate-details-more",
+      "retrieved_at": "2026-09-06T14:23:34.015561Z",
+      "content_hash": "905a27e212ffb060a819d568defea3e39ec02c9c55352465798d43fe62797085",
+      "title": "iPhone 17 Pro teardown looks at vapor chamber, scratchgate, more",
+      "publisher": "9to5mac.com",
+      "published_at": null,
+      "source_family_id": "9to5mac.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    }
+   ]
+  },
+  {
+   "node_id": "nd_1819a092b7d94148b037a4f5be1277e1",
+   "name": "iPhone 17 Pro Camera Control",
+   "kind": "component",
+   "tier": 1,
+   "parent_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+   "edge_id": "ed_7ae62046a138482da492660bbdcfdcf6",
+   "quantity": null,
+   "unit": null,
+   "quantity_support_label": null,
+   "support_label": "directly_supported",
+   "scope": {
+    "type": "product",
+    "product_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+    "organization_node_id": null
+   },
+   "claim_ids": [
+    "clm_01195651c4b44c35a82bab90e32efd83"
+   ],
+   "evidence": [
+    {
+     "id": "ev_1e0ea80d7463466a9f4870a569655cf1",
+     "source_id": "src_a035b97e63a74b3fa43711d23bca9aa2",
+     "span": "100% recycled gold wire in all cameras and Camera Control",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 2200:2257",
+     "extracted_at": "2026-09-06T14:17:53.755403Z",
+     "source": {
+      "id": "src_a035b97e63a74b3fa43711d23bca9aa2",
+      "url": "https://www.apple.com/environment/pdf/products/iphone/iPhone_17_Pro_and_iPhone_17_Pro_Max_PER_Sept2025.pdf",
+      "retrieved_at": "2026-09-06T14:17:53.662050Z",
+      "content_hash": "51f461807a621834fa379465c81b2c304b50ee0159547415d44a848bd9a008b7",
+      "title": "iPhone 17 Pro and iPhone 17 Pro Max",
+      "publisher": "www.apple.com",
+      "published_at": null,
+      "source_family_id": "www.apple.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    }
+   ]
+  },
+  {
+   "node_id": "nd_17cb0c6d2eab452b835e8c4f85f9075d",
+   "name": "iPhone 17 Pro battery",
+   "kind": "component",
+   "tier": 1,
+   "parent_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+   "edge_id": "ed_fcfc1cd4d4b74f6485f44270bca0bde1",
+   "quantity": null,
+   "unit": null,
+   "quantity_support_label": null,
+   "support_label": "directly_supported",
+   "scope": {
+    "type": "product",
+    "product_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+    "organization_node_id": null
+   },
+   "claim_ids": [
+    "clm_f2c99766cb3b439bb3e331a2300aa109",
+    "clm_c92b7b7d2a3046b09b20fc9b5cc7a5be",
+    "clm_ec8ce516fea4480ebfa5f8c0ac61d2bd",
+    "clm_677094d3ad034c4295399885f0a14298"
+   ],
+   "evidence": [
+    {
+     "id": "ev_2dea38237e9846b488fac2d4e335641e",
+     "source_id": "src_0f9edba565d64aaa8ffc468dbc139262",
+     "span": "The battery is slightly larger than the iPhone 16 Pro\u2019s, but Apple has maintained a nearly identical form factor by rearranging internal components.",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 1600:1748",
+     "extracted_at": "2026-09-06T14:20:24.110410Z",
+     "source": {
+      "id": "src_0f9edba565d64aaa8ffc468dbc139262",
+      "url": "https://www.ithinkdiff.com/iphone-17-pro-teardown",
+      "retrieved_at": "2026-09-06T14:20:24.020768Z",
+      "content_hash": "41a1a94e86d41072ef1dfc57f3f0995c7da8d814400b88f9e0ba8cc2cb371324",
+      "title": "iPhone 17 Pro teardown shows smaller logic board and Scratchgate flaws",
+      "publisher": "www.ithinkdiff.com",
+      "published_at": null,
+      "source_family_id": "www.ithinkdiff.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    },
+    {
+     "id": "ev_383419c031464ee6be28f237d64bcaec",
+     "source_id": "src_d7e1737be13e4de5b3192738b8199fc4",
+     "span": "the iPhone 17 Pro uses a screwed-in battery instead of the usual adhesive strips",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 1499:1579",
+     "extracted_at": "2026-09-06T14:19:09.726272Z",
+     "source": {
+      "id": "src_d7e1737be13e4de5b3192738b8199fc4",
+      "url": "https://twit.tv/posts/tech/iphone-17-pro-teardown-key-durability-and-repair-insights-ifixit",
+      "retrieved_at": "2026-09-06T14:19:09.720062Z",
+      "content_hash": "683235e50711453f6c56e458dc38fa1468bd5820a13b48ff9be06e17232b4655",
+      "title": "iPhone 17 Pro Teardown: Key Durability and Repair Insights from iFixit",
+      "publisher": "twit.tv",
+      "published_at": null,
+      "source_family_id": "twit.tv",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    },
+    {
+     "id": "ev_0d270c490a2348bf9500bddb95fe1da2",
+     "source_id": "src_72150f436e924f918199ae07869fb456",
+     "span": "Its battery is rated at 15.53 Wh, compared to the Air\u2019s 12.26 Wh, though the Air\u2019s battery is surprisingly close in capacity despite being only 3 mm thick versus 5.3 mm in the Pro.",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 823:1003",
+     "extracted_at": "2026-09-06T14:19:09.760712Z",
+     "source": {
+      "id": "src_72150f436e924f918199ae07869fb456",
+      "url": "https://www.iphoneincanada.ca/2025/09/20/iphone-17-pro-and-iphone-air-teardowns-show-battery-surprises-and-more",
+      "retrieved_at": "2026-09-06T14:19:09.752898Z",
+      "content_hash": "deb1ad80ecb66562ba8299d0e237f0017f07262d1e4c63fe4452de4c969f89d5",
+      "title": "iPhone 17 Pro and iPhone Air Teardowns Show Battery Surprises and More | iPhone in Canada",
+      "publisher": "www.iphoneincanada.ca",
+      "published_at": null,
+      "source_family_id": "www.iphoneincanada.ca",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    },
+    {
+     "id": "ev_baabfa79fab948b9a090977ec3b12b90",
+     "source_id": "src_a035b97e63a74b3fa43711d23bca9aa2",
+     "span": "iPhone 17 Pro and iPhone 17 Pro Max are powered by recycled materials with a battery containing 100% recycled cobalt and 95% recycled lithium",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 480:621",
+     "extracted_at": "2026-09-06T14:17:53.677725Z",
+     "source": {
+      "id": "src_a035b97e63a74b3fa43711d23bca9aa2",
+      "url": "https://www.apple.com/environment/pdf/products/iphone/iPhone_17_Pro_and_iPhone_17_Pro_Max_PER_Sept2025.pdf",
+      "retrieved_at": "2026-09-06T14:17:53.662050Z",
+      "content_hash": "51f461807a621834fa379465c81b2c304b50ee0159547415d44a848bd9a008b7",
+      "title": "iPhone 17 Pro and iPhone 17 Pro Max",
+      "publisher": "www.apple.com",
+      "published_at": null,
+      "source_family_id": "www.apple.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    }
+   ]
+  },
+  {
+   "node_id": "nd_0ab65bc75202483e8ddb1215045c7e4b",
+   "name": "iPhone 17 Pro cameras",
+   "kind": "component",
+   "tier": 1,
+   "parent_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+   "edge_id": "ed_6f37f22117784279b558c33e81c88ec7",
+   "quantity": null,
+   "unit": null,
+   "quantity_support_label": null,
+   "support_label": "directly_supported",
+   "scope": {
+    "type": "product",
+    "product_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+    "organization_node_id": null
+   },
+   "claim_ids": [
+    "clm_09712323fd8041cb9925697e6ee46169",
+    "clm_a4cfc7ea6b5841a1bd184cee79edf3d0"
+   ],
+   "evidence": [
+    {
+     "id": "ev_94d85c9edd1d4d79891b7921b5aa4e72",
+     "source_id": "src_a035b97e63a74b3fa43711d23bca9aa2",
+     "span": "100% recycled gold wire in all cameras and Camera Control",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 2200:2257",
+     "extracted_at": "2026-09-06T14:17:53.744214Z",
+     "source": {
+      "id": "src_a035b97e63a74b3fa43711d23bca9aa2",
+      "url": "https://www.apple.com/environment/pdf/products/iphone/iPhone_17_Pro_and_iPhone_17_Pro_Max_PER_Sept2025.pdf",
+      "retrieved_at": "2026-09-06T14:17:53.662050Z",
+      "content_hash": "51f461807a621834fa379465c81b2c304b50ee0159547415d44a848bd9a008b7",
+      "title": "iPhone 17 Pro and iPhone 17 Pro Max",
+      "publisher": "www.apple.com",
+      "published_at": null,
+      "source_family_id": "www.apple.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    },
+    {
+     "id": "ev_c5756dc62d774ed895753fca7db82ef1",
+     "source_id": "src_ec51a1797a8545e08190c8f7e0eb5269",
+     "span": "The ultimate pro camera system. All 48MP Fusion rear cameras.",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 1720:1781",
+     "extracted_at": "2026-09-06T14:19:26.295613Z",
+     "source": {
+      "id": "src_ec51a1797a8545e08190c8f7e0eb5269",
+      "url": "https://www.apple.com/iphone-17-pro",
+      "retrieved_at": "2026-09-06T14:19:26.191939Z",
+      "content_hash": "0e4b315db548e31d1759f882f19e857dfbfeefdc12cb3e1e3e2400794b481419",
+      "title": "iPhone 17 Pro and iPhone 17 Pro Max",
+      "publisher": "www.apple.com",
+      "published_at": null,
+      "source_family_id": "www.apple.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    }
+   ]
+  },
+  {
+   "node_id": "nd_15038d5adb264591967f37da5ce322ec",
+   "name": "iPhone 17 Pro display support plate",
+   "kind": "component",
+   "tier": 1,
+   "parent_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+   "edge_id": "ed_42a46b9831d646ffb3207e2770cc18e1",
+   "quantity": null,
+   "unit": null,
+   "quantity_support_label": null,
+   "support_label": "directly_supported",
+   "scope": {
+    "type": "product",
+    "product_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+    "organization_node_id": null
+   },
+   "claim_ids": [
+    "clm_839ad8fe42e245fa812dafe64ad2dc67"
+   ],
+   "evidence": [
+    {
+     "id": "ev_57739816ccc346c9adba8e669fc1810d",
+     "source_id": "src_a035b97e63a74b3fa43711d23bca9aa2",
+     "span": "80% recycled steel in the display support plate",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 2385:2432",
+     "extracted_at": "2026-09-06T14:17:53.777188Z",
+     "source": {
+      "id": "src_a035b97e63a74b3fa43711d23bca9aa2",
+      "url": "https://www.apple.com/environment/pdf/products/iphone/iPhone_17_Pro_and_iPhone_17_Pro_Max_PER_Sept2025.pdf",
+      "retrieved_at": "2026-09-06T14:17:53.662050Z",
+      "content_hash": "51f461807a621834fa379465c81b2c304b50ee0159547415d44a848bd9a008b7",
+      "title": "iPhone 17 Pro and iPhone 17 Pro Max",
+      "publisher": "www.apple.com",
+      "published_at": null,
+      "source_family_id": "www.apple.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    }
+   ]
+  },
+  {
+   "node_id": "nd_32c11da79d7246148d318bc30adb1e30",
+   "name": "iPhone 17 Pro enclosure",
+   "kind": "component",
+   "tier": 1,
+   "parent_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+   "edge_id": "ed_c323ac3eefbc474b856d5055340e24b6",
+   "quantity": null,
+   "unit": null,
+   "quantity_support_label": null,
+   "support_label": "directly_supported",
+   "scope": {
+    "type": "product",
+    "product_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+    "organization_node_id": null
+   },
+   "claim_ids": [
+    "clm_36088185af774b23be0ec0499ebf8caf",
+    "clm_10bbf7e7205342a9ac78cab7a6c45d98",
+    "clm_730ca7c1b955444c95e60601a162f45f",
+    "clm_47fcf666e71e4b3baeb9b79f733f41f0"
+   ],
+   "evidence": [
+    {
+     "id": "ev_c220bd286dcd4bf9ac226c34edf48bbf",
+     "source_id": "src_ec51a1797a8545e08190c8f7e0eb5269",
+     "span": "At the core of the new design is a heat-forged aluminum unibody enclosure that maximizes performance, battery capacity, and durability.",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 2944:3079",
+     "extracted_at": "2026-09-06T14:19:26.249287Z",
+     "source": {
+      "id": "src_ec51a1797a8545e08190c8f7e0eb5269",
+      "url": "https://www.apple.com/iphone-17-pro",
+      "retrieved_at": "2026-09-06T14:19:26.191939Z",
+      "content_hash": "0e4b315db548e31d1759f882f19e857dfbfeefdc12cb3e1e3e2400794b481419",
+      "title": "iPhone 17 Pro and iPhone 17 Pro Max",
+      "publisher": "www.apple.com",
+      "published_at": null,
+      "source_family_id": "www.apple.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    },
+    {
+     "id": "ev_c403ac109dd9415392b37678a46f0098",
+     "source_id": "src_a035b97e63a74b3fa43711d23bca9aa2",
+     "span": "50% recycled aluminum in the enclosure",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 1986:2024",
+     "extracted_at": "2026-09-06T14:17:53.705032Z",
+     "source": {
+      "id": "src_a035b97e63a74b3fa43711d23bca9aa2",
+      "url": "https://www.apple.com/environment/pdf/products/iphone/iPhone_17_Pro_and_iPhone_17_Pro_Max_PER_Sept2025.pdf",
+      "retrieved_at": "2026-09-06T14:17:53.662050Z",
+      "content_hash": "51f461807a621834fa379465c81b2c304b50ee0159547415d44a848bd9a008b7",
+      "title": "iPhone 17 Pro and iPhone 17 Pro Max",
+      "publisher": "www.apple.com",
+      "published_at": null,
+      "source_family_id": "www.apple.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    },
+    {
+     "id": "ev_8706f06af00943c9bb11d39233319fd2",
+     "source_id": "src_bb424b9331344e23b81f2753e443c478",
+     "span": "an all-aluminum design for the iPhone 17 Pro midframe",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 1025:1078",
+     "extracted_at": "2026-09-06T14:20:07.203739Z",
+     "source": {
+      "id": "src_bb424b9331344e23b81f2753e443c478",
+      "url": "https://appleinsider.com/articles/25/09/05/iphone-17-pro-rumored-to-ditch-titanium-frame-and-go-back-to-aluminum",
+      "retrieved_at": "2026-09-06T14:20:07.176921Z",
+      "content_hash": "baccd116b51df80de03276893b2f3bdbbc068cca73d983417f304ec3693cde8c",
+      "title": "iPhone 17 Pro to feature aluminum frame, repeat rumor claims",
+      "publisher": "appleinsider.com",
+      "published_at": null,
+      "source_family_id": "appleinsider.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    },
+    {
+     "id": "ev_47eaa186a4ea4ca59b146c3c4dd077cb",
+     "source_id": "src_9f3280d887e342b99024e508b0709af9",
+     "span": "The aluminum unibody conducts away heat that would have forced earlier iPhones to throttle performance. Apple rebuilt the iPhone from the inside out to finally break the thermal limits that constrained mobile creativity.",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 850:1070",
+     "extracted_at": "2026-09-06T14:19:41.972179Z",
+     "source": {
+      "id": "src_9f3280d887e342b99024e508b0709af9",
+      "url": "https://www.yankodesign.com/2025/09/23/iphone-17-pro-teardown-reveals-apple-rebuilt-everything-from-silicon-to-surface",
+      "retrieved_at": "2026-09-06T14:19:41.913087Z",
+      "content_hash": "24de4a5862310edddd951e831d0b6a831fa263b31dc382e7b7835b36be814247",
+      "title": "iPhone 17 Pro Teardown Reveals Apple Rebuilt Everything From Silicon to Surface - Yanko Design",
+      "publisher": "www.yankodesign.com",
+      "published_at": null,
+      "source_family_id": "www.yankodesign.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    }
+   ]
+  },
+  {
+   "node_id": "nd_0c9dc9d2af8c462aa08d2f35653a9fb9",
+   "name": "iPhone 17 Pro magnets",
+   "kind": "component",
+   "tier": 1,
+   "parent_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+   "edge_id": "ed_22571b8ee00e4f7f8832b120c865b63b",
+   "quantity": null,
+   "unit": null,
+   "quantity_support_label": null,
+   "support_label": "directly_supported",
+   "scope": {
+    "type": "product",
+    "product_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+    "organization_node_id": null
+   },
+   "claim_ids": [
+    "clm_7b1fc780421747b2801e99bb6973f7da"
+   ],
+   "evidence": [
+    {
+     "id": "ev_7051389a32f2452b9405f888836efc8b",
+     "source_id": "src_a035b97e63a74b3fa43711d23bca9aa2",
+     "span": "100% recycled rare earth elements in all magnets",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 2336:2384",
+     "extracted_at": "2026-09-06T14:17:53.765507Z",
+     "source": {
+      "id": "src_a035b97e63a74b3fa43711d23bca9aa2",
+      "url": "https://www.apple.com/environment/pdf/products/iphone/iPhone_17_Pro_and_iPhone_17_Pro_Max_PER_Sept2025.pdf",
+      "retrieved_at": "2026-09-06T14:17:53.662050Z",
+      "content_hash": "51f461807a621834fa379465c81b2c304b50ee0159547415d44a848bd9a008b7",
+      "title": "iPhone 17 Pro and iPhone 17 Pro Max",
+      "publisher": "www.apple.com",
+      "published_at": null,
+      "source_family_id": "www.apple.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    }
+   ]
+  },
+  {
+   "node_id": "nd_79b65bbaf5864baaadf56d0fd08df302",
+   "name": "iPhone 17 Pro printed circuit boards",
+   "kind": "component",
+   "tier": 1,
+   "parent_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+   "edge_id": "ed_d98e631b77fb448a9155378562cb69b4",
+   "quantity": null,
+   "unit": null,
+   "quantity_support_label": null,
+   "support_label": "directly_supported",
+   "scope": {
+    "type": "product",
+    "product_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+    "organization_node_id": null
+   },
+   "claim_ids": [
+    "clm_625daa2634df418991ab61b2b821bc7c"
+   ],
+   "evidence": [
+    {
+     "id": "ev_25c71f6e45e14e20828995fd56888186",
+     "source_id": "src_a035b97e63a74b3fa43711d23bca9aa2",
+     "span": "100% recycled gold plating and tin solder in all Apple-designed printed circuit boards",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 2113:2199",
+     "extracted_at": "2026-09-06T14:17:53.728302Z",
+     "source": {
+      "id": "src_a035b97e63a74b3fa43711d23bca9aa2",
+      "url": "https://www.apple.com/environment/pdf/products/iphone/iPhone_17_Pro_and_iPhone_17_Pro_Max_PER_Sept2025.pdf",
+      "retrieved_at": "2026-09-06T14:17:53.662050Z",
+      "content_hash": "51f461807a621834fa379465c81b2c304b50ee0159547415d44a848bd9a008b7",
+      "title": "iPhone 17 Pro and iPhone 17 Pro Max",
+      "publisher": "www.apple.com",
+      "published_at": null,
+      "source_family_id": "www.apple.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    }
+   ]
+  },
+  {
+   "node_id": "nd_d7c0a898a96647b0a25224ec73c06b94",
+   "name": "iPhone 17 Pro receiver",
+   "kind": "component",
+   "tier": 1,
+   "parent_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+   "edge_id": "ed_c31fba9ff9fb4a2885309ddc6c448555",
+   "quantity": null,
+   "unit": null,
+   "quantity_support_label": null,
+   "support_label": "directly_supported",
+   "scope": {
+    "type": "product",
+    "product_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+    "organization_node_id": null
+   },
+   "claim_ids": [
+    "clm_2851661e172646aa8edec09e06d0fadb",
+    "clm_5e2e67cfce2647478752390c0f047fe4"
+   ],
+   "evidence": [
+    {
+     "id": "ev_496dcf9f2bfb4cbfbacaed9969364134",
+     "source_id": "src_a035b97e63a74b3fa43711d23bca9aa2",
+     "span": "80% recycled steel in the display support plate, speaker, and receiver",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 2385:2455",
+     "extracted_at": "2026-09-06T14:17:53.802609Z",
+     "source": {
+      "id": "src_a035b97e63a74b3fa43711d23bca9aa2",
+      "url": "https://www.apple.com/environment/pdf/products/iphone/iPhone_17_Pro_and_iPhone_17_Pro_Max_PER_Sept2025.pdf",
+      "retrieved_at": "2026-09-06T14:17:53.662050Z",
+      "content_hash": "51f461807a621834fa379465c81b2c304b50ee0159547415d44a848bd9a008b7",
+      "title": "iPhone 17 Pro and iPhone 17 Pro Max",
+      "publisher": "www.apple.com",
+      "published_at": null,
+      "source_family_id": "www.apple.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    },
+    {
+     "id": "ev_b777804677804a958511a17cc0cb76d5",
+     "source_id": "src_559b345917b241188ebb712c83358ff3",
+     "span": "iPhone 17 Pro and iPhone 17 Pro Max are rumored to ship with a longer earpiece",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 1086:1164",
+     "extracted_at": "2026-09-06T14:20:25.647232Z",
+     "source": {
+      "id": "src_559b345917b241188ebb712c83358ff3",
+      "url": "https://wccftech.com/iphone-17-pro-max-longer-earpiece-rumor",
+      "retrieved_at": "2026-09-06T14:20:25.631530Z",
+      "content_hash": "d8b1409bd69c843a730bad11e43b7b7f0e3ab3fc1ffe5d3b898cba9ac3e9e1f7",
+      "title": "iPhone 17 Pro, iPhone 17 Pro Max Rumored To Feature Longer Earpiece, Allowing For Improved Clarity When Making Audio Calls, Plus Other Benefits",
+      "publisher": "wccftech.com",
+      "published_at": null,
+      "source_family_id": "wccftech.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    }
+   ]
+  },
+  {
+   "node_id": "nd_61570f05002c4bbf8fe793a8842d4983",
+   "name": "removable tray",
+   "kind": "component",
+   "tier": 1,
+   "parent_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+   "edge_id": "ed_2ae81356ea974857a8e4502c82a2829f",
+   "quantity": null,
+   "unit": null,
+   "quantity_support_label": null,
+   "support_label": "directly_supported",
+   "scope": {
+    "type": "product",
+    "product_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+    "organization_node_id": null
+   },
+   "claim_ids": [
+    "clm_814ade99603d464a97825eda5255d191",
+    "clm_ce06aae5989541438b4ec110bc876624",
+    "clm_034b0956f3b542cea5c5d72a11c2b9d1"
+   ],
+   "evidence": [
+    {
+     "id": "ev_7be5ad31a8844060975116eeea17b00b",
+     "source_id": "src_f31306ef942f44d982fb6bd62272f780",
+     "span": "YouTube channel REWA Technology today shared an iPhone 17 Pro teardown video, offering a closer look inside the model with a SIM card tray.",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 1032:1171",
+     "extracted_at": "2026-09-06T14:24:24.208085Z",
+     "source": {
+      "id": "src_f31306ef942f44d982fb6bd62272f780",
+      "url": "https://forums.macrumors.com/threads/iphone-17-teardowns-confirm-sim-and-esim-only-battery-capacities.2466604",
+      "retrieved_at": "2026-09-06T14:24:24.194458Z",
+      "content_hash": "cf8a12501db3075a8521453f3d813cadad7d0c1b6cee132a394b261165a8db2c",
+      "title": "iPhone 17 Teardowns Confirm SIM and eSIM-Only Battery Capacities | MacRumors Forums",
+      "publisher": "forums.macrumors.com",
+      "published_at": null,
+      "source_family_id": "forums.macrumors.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    },
+    {
+     "id": "ev_b6909e91c0604e59afd89eb3a6ac665a",
+     "source_id": "src_bcfa8c1aef274d39a6c330968ee44c5f",
+     "span": "Apple adopted a removable tray for the battery",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 1429:1475",
+     "extracted_at": "2026-09-06T14:23:34.093804Z",
+     "source": {
+      "id": "src_bcfa8c1aef274d39a6c330968ee44c5f",
+      "url": "https://9to5mac.com/2025/09/23/iphone-17-pro-teardown-reveals-vapor-chamber-internals-scratchgate-details-more",
+      "retrieved_at": "2026-09-06T14:23:34.015561Z",
+      "content_hash": "905a27e212ffb060a819d568defea3e39ec02c9c55352465798d43fe62797085",
+      "title": "iPhone 17 Pro teardown looks at vapor chamber, scratchgate, more",
+      "publisher": "9to5mac.com",
+      "published_at": null,
+      "source_family_id": "9to5mac.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    },
+    {
+     "id": "ev_afb6f5bce1c04082a38386dd56b524d6",
+     "source_id": "src_a3b786f2ee16433391cc23310037783b",
+     "span": "The device features various internal design changes, including larger rear camera lenses. There is a new vapor chamber cooling system for improved heat dissipation. There is also an Apple-designed N1 chip for Wi-Fi 7, Bluetooth 6, and Thread.",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 519:761",
+     "extracted_at": "2026-09-06T14:24:17.835535Z",
+     "source": {
+      "id": "src_a3b786f2ee16433391cc23310037783b",
+      "url": "https://www.macrumors.com/2025/09/19/iphone-17-and-17-pro-sim-esim-battery-capacities",
+      "retrieved_at": "2026-09-06T14:24:17.815161Z",
+      "content_hash": "33ace37bb34f717f8113708c884552abc1d595316bd50990ca0ce243e911ea54",
+      "title": "iPhone 17 Teardowns Confirm SIM and eSIM-Only Battery Capacities - MacRumors",
+      "publisher": "www.macrumors.com",
+      "published_at": null,
+      "source_family_id": "www.macrumors.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    }
+   ]
+  },
+  {
+   "node_id": "nd_9a286436471f41e59c953e211e622186",
+   "name": "48MP Fusion Main",
+   "kind": "component",
+   "tier": 2,
+   "parent_node_id": "nd_0ab65bc75202483e8ddb1215045c7e4b",
+   "edge_id": "ed_ea74df4d33e4495ebaae33aed31ade0d",
+   "quantity": null,
+   "unit": null,
+   "quantity_support_label": null,
+   "support_label": "directly_supported",
+   "scope": {
+    "type": "product",
+    "product_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+    "organization_node_id": null
+   },
+   "claim_ids": [
+    "clm_ffab9785e0444c7c867175a6cd65cee4"
+   ],
+   "evidence": [
+    {
+     "id": "ev_1e3d588b519e4b43ba94132d0c0caf3e",
+     "source_id": "src_ec51a1797a8545e08190c8f7e0eb5269",
+     "span": "48MP Fusion Main  \n48MP Fusion Ultra Wide  \n48MP Fusion Telephoto",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 49021:49086",
+     "extracted_at": "2026-09-06T14:19:26.306142Z",
+     "source": {
+      "id": "src_ec51a1797a8545e08190c8f7e0eb5269",
+      "url": "https://www.apple.com/iphone-17-pro",
+      "retrieved_at": "2026-09-06T14:19:26.191939Z",
+      "content_hash": "0e4b315db548e31d1759f882f19e857dfbfeefdc12cb3e1e3e2400794b481419",
+      "title": "iPhone 17 Pro and iPhone 17 Pro Max",
+      "publisher": "www.apple.com",
+      "published_at": null,
+      "source_family_id": "www.apple.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    }
+   ]
+  },
+  {
+   "node_id": "nd_efa7389c6faa4e8986c13da839b4ad9b",
+   "name": "48MP Fusion Telephoto",
+   "kind": "component",
+   "tier": 2,
+   "parent_node_id": "nd_0ab65bc75202483e8ddb1215045c7e4b",
+   "edge_id": "ed_90f7f68db20c49369299033e1f2496d6",
+   "quantity": null,
+   "unit": null,
+   "quantity_support_label": null,
+   "support_label": "directly_supported",
+   "scope": {
+    "type": "product",
+    "product_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+    "organization_node_id": null
+   },
+   "claim_ids": [
+    "clm_b4d255cc926842479fe22d3c40b59af9"
+   ],
+   "evidence": [
+    {
+     "id": "ev_b32c4abdd6054c1db16dbed2bcfe79cf",
+     "source_id": "src_ec51a1797a8545e08190c8f7e0eb5269",
+     "span": "48MP Fusion Main  \n48MP Fusion Ultra Wide  \n48MP Fusion Telephoto",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 49021:49086",
+     "extracted_at": "2026-09-06T14:19:26.327499Z",
+     "source": {
+      "id": "src_ec51a1797a8545e08190c8f7e0eb5269",
+      "url": "https://www.apple.com/iphone-17-pro",
+      "retrieved_at": "2026-09-06T14:19:26.191939Z",
+      "content_hash": "0e4b315db548e31d1759f882f19e857dfbfeefdc12cb3e1e3e2400794b481419",
+      "title": "iPhone 17 Pro and iPhone 17 Pro Max",
+      "publisher": "www.apple.com",
+      "published_at": null,
+      "source_family_id": "www.apple.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    }
+   ]
+  },
+  {
+   "node_id": "nd_154fef0e069647deb479f7d84da3306b",
+   "name": "48MP Fusion Ultra Wide",
+   "kind": "component",
+   "tier": 2,
+   "parent_node_id": "nd_0ab65bc75202483e8ddb1215045c7e4b",
+   "edge_id": "ed_a92b7b82cd08426ab60a6474587956a2",
+   "quantity": null,
+   "unit": null,
+   "quantity_support_label": null,
+   "support_label": "directly_supported",
+   "scope": {
+    "type": "product",
+    "product_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+    "organization_node_id": null
+   },
+   "claim_ids": [
+    "clm_2d17ba1042a24fa4b9936a2555b19535"
+   ],
+   "evidence": [
+    {
+     "id": "ev_f86621db9b0e4958bca77bc5495a6388",
+     "source_id": "src_ec51a1797a8545e08190c8f7e0eb5269",
+     "span": "48MP Fusion Main  \n48MP Fusion Ultra Wide  \n48MP Fusion Telephoto",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 49021:49086",
+     "extracted_at": "2026-09-06T14:19:26.316511Z",
+     "source": {
+      "id": "src_ec51a1797a8545e08190c8f7e0eb5269",
+      "url": "https://www.apple.com/iphone-17-pro",
+      "retrieved_at": "2026-09-06T14:19:26.191939Z",
+      "content_hash": "0e4b315db548e31d1759f882f19e857dfbfeefdc12cb3e1e3e2400794b481419",
+      "title": "iPhone 17 Pro and iPhone 17 Pro Max",
+      "publisher": "www.apple.com",
+      "published_at": null,
+      "source_family_id": "www.apple.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    }
+   ]
+  },
+  {
+   "node_id": "nd_80d9612fb8f748e7b7e3509b11fafcca",
+   "name": "7000 series aluminum",
+   "kind": "material",
+   "tier": 2,
+   "parent_node_id": "nd_32c11da79d7246148d318bc30adb1e30",
+   "edge_id": "ed_e7fdfa998244467090257427abd847d8",
+   "quantity": null,
+   "unit": null,
+   "quantity_support_label": null,
+   "support_label": "directly_supported",
+   "scope": {
+    "type": "product",
+    "product_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+    "organization_node_id": null
+   },
+   "claim_ids": [
+    "clm_95d83a9fc2314fdb93951cc327e49cba"
+   ],
+   "evidence": [
+    {
+     "id": "ev_48d36d43443947659abff63d7b84449a",
+     "source_id": "src_9f3280d887e342b99024e508b0709af9",
+     "span": "Apple\u2019s shift from titanium to aerospace-grade 7000 series aluminum reflects a deeper commitment to thermal performance and environmental responsibility.",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 4646:4799",
+     "extracted_at": "2026-09-06T14:19:41.986267Z",
+     "source": {
+      "id": "src_9f3280d887e342b99024e508b0709af9",
+      "url": "https://www.yankodesign.com/2025/09/23/iphone-17-pro-teardown-reveals-apple-rebuilt-everything-from-silicon-to-surface",
+      "retrieved_at": "2026-09-06T14:19:41.913087Z",
+      "content_hash": "24de4a5862310edddd951e831d0b6a831fa263b31dc382e7b7835b36be814247",
+      "title": "iPhone 17 Pro Teardown Reveals Apple Rebuilt Everything From Silicon to Surface - Yanko Design",
+      "publisher": "www.yankodesign.com",
+      "published_at": null,
+      "source_family_id": "www.yankodesign.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    }
+   ]
+  },
+  {
+   "node_id": "nd_dd3c409974de42aaac16968d200c5a3b",
+   "name": "Apple N1",
+   "kind": "component",
+   "tier": 2,
+   "parent_node_id": "nd_cf6c5174ea584b8aa1efee45f56ee803",
+   "edge_id": "ed_aaadb02a3d45451096a2e7469da1e161",
+   "quantity": null,
+   "unit": null,
+   "quantity_support_label": null,
+   "support_label": "directly_supported",
+   "scope": {
+    "type": "product",
+    "product_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+    "organization_node_id": null
+   },
+   "claim_ids": [
+    "clm_9caa3908a89248048b081a9d5014cdf5"
+   ],
+   "evidence": [
+    {
+     "id": "ev_0b26b8cba62a46f09c87a078f8ca5136",
+     "source_id": "src_b264970dac684557a65508f53dc75cf6",
+     "span": "USI 339M00399 WiFi 7/Bluetooth 6/Thread module (contains Apple N1)",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 3288:3354",
+     "extracted_at": "2026-09-06T14:24:28.423297Z",
+     "source": {
+      "id": "src_b264970dac684557a65508f53dc75cf6",
+      "url": "https://www.ifixit.com/Guide/iPhone+17+Pro+Chip+ID/196117",
+      "retrieved_at": "2026-09-06T14:24:28.286810Z",
+      "content_hash": "8b67f49f7074a21d01175978619fc11b927357f87d54fd2359b8646ac726a292",
+      "title": "iPhone 17 Pro Chip ID - iFixit",
+      "publisher": "www.ifixit.com",
+      "published_at": null,
+      "source_family_id": "www.ifixit.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    }
+   ]
+  },
+  {
+   "node_id": "nd_4241b8d577b84a18b1e88374ac210299",
+   "name": "Copper",
+   "kind": "material",
+   "tier": 2,
+   "parent_node_id": "nd_c6357dd5c00e45879eecf88119941871",
+   "edge_id": "ed_15201af902114b658d3fccba5f8ff706",
+   "quantity": null,
+   "unit": null,
+   "quantity_support_label": null,
+   "support_label": "directly_supported",
+   "scope": {
+    "type": "product",
+    "product_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+    "organization_node_id": null
+   },
+   "claim_ids": [
+    "clm_60a68dc1a2f7459f81c48662a4cdd814",
+    "clm_ef2b34ad4d0445cfbffc260e43528f11",
+    "clm_b6f54190ae3445dfbbf4406cbbc96da7",
+    "clm_548193a361db4b949ce20647cccabc24"
+   ],
+   "evidence": [
+    {
+     "id": "ev_16801c2dcaf94560a2af1300337bb6f7",
+     "source_id": "src_86b3c3e8c8674e96994df072716b4893",
+     "span": "Apple's vapor chamber works by sealing deionized water inside a copper chamber, which evaporates at heated areas and condenses in cooler spots, ...",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 10243:10390",
+     "extracted_at": "2026-09-06T14:24:44.297964Z",
+     "source": {
+      "id": "src_86b3c3e8c8674e96994df072716b4893",
+      "url": "https://electronics.alibaba.com/supplier/vapor-chamber-cooling-iphone-17",
+      "retrieved_at": "2026-09-06T14:24:44.278060Z",
+      "content_hash": "c8e49c7e3a8d746ec2a953619a4259f47d8a8779da67f743e9c140d870d885c7",
+      "title": "iPhone 17 Vapor Chamber Suppliers Guide",
+      "publisher": "electronics.alibaba.com",
+      "published_at": null,
+      "source_family_id": "electronics.alibaba.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    },
+    {
+     "id": "ev_e58e708b9bb749bf9e1bda6dca6f0c81",
+     "source_id": "src_f0af53c7f8044edaa3a2ae0572132e61",
+     "span": "Copper indentations collect water vapor, which is sent back to the chip along the lattice.",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 2707:2797",
+     "extracted_at": "2026-09-06T14:16:49.835476Z",
+     "source": {
+      "id": "src_f0af53c7f8044edaa3a2ae0572132e61",
+      "url": "https://appleinsider.com/articles/25/09/24/iphone-17-pro-teardown-reveals-vapor-chamber-explains-scratches",
+      "retrieved_at": "2026-09-06T14:16:49.802308Z",
+      "content_hash": "507ff315c66f537817aafe7c05a5369528ef035347b8fefd3ee3dda6b09dd12e",
+      "title": "iPhone 17 Pro teardown reveals vapor chamber design",
+      "publisher": "appleinsider.com",
+      "published_at": null,
+      "source_family_id": "appleinsider.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    },
+    {
+     "id": "ev_625f7ef1235945748a9d5bc725470c10",
+     "source_id": "src_bcfa8c1aef274d39a6c330968ee44c5f",
+     "span": "indentations in the copper that let liquid boil, evaporate, and condense",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 911:983",
+     "extracted_at": "2026-09-06T14:23:34.077898Z",
+     "source": {
+      "id": "src_bcfa8c1aef274d39a6c330968ee44c5f",
+      "url": "https://9to5mac.com/2025/09/23/iphone-17-pro-teardown-reveals-vapor-chamber-internals-scratchgate-details-more",
+      "retrieved_at": "2026-09-06T14:23:34.015561Z",
+      "content_hash": "905a27e212ffb060a819d568defea3e39ec02c9c55352465798d43fe62797085",
+      "title": "iPhone 17 Pro teardown looks at vapor chamber, scratchgate, more",
+      "publisher": "9to5mac.com",
+      "published_at": null,
+      "source_family_id": "9to5mac.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    },
+    {
+     "id": "ev_7092dc8d99bc45b8980ec4de509d024c",
+     "source_id": "src_a035b97e63a74b3fa43711d23bca9aa2",
+     "span": "100% recycled copper in the vapor chamber enclosure",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 2061:2112",
+     "extracted_at": "2026-09-06T14:17:53.723233Z",
+     "source": {
+      "id": "src_a035b97e63a74b3fa43711d23bca9aa2",
+      "url": "https://www.apple.com/environment/pdf/products/iphone/iPhone_17_Pro_and_iPhone_17_Pro_Max_PER_Sept2025.pdf",
+      "retrieved_at": "2026-09-06T14:17:53.662050Z",
+      "content_hash": "51f461807a621834fa379465c81b2c304b50ee0159547415d44a848bd9a008b7",
+      "title": "iPhone 17 Pro and iPhone 17 Pro Max",
+      "publisher": "www.apple.com",
+      "published_at": null,
+      "source_family_id": "www.apple.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    }
+   ]
+  },
+  {
+   "node_id": "nd_4241b8d577b84a18b1e88374ac210299",
+   "name": "Copper",
+   "kind": "material",
+   "tier": 2,
+   "parent_node_id": "nd_a2ea61e8a018481dbe87bf56ddd403be",
+   "edge_id": "ed_c687f17ae2524955b18c7dc35c5a39f2",
+   "quantity": null,
+   "unit": null,
+   "quantity_support_label": null,
+   "support_label": "directly_supported",
+   "scope": {
+    "type": "product",
+    "product_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+    "organization_node_id": null
+   },
+   "claim_ids": [
+    "clm_7b83dc214b394710a31a6c81db45db68"
+   ],
+   "evidence": [
+    {
+     "id": "ev_658ec825fdf04de4840281ab93f5e205",
+     "source_id": "src_a035b97e63a74b3fa43711d23bca9aa2",
+     "span": "100% recycled tungsten and copper wire in the Taptic Engine",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 2456:2515",
+     "extracted_at": "2026-09-06T14:17:53.832604Z",
+     "source": {
+      "id": "src_a035b97e63a74b3fa43711d23bca9aa2",
+      "url": "https://www.apple.com/environment/pdf/products/iphone/iPhone_17_Pro_and_iPhone_17_Pro_Max_PER_Sept2025.pdf",
+      "retrieved_at": "2026-09-06T14:17:53.662050Z",
+      "content_hash": "51f461807a621834fa379465c81b2c304b50ee0159547415d44a848bd9a008b7",
+      "title": "iPhone 17 Pro and iPhone 17 Pro Max",
+      "publisher": "www.apple.com",
+      "published_at": null,
+      "source_family_id": "www.apple.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    }
+   ]
+  },
+  {
+   "node_id": "nd_eb25d1d45cad4c7bab8008103840676e",
+   "name": "GPU",
+   "kind": "component",
+   "tier": 2,
+   "parent_node_id": "nd_a10d17029d1e4e4fb9d399a4d3b4b497",
+   "edge_id": "ed_040d400ba35a435eb6b17c6f9b384164",
+   "quantity": null,
+   "unit": null,
+   "quantity_support_label": null,
+   "support_label": "directly_supported",
+   "scope": {
+    "type": "product",
+    "product_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+    "organization_node_id": null
+   },
+   "claim_ids": [
+    "clm_c1f86b9693b04386981f5ae4bb9d9bac"
+   ],
+   "evidence": [
+    {
+     "id": "ev_ba2a8372b9a14da3ae69124254861da7",
+     "source_id": "src_0c82e3edc09f46198c2547a3f616afbf",
+     "span": "the A19 Pro includes both 5-core and 6-core configurations depending on the device",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 3091:3173",
+     "extracted_at": "2026-09-06T14:18:37.646341Z",
+     "source": {
+      "id": "src_0c82e3edc09f46198c2547a3f616afbf",
+      "url": "https://en.wikipedia.org/wiki/Apple_A19",
+      "retrieved_at": "2026-09-06T14:18:37.594037Z",
+      "content_hash": "598c29cb215e71a50ccfcdfa9cd37033f2f5c64beba0cd9d93e6188a0a2ea746",
+      "title": "Apple A19 - Wikipedia",
+      "publisher": "en.wikipedia.org",
+      "published_at": null,
+      "source_family_id": "en.wikipedia.org",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    }
+   ]
+  },
+  {
+   "node_id": "nd_b56fb0d3e4b8420cbd52a544fc2bbdbe",
+   "name": "IMX903",
+   "kind": "component",
+   "tier": 2,
+   "parent_node_id": "nd_44a2e777ee964555b842e37e7279bde4",
+   "edge_id": "ed_c48f1e6dd60149599ebed54f1e2b5e2c",
+   "quantity": null,
+   "unit": null,
+   "quantity_support_label": null,
+   "support_label": "directly_supported",
+   "scope": {
+    "type": "product",
+    "product_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+    "organization_node_id": null
+   },
+   "claim_ids": [
+    "clm_6f476a4fad1f4cec8a7b7f5ff640fd93"
+   ],
+   "evidence": [
+    {
+     "id": "ev_78fd6d9e9e73482ea5d539b1dd4ee25c",
+     "source_id": "src_2462ec7300bb449a9803f0eba4ff71eb",
+     "span": "iPhone 17 Pro and Pro Max use Sony IMX903 (48MP main, 1/1.28-inch)",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 298:364",
+     "extracted_at": "2026-09-06T14:18:48.853208Z",
+     "source": {
+      "id": "src_2462ec7300bb449a9803f0eba4ff71eb",
+      "url": "https://www.smartprix.com/bytes/iphone-17-series-camera-sensors-revealed-all-of-them-are-from-sony",
+      "retrieved_at": "2026-09-06T14:18:48.826840Z",
+      "content_hash": "5440b7bb564d4415a1e3b8703c9ac132753623a64220dbc168b7f25bd0f28295",
+      "title": "iPhone 17 Series Camera Sensors Revealed: All Of Them Are From Sony - Smartprix",
+      "publisher": "www.smartprix.com",
+      "published_at": null,
+      "source_family_id": "www.smartprix.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    }
+   ]
+  },
+  {
+   "node_id": "nd_6860807386fc4c4596c37b39ddd3546a",
+   "name": "Liquid",
+   "kind": "material",
+   "tier": 2,
+   "parent_node_id": "nd_c6357dd5c00e45879eecf88119941871",
+   "edge_id": "ed_d68b6b8177074f33b47e87e1fd68d6ef",
+   "quantity": null,
+   "unit": null,
+   "quantity_support_label": null,
+   "support_label": "directly_supported",
+   "scope": {
+    "type": "product",
+    "product_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+    "organization_node_id": null
+   },
+   "claim_ids": [
+    "clm_2a9bb4454608403892af310bd4907958",
+    "clm_eaac1064651e4eaaa3439cea5d2cf3d3",
+    "clm_9a1565e06ebd43fa8015b1bbb659f1cf",
+    "clm_7a3b9598b2fb4ab79ac7a240d4d48073",
+    "clm_d1ecafc869e94a06805f2ab136b4a38f"
+   ],
+   "evidence": [
+    {
+     "id": "ev_3a6d06b8226646a9a397de03b5e40029",
+     "source_id": "src_f0af53c7f8044edaa3a2ae0572132e61",
+     "span": "The addition is a thermal management technique that uses liquid trapped in a reservoir to wick heat away from connected chips.",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 1980:2106",
+     "extracted_at": "2026-09-06T14:16:49.839477Z",
+     "source": {
+      "id": "src_f0af53c7f8044edaa3a2ae0572132e61",
+      "url": "https://appleinsider.com/articles/25/09/24/iphone-17-pro-teardown-reveals-vapor-chamber-explains-scratches",
+      "retrieved_at": "2026-09-06T14:16:49.802308Z",
+      "content_hash": "507ff315c66f537817aafe7c05a5369528ef035347b8fefd3ee3dda6b09dd12e",
+      "title": "iPhone 17 Pro teardown reveals vapor chamber design",
+      "publisher": "appleinsider.com",
+      "published_at": null,
+      "source_family_id": "appleinsider.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    },
+    {
+     "id": "ev_c1d0f06d66474abe99f7bde852bac312",
+     "source_id": "src_2f11cfe113f74ded8b7d8dc319941353",
+     "span": "Inside is a tiny bit of liquid \u2014 de-ionised water \u2014 and a wick-like structure.",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 547:625",
+     "extracted_at": "2026-09-06T14:23:15.321964Z",
+     "source": {
+      "id": "src_2f11cfe113f74ded8b7d8dc319941353",
+      "url": "https://gulfnews.com/technology/whats-a-vapor-chamber-in-the-iphone-17-pro-and-pro-max-1.500264577",
+      "retrieved_at": "2026-09-06T14:23:15.302729Z",
+      "content_hash": "ebc795dec82afb7745b1a3452a6cf0832587ec5d4b48b589a2803bc8d330c00e",
+      "title": "What's a 'vapor chamber' in the iPhone 17 Pro and Pro Max?",
+      "publisher": "gulfnews.com",
+      "published_at": null,
+      "source_family_id": "gulfnews.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    },
+    {
+     "id": "ev_019470d566274156abeddbf979a234cd",
+     "source_id": "src_00451705287045bb99cfbfa777fc9dc8",
+     "span": "This cavity contains a very small amount of deionized water.",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 1250:1310",
+     "extracted_at": "2026-09-06T14:20:51.874697Z",
+     "source": {
+      "id": "src_00451705287045bb99cfbfa777fc9dc8",
+      "url": "https://www.igorslab.de/en/apple-iphone-17-pro-vapor-chamber-cooling-with-water-in-use",
+      "retrieved_at": "2026-09-06T14:20:51.850224Z",
+      "content_hash": "d707346fc99e80ffff2cf7e09e834b9b8db2c5c5f84915aa0e2af9c7d28ab1d5",
+      "title": "Apple iPhone 17 Pro: Vapor-chamber cooling with water in use|igor\u00b4sLAB",
+      "publisher": "www.igorslab.de",
+      "published_at": null,
+      "source_family_id": "www.igorslab.de",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    },
+    {
+     "id": "ev_f86b15f05685461cb9883dcf8662a44a",
+     "source_id": "src_bcfa8c1aef274d39a6c330968ee44c5f",
+     "span": "indentations in the copper that let liquid boil, evaporate, and condense in a continuous loop",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 911:1004",
+     "extracted_at": "2026-09-06T14:23:34.039987Z",
+     "source": {
+      "id": "src_bcfa8c1aef274d39a6c330968ee44c5f",
+      "url": "https://9to5mac.com/2025/09/23/iphone-17-pro-teardown-reveals-vapor-chamber-internals-scratchgate-details-more",
+      "retrieved_at": "2026-09-06T14:23:34.015561Z",
+      "content_hash": "905a27e212ffb060a819d568defea3e39ec02c9c55352465798d43fe62797085",
+      "title": "iPhone 17 Pro teardown looks at vapor chamber, scratchgate, more",
+      "publisher": "9to5mac.com",
+      "published_at": null,
+      "source_family_id": "9to5mac.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    },
+    {
+     "id": "ev_24e3ee5f49324aaea254ca2b79f0cef8",
+     "source_id": "src_0c82e3edc09f46198c2547a3f616afbf",
+     "span": "featuring a vapor chamber containing deionized water, laser-welded into the aluminum unibody",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 5345:5437",
+     "extracted_at": "2026-09-06T14:18:37.667305Z",
+     "source": {
+      "id": "src_0c82e3edc09f46198c2547a3f616afbf",
+      "url": "https://en.wikipedia.org/wiki/Apple_A19",
+      "retrieved_at": "2026-09-06T14:18:37.594037Z",
+      "content_hash": "598c29cb215e71a50ccfcdfa9cd37033f2f5c64beba0cd9d93e6188a0a2ea746",
+      "title": "Apple A19 - Wikipedia",
+      "publisher": "en.wikipedia.org",
+      "published_at": null,
+      "source_family_id": "en.wikipedia.org",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    }
+   ]
+  },
+  {
+   "node_id": "nd_db74d1da789f4b61b329c997dd51687d",
+   "name": "Water vapor",
+   "kind": "material",
+   "tier": 2,
+   "parent_node_id": "nd_c6357dd5c00e45879eecf88119941871",
+   "edge_id": "ed_51b67fd09b604e368d4386c131a5e505",
+   "quantity": null,
+   "unit": null,
+   "quantity_support_label": null,
+   "support_label": "directly_supported",
+   "scope": {
+    "type": "product",
+    "product_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+    "organization_node_id": null
+   },
+   "claim_ids": [
+    "clm_15df2f38060f4127b5593b231ca7af2a"
+   ],
+   "evidence": [
+    {
+     "id": "ev_b504ab12dcc04659b82876536758d400",
+     "source_id": "src_f0af53c7f8044edaa3a2ae0572132e61",
+     "span": "Copper indentations collect water vapor, which is sent back to the chip along the lattice.",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 2707:2797",
+     "extracted_at": "2026-09-06T14:16:49.843431Z",
+     "source": {
+      "id": "src_f0af53c7f8044edaa3a2ae0572132e61",
+      "url": "https://appleinsider.com/articles/25/09/24/iphone-17-pro-teardown-reveals-vapor-chamber-explains-scratches",
+      "retrieved_at": "2026-09-06T14:16:49.802308Z",
+      "content_hash": "507ff315c66f537817aafe7c05a5369528ef035347b8fefd3ee3dda6b09dd12e",
+      "title": "iPhone 17 Pro teardown reveals vapor chamber design",
+      "publisher": "appleinsider.com",
+      "published_at": null,
+      "source_family_id": "appleinsider.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    }
+   ]
+  },
+  {
+   "node_id": "nd_3110a0c9e0df419ab938a8627f9cb765",
+   "name": "dot projector",
+   "kind": "component",
+   "tier": 2,
+   "parent_node_id": "nd_55672904995342c7879992e87c70b315",
+   "edge_id": "ed_cefb1bb7be97466f9960bbab2bebf0fb",
+   "quantity": null,
+   "unit": null,
+   "quantity_support_label": null,
+   "support_label": "directly_supported",
+   "scope": {
+    "type": "product",
+    "product_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+    "organization_node_id": null
+   },
+   "claim_ids": [
+    "clm_6545bc7fb4fd4712b62ad7aca8852a5b"
+   ],
+   "evidence": [
+    {
+     "id": "ev_906a10280db946008336a7ffa5d626f3",
+     "source_id": "src_2a57bf735ee646f2be1a3edea5f917ef",
+     "span": "Apple has swapped the positions of the dot projector and flood illuminator compared to the iPhone 16 Pro.",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 1109:1214",
+     "extracted_at": "2026-09-06T14:18:18.932889Z",
+     "source": {
+      "id": "src_2a57bf735ee646f2be1a3edea5f917ef",
+      "url": "https://www.newsbytesapp.com/news/science/iphone-17-pro-teardown-reveals-larger-camera-sensors/story",
+      "retrieved_at": "2026-09-06T14:18:18.905108Z",
+      "content_hash": "b0785102d9fc3bafc1a4ca99b51feebcb6b884a2730f29818600a7e8cc48d964",
+      "title": "iPhone 17 Pro teardown reveals repair-friendly design, larger camera sensors",
+      "publisher": "www.newsbytesapp.com",
+      "published_at": null,
+      "source_family_id": "www.newsbytesapp.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    }
+   ]
+  },
+  {
+   "node_id": "nd_22a21ace3280447dbc208b74488c4665",
+   "name": "flood illuminator",
+   "kind": "component",
+   "tier": 2,
+   "parent_node_id": "nd_55672904995342c7879992e87c70b315",
+   "edge_id": "ed_a48061451118470e980d189e0354c63c",
+   "quantity": null,
+   "unit": null,
+   "quantity_support_label": null,
+   "support_label": "directly_supported",
+   "scope": {
+    "type": "product",
+    "product_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+    "organization_node_id": null
+   },
+   "claim_ids": [
+    "clm_c90dbf3870cc4e9b8a4d385af3373265"
+   ],
+   "evidence": [
+    {
+     "id": "ev_fd5af20ceeab40bf928ebadaac277658",
+     "source_id": "src_2a57bf735ee646f2be1a3edea5f917ef",
+     "span": "Apple has swapped the positions of the dot projector and flood illuminator compared to the iPhone 16 Pro.",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 1109:1214",
+     "extracted_at": "2026-09-06T14:18:18.945870Z",
+     "source": {
+      "id": "src_2a57bf735ee646f2be1a3edea5f917ef",
+      "url": "https://www.newsbytesapp.com/news/science/iphone-17-pro-teardown-reveals-larger-camera-sensors/story",
+      "retrieved_at": "2026-09-06T14:18:18.905108Z",
+      "content_hash": "b0785102d9fc3bafc1a4ca99b51feebcb6b884a2730f29818600a7e8cc48d964",
+      "title": "iPhone 17 Pro teardown reveals repair-friendly design, larger camera sensors",
+      "publisher": "www.newsbytesapp.com",
+      "published_at": null,
+      "source_family_id": "www.newsbytesapp.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    }
+   ]
+  },
+  {
+   "node_id": "nd_a6c75121b2104e3d83b9bd791aa5b1f0",
+   "name": "metal lattice",
+   "kind": "component",
+   "tier": 2,
+   "parent_node_id": "nd_c6357dd5c00e45879eecf88119941871",
+   "edge_id": "ed_ed8bea7421034cbc95cd9c9014d350cc",
+   "quantity": null,
+   "unit": null,
+   "quantity_support_label": null,
+   "support_label": "directly_supported",
+   "scope": {
+    "type": "product",
+    "product_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+    "organization_node_id": null
+   },
+   "claim_ids": [
+    "clm_fa2ef4a756df4c0298e49ba648c7360d"
+   ],
+   "evidence": [
+    {
+     "id": "ev_54792aea7ef7409f9786670fe68f82d7",
+     "source_id": "src_bcfa8c1aef274d39a6c330968ee44c5f",
+     "span": "The teardown shows the metal lattice and the indentations in the copper",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 866:937",
+     "extracted_at": "2026-09-06T14:23:34.060605Z",
+     "source": {
+      "id": "src_bcfa8c1aef274d39a6c330968ee44c5f",
+      "url": "https://9to5mac.com/2025/09/23/iphone-17-pro-teardown-reveals-vapor-chamber-internals-scratchgate-details-more",
+      "retrieved_at": "2026-09-06T14:23:34.015561Z",
+      "content_hash": "905a27e212ffb060a819d568defea3e39ec02c9c55352465798d43fe62797085",
+      "title": "iPhone 17 Pro teardown looks at vapor chamber, scratchgate, more",
+      "publisher": "9to5mac.com",
+      "published_at": null,
+      "source_family_id": "9to5mac.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    }
+   ]
+  },
+  {
+   "node_id": "nd_124fb173159b4eac8223e0ba96d1ce58",
+   "name": "recycled aluminum",
+   "kind": "material",
+   "tier": 2,
+   "parent_node_id": "nd_32c11da79d7246148d318bc30adb1e30",
+   "edge_id": "ed_54196d62360544a5a40a85d8e1fd5dc2",
+   "quantity": null,
+   "unit": null,
+   "quantity_support_label": null,
+   "support_label": "directly_supported",
+   "scope": {
+    "type": "product",
+    "product_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+    "organization_node_id": null
+   },
+   "claim_ids": [
+    "clm_2ca4cb799bd54d8e948e0c0af2983241"
+   ],
+   "evidence": [
+    {
+     "id": "ev_a9696b39b0654c1cbf11748dd09b353f",
+     "source_id": "src_a035b97e63a74b3fa43711d23bca9aa2",
+     "span": "50% recycled aluminum in the enclosure",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 1986:2024",
+     "extracted_at": "2026-09-06T14:17:53.710565Z",
+     "source": {
+      "id": "src_a035b97e63a74b3fa43711d23bca9aa2",
+      "url": "https://www.apple.com/environment/pdf/products/iphone/iPhone_17_Pro_and_iPhone_17_Pro_Max_PER_Sept2025.pdf",
+      "retrieved_at": "2026-09-06T14:17:53.662050Z",
+      "content_hash": "51f461807a621834fa379465c81b2c304b50ee0159547415d44a848bd9a008b7",
+      "title": "iPhone 17 Pro and iPhone 17 Pro Max",
+      "publisher": "www.apple.com",
+      "published_at": null,
+      "source_family_id": "www.apple.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    }
+   ]
+  },
+  {
+   "node_id": "nd_aa2c269fb21144a4a919e5ad41f0df94",
+   "name": "recycled cobalt",
+   "kind": "material",
+   "tier": 2,
+   "parent_node_id": "nd_17cb0c6d2eab452b835e8c4f85f9075d",
+   "edge_id": "ed_5681dbe741bc43e4bc1d416556444789",
+   "quantity": null,
+   "unit": null,
+   "quantity_support_label": null,
+   "support_label": "directly_supported",
+   "scope": {
+    "type": "product",
+    "product_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+    "organization_node_id": null
+   },
+   "claim_ids": [
+    "clm_a3a68824dd594320a0e74a185a3ecb9a",
+    "clm_a1aa215495e34e58a6bc6fe6613fb99b"
+   ],
+   "evidence": [
+    {
+     "id": "ev_4768357685454728a3766f3c8bbd0df1",
+     "source_id": "src_6b0139835bac4ff2989fc5170dc281f4",
+     "span": "More components in our products are now made with recycled materials, like 100% recycled cobalt in batteries.",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 637:746",
+     "extracted_at": "2026-09-06T14:22:18.417605Z",
+     "source": {
+      "id": "src_6b0139835bac4ff2989fc5170dc281f4",
+      "url": "https://www.apple.com/environment",
+      "retrieved_at": "2026-09-06T14:22:18.404851Z",
+      "content_hash": "2d3cf370246dc673dbe8fb8ba3de34f112e99155fc418fb7e666f34254ba9b1e",
+      "title": "Environment",
+      "publisher": "www.apple.com",
+      "published_at": null,
+      "source_family_id": "www.apple.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    },
+    {
+     "id": "ev_88db6ee88b484f1fa44145f69c6c15a2",
+     "source_id": "src_a035b97e63a74b3fa43711d23bca9aa2",
+     "span": "battery containing 100% recycled cobalt and 95% recycled lithium",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 557:621",
+     "extracted_at": "2026-09-06T14:17:53.685233Z",
+     "source": {
+      "id": "src_a035b97e63a74b3fa43711d23bca9aa2",
+      "url": "https://www.apple.com/environment/pdf/products/iphone/iPhone_17_Pro_and_iPhone_17_Pro_Max_PER_Sept2025.pdf",
+      "retrieved_at": "2026-09-06T14:17:53.662050Z",
+      "content_hash": "51f461807a621834fa379465c81b2c304b50ee0159547415d44a848bd9a008b7",
+      "title": "iPhone 17 Pro and iPhone 17 Pro Max",
+      "publisher": "www.apple.com",
+      "published_at": null,
+      "source_family_id": "www.apple.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    }
+   ]
+  },
+  {
+   "node_id": "nd_b5354e8f20904745830e58bbf5e74c62",
+   "name": "recycled gold plating",
+   "kind": "material",
+   "tier": 2,
+   "parent_node_id": "nd_79b65bbaf5864baaadf56d0fd08df302",
+   "edge_id": "ed_e1877f66851e4235a9c08560323d2ca2",
+   "quantity": null,
+   "unit": null,
+   "quantity_support_label": null,
+   "support_label": "directly_supported",
+   "scope": {
+    "type": "product",
+    "product_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+    "organization_node_id": null
+   },
+   "claim_ids": [
+    "clm_8162b35df5eb4fb28c00c9cc54dba30c"
+   ],
+   "evidence": [
+    {
+     "id": "ev_d9d65cdc602145e0aab82b7653728236",
+     "source_id": "src_a035b97e63a74b3fa43711d23bca9aa2",
+     "span": "100% recycled gold plating and tin solder in all Apple-designed printed circuit boards",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 2113:2199",
+     "extracted_at": "2026-09-06T14:17:53.733437Z",
+     "source": {
+      "id": "src_a035b97e63a74b3fa43711d23bca9aa2",
+      "url": "https://www.apple.com/environment/pdf/products/iphone/iPhone_17_Pro_and_iPhone_17_Pro_Max_PER_Sept2025.pdf",
+      "retrieved_at": "2026-09-06T14:17:53.662050Z",
+      "content_hash": "51f461807a621834fa379465c81b2c304b50ee0159547415d44a848bd9a008b7",
+      "title": "iPhone 17 Pro and iPhone 17 Pro Max",
+      "publisher": "www.apple.com",
+      "published_at": null,
+      "source_family_id": "www.apple.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    }
+   ]
+  },
+  {
+   "node_id": "nd_be36a569c3c34699a3761858fe4f2dff",
+   "name": "recycled gold wire",
+   "kind": "material",
+   "tier": 2,
+   "parent_node_id": "nd_1819a092b7d94148b037a4f5be1277e1",
+   "edge_id": "ed_8d843e34aa604a7c904c8085805a188b",
+   "quantity": null,
+   "unit": null,
+   "quantity_support_label": null,
+   "support_label": "directly_supported",
+   "scope": {
+    "type": "product",
+    "product_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+    "organization_node_id": null
+   },
+   "claim_ids": [
+    "clm_3a552a128e204870bab349f46b5e086c"
+   ],
+   "evidence": [
+    {
+     "id": "ev_475c6b362ea34943868eb38c63673fab",
+     "source_id": "src_a035b97e63a74b3fa43711d23bca9aa2",
+     "span": "100% recycled gold wire in all cameras and Camera Control",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 2200:2257",
+     "extracted_at": "2026-09-06T14:17:53.761041Z",
+     "source": {
+      "id": "src_a035b97e63a74b3fa43711d23bca9aa2",
+      "url": "https://www.apple.com/environment/pdf/products/iphone/iPhone_17_Pro_and_iPhone_17_Pro_Max_PER_Sept2025.pdf",
+      "retrieved_at": "2026-09-06T14:17:53.662050Z",
+      "content_hash": "51f461807a621834fa379465c81b2c304b50ee0159547415d44a848bd9a008b7",
+      "title": "iPhone 17 Pro and iPhone 17 Pro Max",
+      "publisher": "www.apple.com",
+      "published_at": null,
+      "source_family_id": "www.apple.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    }
+   ]
+  },
+  {
+   "node_id": "nd_be36a569c3c34699a3761858fe4f2dff",
+   "name": "recycled gold wire",
+   "kind": "material",
+   "tier": 2,
+   "parent_node_id": "nd_0ab65bc75202483e8ddb1215045c7e4b",
+   "edge_id": "ed_a926642df9774fafab523cdae93248f0",
+   "quantity": null,
+   "unit": null,
+   "quantity_support_label": null,
+   "support_label": "directly_supported",
+   "scope": {
+    "type": "product",
+    "product_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+    "organization_node_id": null
+   },
+   "claim_ids": [
+    "clm_d855cd90894f4926be33150f213ccb4f"
+   ],
+   "evidence": [
+    {
+     "id": "ev_5204103388574f4180152ed94c87437a",
+     "source_id": "src_a035b97e63a74b3fa43711d23bca9aa2",
+     "span": "100% recycled gold wire in all cameras and Camera Control",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 2200:2257",
+     "extracted_at": "2026-09-06T14:17:53.749755Z",
+     "source": {
+      "id": "src_a035b97e63a74b3fa43711d23bca9aa2",
+      "url": "https://www.apple.com/environment/pdf/products/iphone/iPhone_17_Pro_and_iPhone_17_Pro_Max_PER_Sept2025.pdf",
+      "retrieved_at": "2026-09-06T14:17:53.662050Z",
+      "content_hash": "51f461807a621834fa379465c81b2c304b50ee0159547415d44a848bd9a008b7",
+      "title": "iPhone 17 Pro and iPhone 17 Pro Max",
+      "publisher": "www.apple.com",
+      "published_at": null,
+      "source_family_id": "www.apple.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    }
+   ]
+  },
+  {
+   "node_id": "nd_9206a62a7fa04ee09fdfee15aeafbe2c",
+   "name": "recycled lithium",
+   "kind": "material",
+   "tier": 2,
+   "parent_node_id": "nd_17cb0c6d2eab452b835e8c4f85f9075d",
+   "edge_id": "ed_6b1738c0cae342c891ea39581b3159bd",
+   "quantity": null,
+   "unit": null,
+   "quantity_support_label": null,
+   "support_label": "directly_supported",
+   "scope": {
+    "type": "product",
+    "product_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+    "organization_node_id": null
+   },
+   "claim_ids": [
+    "clm_215b73a01d844912ba6609c710c2ec4e"
+   ],
+   "evidence": [
+    {
+     "id": "ev_236b6aa7cd814a60a0498c47f50e8fd8",
+     "source_id": "src_a035b97e63a74b3fa43711d23bca9aa2",
+     "span": "battery containing 100% recycled cobalt and 95% recycled lithium",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 557:621",
+     "extracted_at": "2026-09-06T14:17:53.692238Z",
+     "source": {
+      "id": "src_a035b97e63a74b3fa43711d23bca9aa2",
+      "url": "https://www.apple.com/environment/pdf/products/iphone/iPhone_17_Pro_and_iPhone_17_Pro_Max_PER_Sept2025.pdf",
+      "retrieved_at": "2026-09-06T14:17:53.662050Z",
+      "content_hash": "51f461807a621834fa379465c81b2c304b50ee0159547415d44a848bd9a008b7",
+      "title": "iPhone 17 Pro and iPhone 17 Pro Max",
+      "publisher": "www.apple.com",
+      "published_at": null,
+      "source_family_id": "www.apple.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    }
+   ]
+  },
+  {
+   "node_id": "nd_9e19035b86794b78af78ad2403bbdd2a",
+   "name": "recycled rare earth elements",
+   "kind": "material",
+   "tier": 2,
+   "parent_node_id": "nd_0c9dc9d2af8c462aa08d2f35653a9fb9",
+   "edge_id": "ed_acf46ff765a04c91beea37e0d6df6e68",
+   "quantity": null,
+   "unit": null,
+   "quantity_support_label": null,
+   "support_label": "directly_supported",
+   "scope": {
+    "type": "product",
+    "product_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+    "organization_node_id": null
+   },
+   "claim_ids": [
+    "clm_48b1c64027d84845986c8fd47dfa2766"
+   ],
+   "evidence": [
+    {
+     "id": "ev_252c8f5db61645bd95248db11fe7dd88",
+     "source_id": "src_a035b97e63a74b3fa43711d23bca9aa2",
+     "span": "100% recycled rare earth elements in all magnets",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 2336:2384",
+     "extracted_at": "2026-09-06T14:17:53.771243Z",
+     "source": {
+      "id": "src_a035b97e63a74b3fa43711d23bca9aa2",
+      "url": "https://www.apple.com/environment/pdf/products/iphone/iPhone_17_Pro_and_iPhone_17_Pro_Max_PER_Sept2025.pdf",
+      "retrieved_at": "2026-09-06T14:17:53.662050Z",
+      "content_hash": "51f461807a621834fa379465c81b2c304b50ee0159547415d44a848bd9a008b7",
+      "title": "iPhone 17 Pro and iPhone 17 Pro Max",
+      "publisher": "www.apple.com",
+      "published_at": null,
+      "source_family_id": "www.apple.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    }
+   ]
+  },
+  {
+   "node_id": "nd_5eee6e488dab4a85ab8269aed1e16bd7",
+   "name": "recycled steel",
+   "kind": "material",
+   "tier": 2,
+   "parent_node_id": "nd_15038d5adb264591967f37da5ce322ec",
+   "edge_id": "ed_1fac86548df544448366b71dee882291",
+   "quantity": null,
+   "unit": null,
+   "quantity_support_label": null,
+   "support_label": "directly_supported",
+   "scope": {
+    "type": "product",
+    "product_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+    "organization_node_id": null
+   },
+   "claim_ids": [
+    "clm_85054d11b363419cbd4d867138113a4d"
+   ],
+   "evidence": [
+    {
+     "id": "ev_882da75fbf964b7fbe93504fc2402fda",
+     "source_id": "src_a035b97e63a74b3fa43711d23bca9aa2",
+     "span": "80% recycled steel in the display support plate",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 2385:2432",
+     "extracted_at": "2026-09-06T14:17:53.783123Z",
+     "source": {
+      "id": "src_a035b97e63a74b3fa43711d23bca9aa2",
+      "url": "https://www.apple.com/environment/pdf/products/iphone/iPhone_17_Pro_and_iPhone_17_Pro_Max_PER_Sept2025.pdf",
+      "retrieved_at": "2026-09-06T14:17:53.662050Z",
+      "content_hash": "51f461807a621834fa379465c81b2c304b50ee0159547415d44a848bd9a008b7",
+      "title": "iPhone 17 Pro and iPhone 17 Pro Max",
+      "publisher": "www.apple.com",
+      "published_at": null,
+      "source_family_id": "www.apple.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    }
+   ]
+  },
+  {
+   "node_id": "nd_5eee6e488dab4a85ab8269aed1e16bd7",
+   "name": "recycled steel",
+   "kind": "material",
+   "tier": 2,
+   "parent_node_id": "nd_d7c0a898a96647b0a25224ec73c06b94",
+   "edge_id": "ed_7e3322114ebf4ceb8c1be29815888ca0",
+   "quantity": null,
+   "unit": null,
+   "quantity_support_label": null,
+   "support_label": "directly_supported",
+   "scope": {
+    "type": "product",
+    "product_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+    "organization_node_id": null
+   },
+   "claim_ids": [
+    "clm_5e11054bc860459497f210167381e9f0"
+   ],
+   "evidence": [
+    {
+     "id": "ev_819ce7862f5e469ca630fe7200bfa82b",
+     "source_id": "src_a035b97e63a74b3fa43711d23bca9aa2",
+     "span": "80% recycled steel in the display support plate, speaker, and receiver",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 2385:2455",
+     "extracted_at": "2026-09-06T14:17:53.809503Z",
+     "source": {
+      "id": "src_a035b97e63a74b3fa43711d23bca9aa2",
+      "url": "https://www.apple.com/environment/pdf/products/iphone/iPhone_17_Pro_and_iPhone_17_Pro_Max_PER_Sept2025.pdf",
+      "retrieved_at": "2026-09-06T14:17:53.662050Z",
+      "content_hash": "51f461807a621834fa379465c81b2c304b50ee0159547415d44a848bd9a008b7",
+      "title": "iPhone 17 Pro and iPhone 17 Pro Max",
+      "publisher": "www.apple.com",
+      "published_at": null,
+      "source_family_id": "www.apple.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    }
+   ]
+  },
+  {
+   "node_id": "nd_5eee6e488dab4a85ab8269aed1e16bd7",
+   "name": "recycled steel",
+   "kind": "material",
+   "tier": 2,
+   "parent_node_id": "nd_181e7884e3ab4c5398eff51efc1121e2",
+   "edge_id": "ed_92562a917fa5498ab7b3f32c7ea43c6b",
+   "quantity": null,
+   "unit": null,
+   "quantity_support_label": null,
+   "support_label": "directly_supported",
+   "scope": {
+    "type": "product",
+    "product_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+    "organization_node_id": null
+   },
+   "claim_ids": [
+    "clm_a3b87d7a82f94668ae21ff4afd4c696d"
+   ],
+   "evidence": [
+    {
+     "id": "ev_de10d4ddf160492b928318090243ad99",
+     "source_id": "src_a035b97e63a74b3fa43711d23bca9aa2",
+     "span": "80% recycled steel in the display support plate, speaker, and receiver",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 2385:2455",
+     "extracted_at": "2026-09-06T14:17:53.797136Z",
+     "source": {
+      "id": "src_a035b97e63a74b3fa43711d23bca9aa2",
+      "url": "https://www.apple.com/environment/pdf/products/iphone/iPhone_17_Pro_and_iPhone_17_Pro_Max_PER_Sept2025.pdf",
+      "retrieved_at": "2026-09-06T14:17:53.662050Z",
+      "content_hash": "51f461807a621834fa379465c81b2c304b50ee0159547415d44a848bd9a008b7",
+      "title": "iPhone 17 Pro and iPhone 17 Pro Max",
+      "publisher": "www.apple.com",
+      "published_at": null,
+      "source_family_id": "www.apple.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    }
+   ]
+  },
+  {
+   "node_id": "nd_aa06303c2c3742ce9b8f4d0126a0a0ee",
+   "name": "recycled tungsten",
+   "kind": "material",
+   "tier": 2,
+   "parent_node_id": "nd_a2ea61e8a018481dbe87bf56ddd403be",
+   "edge_id": "ed_ad5781cc3ecb4ddca354fb66a26fdbe8",
+   "quantity": null,
+   "unit": null,
+   "quantity_support_label": null,
+   "support_label": "directly_supported",
+   "scope": {
+    "type": "product",
+    "product_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+    "organization_node_id": null
+   },
+   "claim_ids": [
+    "clm_9a41bc106d2a479ca43c90ef2f234eaa"
+   ],
+   "evidence": [
+    {
+     "id": "ev_7973452400c14e2f81616dbedc871b2d",
+     "source_id": "src_a035b97e63a74b3fa43711d23bca9aa2",
+     "span": "100% recycled tungsten and copper wire in the Taptic Engine",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 2456:2515",
+     "extracted_at": "2026-09-06T14:17:53.823813Z",
+     "source": {
+      "id": "src_a035b97e63a74b3fa43711d23bca9aa2",
+      "url": "https://www.apple.com/environment/pdf/products/iphone/iPhone_17_Pro_and_iPhone_17_Pro_Max_PER_Sept2025.pdf",
+      "retrieved_at": "2026-09-06T14:17:53.662050Z",
+      "content_hash": "51f461807a621834fa379465c81b2c304b50ee0159547415d44a848bd9a008b7",
+      "title": "iPhone 17 Pro and iPhone 17 Pro Max",
+      "publisher": "www.apple.com",
+      "published_at": null,
+      "source_family_id": "www.apple.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    }
+   ]
+  },
+  {
+   "node_id": "nd_86236751c0364b8cb34513d7ff67894d",
+   "name": "tin solder",
+   "kind": "material",
+   "tier": 2,
+   "parent_node_id": "nd_79b65bbaf5864baaadf56d0fd08df302",
+   "edge_id": "ed_a2f334b671fb420e926efd6401022909",
+   "quantity": null,
+   "unit": null,
+   "quantity_support_label": null,
+   "support_label": "directly_supported",
+   "scope": {
+    "type": "product",
+    "product_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+    "organization_node_id": null
+   },
+   "claim_ids": [
+    "clm_8668dd560853457cacb03980cdec410d"
+   ],
+   "evidence": [
+    {
+     "id": "ev_b2a21b384ae944cfbda2285a33992162",
+     "source_id": "src_a035b97e63a74b3fa43711d23bca9aa2",
+     "span": "100% recycled gold plating and tin solder in all Apple-designed printed circuit boards",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 2113:2199",
+     "extracted_at": "2026-09-06T14:17:53.738609Z",
+     "source": {
+      "id": "src_a035b97e63a74b3fa43711d23bca9aa2",
+      "url": "https://www.apple.com/environment/pdf/products/iphone/iPhone_17_Pro_and_iPhone_17_Pro_Max_PER_Sept2025.pdf",
+      "retrieved_at": "2026-09-06T14:17:53.662050Z",
+      "content_hash": "51f461807a621834fa379465c81b2c304b50ee0159547415d44a848bd9a008b7",
+      "title": "iPhone 17 Pro and iPhone 17 Pro Max",
+      "publisher": "www.apple.com",
+      "published_at": null,
+      "source_family_id": "www.apple.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    }
+   ]
+  },
+  {
+   "node_id": "nd_e83ef41824814738a83a7527fea503ab",
+   "name": "Neural Accelerators",
+   "kind": "component",
+   "tier": 3,
+   "parent_node_id": "nd_eb25d1d45cad4c7bab8008103840676e",
+   "edge_id": "ed_afa87a1669e74761b9123d18627d25e1",
+   "quantity": null,
+   "unit": null,
+   "quantity_support_label": null,
+   "support_label": "directly_supported",
+   "scope": {
+    "type": "product",
+    "product_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+    "organization_node_id": null
+   },
+   "claim_ids": [
+    "clm_78239a95543c4c44944df9c0a2183d79"
+   ],
+   "evidence": [
+    {
+     "id": "ev_a51edc35d9bc4f2988a142a8fb042a62",
+     "source_id": "src_0c82e3edc09f46198c2547a3f616afbf",
+     "span": "includes dedicated tensor processing units called \"Neural Accelerators\" integrated into each GPU core",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 3538:3639",
+     "extracted_at": "2026-09-06T14:18:37.656039Z",
+     "source": {
+      "id": "src_0c82e3edc09f46198c2547a3f616afbf",
+      "url": "https://en.wikipedia.org/wiki/Apple_A19",
+      "retrieved_at": "2026-09-06T14:18:37.594037Z",
+      "content_hash": "598c29cb215e71a50ccfcdfa9cd37033f2f5c64beba0cd9d93e6188a0a2ea746",
+      "title": "Apple A19 - Wikipedia",
+      "publisher": "en.wikipedia.org",
+      "published_at": null,
+      "source_family_id": "en.wikipedia.org",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    }
+   ]
+  },
+  {
+   "node_id": "nd_4b95e2e13b904c7088a9de95129390c0",
+   "name": "Sensor",
+   "kind": "component",
+   "tier": 3,
+   "parent_node_id": "nd_efa7389c6faa4e8986c13da839b4ad9b",
+   "edge_id": "ed_23a1292ad599409d90ccfe5af63098b5",
+   "quantity": null,
+   "unit": null,
+   "quantity_support_label": null,
+   "support_label": "directly_supported",
+   "scope": {
+    "type": "product",
+    "product_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+    "organization_node_id": null
+   },
+   "claim_ids": [
+    "clm_50cc0dffdcbf4ada859fc6be5576bf5b"
+   ],
+   "evidence": [
+    {
+     "id": "ev_33c997eab4f340ab91de64e1f432c077",
+     "source_id": "src_ec51a1797a8545e08190c8f7e0eb5269",
+     "span": "The telephoto features the next generation of our tetraprism design and a 56 percent larger sensor.",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 4816:4915",
+     "extracted_at": "2026-09-06T14:19:26.352225Z",
+     "source": {
+      "id": "src_ec51a1797a8545e08190c8f7e0eb5269",
+      "url": "https://www.apple.com/iphone-17-pro",
+      "retrieved_at": "2026-09-06T14:19:26.191939Z",
+      "content_hash": "0e4b315db548e31d1759f882f19e857dfbfeefdc12cb3e1e3e2400794b481419",
+      "title": "iPhone 17 Pro and iPhone 17 Pro Max",
+      "publisher": "www.apple.com",
+      "published_at": null,
+      "source_family_id": "www.apple.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    }
+   ]
+  },
+  {
+   "node_id": "nd_a1289288a3284bb9ac91af7783804b82",
+   "name": "Tetraprism design",
+   "kind": "component",
+   "tier": 3,
+   "parent_node_id": "nd_efa7389c6faa4e8986c13da839b4ad9b",
+   "edge_id": "ed_de0df3b738404371bce945faa97ab998",
+   "quantity": null,
+   "unit": null,
+   "quantity_support_label": null,
+   "support_label": "directly_supported",
+   "scope": {
+    "type": "product",
+    "product_node_id": "nd_4d0adffca4c644a8a6f387d4098d9fa1",
+    "organization_node_id": null
+   },
+   "claim_ids": [
+    "clm_6c8624fc7b9c4de78d49e50a31412402"
+   ],
+   "evidence": [
+    {
+     "id": "ev_928e1ce9d2864cca9851cb8881b61688",
+     "source_id": "src_ec51a1797a8545e08190c8f7e0eb5269",
+     "span": "The telephoto features the next generation of our tetraprism design and a 56 percent larger sensor.",
+     "support_type": "supports",
+     "locator": "retrieved document character offsets; chars 4816:4915",
+     "extracted_at": "2026-09-06T14:19:26.338446Z",
+     "source": {
+      "id": "src_ec51a1797a8545e08190c8f7e0eb5269",
+      "url": "https://www.apple.com/iphone-17-pro",
+      "retrieved_at": "2026-09-06T14:19:26.191939Z",
+      "content_hash": "0e4b315db548e31d1759f882f19e857dfbfeefdc12cb3e1e3e2400794b481419",
+      "title": "iPhone 17 Pro and iPhone 17 Pro Max",
+      "publisher": "www.apple.com",
+      "published_at": null,
+      "source_family_id": "www.apple.com",
+      "kind": "other",
+      "license_notes": "Retrieved public text; evidence excerpts only are exposed."
+     }
+    }
+   ]
+  }
+ ],
+ "open_questions": [
+  "No further verified upstream inputs for 100% recycled cobalt in the battery.",
+  "No further verified upstream inputs for Logic board.",
+  "No further verified upstream inputs for Speaker module.",
+  "No further verified upstream inputs for Taptic Engine.",
+  "No further verified upstream inputs for iPhone 17 Pro Camera Control.",
+  "No further verified upstream inputs for iPhone 17 Pro battery.",
+  "No further verified upstream inputs for iPhone 17 Pro magnets.",
+  "No further verified upstream inputs for iPhone 17 Pro printed circuit boards.",
+  "No further verified upstream inputs for iPhone 17 Pro receiver.",
+  "Skipped research for Water vapor: Water vapor is the vapor-chamber working fluid rather than a traceable sourced material, and public product documents are unlikely to identify its geographic origin or a product-specific supplier for the iPhone 17 Pro..",
+  "No further verified upstream inputs for recycled aluminum.",
+  "No further verified upstream inputs for Liquid.",
+  "No further verified upstream inputs for Copper.",
+  "No further verified upstream inputs for recycled gold plating.",
+  "No further verified upstream inputs for recycled cobalt.",
+  "No further verified upstream inputs for recycled gold wire.",
+  "No further verified upstream inputs for recycled lithium.",
+  "No further verified upstream inputs for recycled rare earth elements.",
+  "No further verified upstream inputs for recycled steel.",
+  "No further verified upstream inputs for tin solder.",
+  "No further verified upstream inputs for recycled tungsten.",
+  "No further verified upstream inputs for aluminum.",
+  "No further verified upstream inputs for dot projector.",
+  "No further verified upstream inputs for 7000 series aluminum.",
+  "No further verified upstream inputs for IMX903.",
+  "No further verified upstream inputs for Action button.",
+  "No further verified upstream inputs for GPU.",
+  "No further verified upstream inputs for BOE Technology.",
+  "No further verified upstream inputs for flood illuminator.",
+  "Skipped research for Water vapor: Water vapor is not typically procured as a traceable supplied material, and public Apple supplier lists, filings, datasheets, or teardowns are unlikely to identify a verified supplier specifically for water vapor in the iPhone 17 Pro..",
+  "No further verified upstream inputs for Neural Accelerators.",
+  "No further verified upstream inputs for Ceramic Shield.",
+  "No further verified upstream inputs for Ceramic Shield 2.",
+  "No further verified upstream inputs for MagSafe coil.",
+  "No further verified upstream inputs for anodized coating.",
+  "No further verified upstream inputs for Neural Engine.",
+  "No further verified upstream inputs for removable tray.",
+  "No further verified upstream inputs for Analog Devices MAX11390A.",
+  "No further verified upstream inputs for Analog Devices MAX20348P.",
+  "No further verified upstream inputs for metal lattice.",
+  "No further verified upstream inputs for Apple 338S00616.",
+  "No further verified upstream inputs for Apple 338S01153-B1.",
+  "No further verified upstream inputs for Apple/Cirrus Logic 338S00967.",
+  "No further verified upstream inputs for Apple/Cirrus Logic 338S01087.",
+  "No further verified upstream inputs for Apple/Cirrus Logic 338S01148.",
+  "No further verified upstream inputs for Broadcom AFEM-8257.",
+  "No further verified upstream inputs for Broadcom AFEM-8267.",
+  "No further verified upstream inputs for Broadcom BCM59367A1IUBG.",
+  "No further verified upstream inputs for Kioxia K5A4CG1685.",
+  "No further verified upstream inputs for NXP Semiconductors CBTL1701B0.",
+  "No further verified upstream inputs for Qorvo QM76309.",
+  "No further verified upstream inputs for Qorvo QM76308.",
+  "No further verified upstream inputs for Qualcomm PMX75-001.",
+  "No further verified upstream inputs for Qualcomm SDR875-004.",
+  "No further verified upstream inputs for Qualcomm QET7100A-002.",
+  "No further verified upstream inputs for NXP Semiconductors SN300.",
+  "No further verified upstream inputs for STMicroelectronics STPMIA3A.",
+  "No further verified upstream inputs for Qualcomm SDX80M-001.",
+  "No further verified upstream inputs for Skyworks SKY58480-14.",
+  "No further verified upstream inputs for Texas Instruments CP3200C1K4.",
+  "No further verified upstream inputs for Samsung K3KLMLM0FM-HGGV.",
+  "No further verified upstream inputs for Texas Instruments TPS65658A0.",
+  "Research provider failed or returned invalid data"
+ ],
+ "method": {
+  "name": "evidence_backed_bom_decomposition",
+  "version": "1",
+  "params": {
+   "predicates": [
+    "PART_OF",
+    "INPUT_TO"
+   ]
+  },
+  "assumptions": [
+   "Only product-scoped evidenced or explicitly user-asserted relationships are included; generic and company context remain in the graph.",
+   "Unknown quantities remain null."
+  ]
+ },
+ "data_quality": {
+  "coverage_pct": 100.0,
+  "unmapped_node_ids": [],
+  "equal_weight_fallback": false,
+  "notes": [
+   "Coverage is the fraction of returned BOM rows directly supported by public evidence, not the fraction of the physical product discovered.",
+   "This is a research BOM, not a complete manufacturing BOM."
+  ],
+  "as_of": "2026-09-06T14:24:44.298889Z"
+ }
+}

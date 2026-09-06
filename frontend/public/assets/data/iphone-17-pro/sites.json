@@ -1,0 +1,1228 @@
+{
+ "sites": [
+  {
+   "node_id": "nd_f19432768b7e459abd7d9e8437cb9f37",
+   "kind": "organization",
+   "role": "organization",
+   "label": "BOE Technology",
+   "country_iso2": "CN",
+   "admin1": "Beijing",
+   "city": "Beijing",
+   "lat": 39.9,
+   "lon": 116.41,
+   "precision": "city",
+   "geocoding": {
+    "method": "gazetteer_v1",
+    "precision": "city",
+    "note": "Approximate centre from a reference gazetteer; not a facility address."
+   },
+   "location_claim_ids": [
+    "clm_dd726d3bcb57492dbf0ee9f2137b7845",
+    "clm_1ec9853e54254c50acda8e981bec21d0"
+   ],
+   "location_sources": [
+    "https://sscobj.boe.com/online-head-service/website/d41f31c820694034ac383a9c00ef652b.pdf",
+    "http://static.cninfo.com.cn/finalpage/2021-04-13/1209675922.PDF"
+   ],
+   "operators": [],
+   "makes": [
+    {
+     "node_id": "nd_15038d5adb264591967f37da5ce322ec",
+     "label": "iPhone 17 Pro display support plate",
+     "kind": "component",
+     "predicate": "MANUFACTURES",
+     "scope": "product",
+     "share": 1.0,
+     "share_basis": "uniform_prior",
+     "claim_ids": [
+      "clm_b1845754ef854347a31aa0d8d9c85f29"
+     ],
+     "sources": [
+      "https://appleinsider.com/articles/25/11/19/boe-takes-another-hit-iphone-17-screen-orders-shifted-to-samsung"
+     ]
+    }
+   ]
+  },
+  {
+   "node_id": "nd_2af3ab7bfd6c4dc4a0c65cba65e9fcb8",
+   "kind": "organization",
+   "role": "organization",
+   "label": "Simplo Technology",
+   "country_iso2": "TW",
+   "admin1": null,
+   "city": null,
+   "lat": 23.7,
+   "lon": 121.0,
+   "precision": "country",
+   "geocoding": {
+    "method": "gazetteer_v1",
+    "precision": "country",
+    "note": "Approximate centre from a reference gazetteer; not a facility address."
+   },
+   "location_claim_ids": [
+    "clm_09eddaf1da3e4a45a5a77998212f7fe2"
+   ],
+   "location_sources": [
+    "https://www.marketsandmarkets.com/Market-Reports/geography/lithium-ion-battery-market/China"
+   ],
+   "operators": [],
+   "makes": [
+    {
+     "node_id": "nd_17cb0c6d2eab452b835e8c4f85f9075d",
+     "label": "iPhone 17 Pro battery",
+     "kind": "component",
+     "predicate": "MANUFACTURES",
+     "scope": "generic",
+     "share": 0.25,
+     "share_basis": "uniform_prior",
+     "claim_ids": [
+      "clm_88509bd835b64efbbaffd9cd3ba86fbb"
+     ],
+     "sources": [
+      "https://haisicstorage.com/iphone-17-battery-manufacturer"
+     ]
+    }
+   ]
+  },
+  {
+   "node_id": "nd_4e9163e3198e4f75ae51151c3a8c94aa",
+   "kind": "organization",
+   "role": "organization",
+   "label": "Apple",
+   "country_iso2": "US",
+   "admin1": "California",
+   "city": "Cupertino",
+   "lat": 37.32,
+   "lon": -122.03,
+   "precision": "city",
+   "geocoding": {
+    "method": "gazetteer_v1",
+    "precision": "city",
+    "note": "Approximate centre from a reference gazetteer; not a facility address."
+   },
+   "location_claim_ids": [
+    "clm_e1c68ae72db3401f8d970a179dfab2bf"
+   ],
+   "location_sources": [
+    "https://s2.q4cdn.com/470004039/files/doc_financials/2025/ar/_10-K-2025-As-Filed.pdf"
+   ],
+   "operators": [],
+   "makes": [
+    {
+     "node_id": "nd_a10d17029d1e4e4fb9d399a4d3b4b497",
+     "label": "A19 Pro",
+     "kind": "component",
+     "predicate": "PRODUCES",
+     "scope": "generic",
+     "share": 0.5,
+     "share_basis": "uniform_prior",
+     "claim_ids": [
+      "clm_c003d61306e6458faed7e73db699ebad"
+     ],
+     "sources": [
+      "https://www.apple.com/newsroom/2025/09/apple-unveils-iphone-17-pro-and-iphone-17-pro-max"
+     ]
+    }
+   ]
+  },
+  {
+   "node_id": "nd_4b0df183c2f9419c952c09591673f718",
+   "kind": "organization",
+   "role": "organization",
+   "label": "Samsung SDI",
+   "country_iso2": "KR",
+   "admin1": "Gyeonggi",
+   "city": null,
+   "lat": 37.4,
+   "lon": 127.2,
+   "precision": "region",
+   "geocoding": {
+    "method": "gazetteer_v1",
+    "precision": "region",
+    "note": "Approximate centre from a reference gazetteer; not a facility address."
+   },
+   "location_claim_ids": [
+    "clm_2c422993306948a081d4ff810738b416",
+    "clm_dfc5955ad1f64508b3b0987ae846fff3"
+   ],
+   "location_sources": [
+    "https://umbrex.com/resources/company-profiles/samsung-sdi-ltd"
+   ],
+   "operators": [],
+   "makes": [
+    {
+     "node_id": "nd_27b54a99059c404d86644b55b9043dd1",
+     "label": "Haisic",
+     "kind": "organization",
+     "predicate": "SUPPLIES",
+     "scope": "generic",
+     "share": 0.5,
+     "share_basis": "uniform_prior",
+     "claim_ids": [
+      "clm_d9346ae69cdf49ccb57721681b5c21fd"
+     ],
+     "sources": [
+      "https://haisicstorage.com/battery-manufacturer-of-iphone"
+     ]
+    }
+   ]
+  },
+  {
+   "node_id": "nd_b3d3ec668d454ec6acd65d02dee97c49",
+   "kind": "facility",
+   "role": "plant",
+   "label": "TSMC Camas fab",
+   "country_iso2": "US",
+   "admin1": "Washington",
+   "city": "5509 N.W. Parker Street, Camas, WA 98607-9299, U.S.A.",
+   "lat": 39.8,
+   "lon": -98.6,
+   "precision": "country",
+   "geocoding": {
+    "method": "gazetteer_v1",
+    "precision": "country",
+    "note": "Approximate centre from a reference gazetteer; not a facility address."
+   },
+   "location_claim_ids": [
+    "clm_73e2139578d34a368ee947a7227f41bc"
+   ],
+   "location_sources": [
+    "https://www.tsmc.com/english/contact-us"
+   ],
+   "operators": [
+    {
+     "node_id": "nd_e1e9c10c2a77467f82acd5c372bb4b17",
+     "label": "TSMC"
+    }
+   ],
+   "makes": [
+    {
+     "node_id": "nd_a10d17029d1e4e4fb9d399a4d3b4b497",
+     "label": "A19 Pro",
+     "kind": "component",
+     "predicate": "MANUFACTURES",
+     "scope": "generic",
+     "share": 0.5,
+     "share_basis": "uniform_prior",
+     "claim_ids": [
+      "clm_fa9553d8a1fb4bd8a997937e80b59565"
+     ],
+     "sources": [
+      "https://en.wikipedia.org/wiki/Apple_A19"
+     ],
+     "via_organization_id": "nd_e1e9c10c2a77467f82acd5c372bb4b17"
+    }
+   ]
+  },
+  {
+   "node_id": "nd_f173279422894924ad4a35145c656ca4",
+   "kind": "organization",
+   "role": "organization",
+   "label": "Corning",
+   "country_iso2": "US",
+   "admin1": "New York",
+   "city": "Corning",
+   "lat": 42.14,
+   "lon": -77.05,
+   "precision": "city",
+   "geocoding": {
+    "method": "gazetteer_v1",
+    "precision": "city",
+    "note": "Approximate centre from a reference gazetteer; not a facility address."
+   },
+   "location_claim_ids": [
+    "clm_8f41019a4b41400ab8e091bffb95b7de"
+   ],
+   "location_sources": [
+    "https://www.sec.gov/Archives/edgar/data/24741/000130817914000032/lglw2013_10k.htm"
+   ],
+   "operators": [],
+   "makes": [
+    {
+     "node_id": "nd_285dc321fd054d84a60ecd41a5bc806c",
+     "label": "Ceramic Shield",
+     "kind": "component",
+     "predicate": "MANUFACTURES",
+     "scope": "generic",
+     "share": 0.5,
+     "share_basis": "uniform_prior",
+     "claim_ids": [
+      "clm_67eb117769774461b1c312a40d011714"
+     ],
+     "sources": [
+      "https://www.apple.com/newsroom/2025/08/apple-corning-to-manufacture-all-iphone-apple-watch-cover-glass-in-kentucky"
+     ]
+    },
+    {
+     "node_id": "nd_d1da2ce9a1c144739f9bf69df9ea4d82",
+     "label": "GlobalWafers",
+     "kind": "organization",
+     "predicate": "SUPPLIES",
+     "scope": "generic",
+     "share": 1.0,
+     "share_basis": "uniform_prior",
+     "claim_ids": [
+      "clm_00eaa09658ad4399881dc334ece1e9cf"
+     ],
+     "sources": [
+      "https://www.apple.com/newsroom/2025/08/apple-corning-to-manufacture-all-iphone-apple-watch-cover-glass-in-kentucky"
+     ]
+    }
+   ]
+  },
+  {
+   "node_id": "nd_4db6c2abe9554d5caeed9c94af92dc20",
+   "kind": "facility",
+   "role": "plant",
+   "label": "Corning Harrodsburg facility",
+   "country_iso2": "US",
+   "admin1": "Kentucky",
+   "city": "Harrodsburg, Kentucky",
+   "lat": 37.76,
+   "lon": -84.84,
+   "precision": "city",
+   "geocoding": {
+    "method": "gazetteer_v1",
+    "precision": "city",
+    "note": "Approximate centre from a reference gazetteer; not a facility address."
+   },
+   "location_claim_ids": [
+    "clm_1a8aac1574f14ee6b665172fd88e4f88"
+   ],
+   "location_sources": [
+    "https://www.harrodsburgherald.com/2025/08/06/apple-and-corning-to-build-worlds-largest-smartphone-glass-production-line-in-harrodsburg"
+   ],
+   "operators": [
+    {
+     "node_id": "nd_f173279422894924ad4a35145c656ca4",
+     "label": "Corning"
+    }
+   ],
+   "makes": [
+    {
+     "node_id": "nd_285dc321fd054d84a60ecd41a5bc806c",
+     "label": "Ceramic Shield",
+     "kind": "component",
+     "predicate": "MANUFACTURES",
+     "scope": "generic",
+     "share": 0.5,
+     "share_basis": "uniform_prior",
+     "claim_ids": [
+      "clm_ebb358a7022b422f887446f4af6cbc13"
+     ],
+     "sources": [
+      "https://www.apple.com/newsroom/2025/08/apple-corning-to-manufacture-all-iphone-apple-watch-cover-glass-in-kentucky"
+     ]
+    },
+    {
+     "node_id": "nd_d1da2ce9a1c144739f9bf69df9ea4d82",
+     "label": "GlobalWafers",
+     "kind": "organization",
+     "predicate": "SUPPLIES",
+     "scope": "generic",
+     "share": 1.0,
+     "share_basis": "uniform_prior",
+     "claim_ids": [
+      "clm_00eaa09658ad4399881dc334ece1e9cf"
+     ],
+     "sources": [
+      "https://www.apple.com/newsroom/2025/08/apple-corning-to-manufacture-all-iphone-apple-watch-cover-glass-in-kentucky"
+     ],
+     "via_organization_id": "nd_f173279422894924ad4a35145c656ca4"
+    }
+   ]
+  },
+  {
+   "node_id": "nd_d1da2ce9a1c144739f9bf69df9ea4d82",
+   "kind": "organization",
+   "role": "organization",
+   "label": "GlobalWafers",
+   "country_iso2": "TW",
+   "admin1": "Hsinchu",
+   "city": "Hsinchu",
+   "lat": 24.8,
+   "lon": 120.97,
+   "precision": "city",
+   "geocoding": {
+    "method": "gazetteer_v1",
+    "precision": "city",
+    "note": "Approximate centre from a reference gazetteer; not a facility address."
+   },
+   "location_claim_ids": [
+    "clm_3d5c7d6ef4b1413cb2cf247028c94d12",
+    "clm_30b91f76ce81454a88e357918b709982",
+    "clm_e83a79a1dabb497d9a100f1571ae65c5"
+   ],
+   "location_sources": [
+    "https://www.sas-globalwafers.com/en/financial/financial-releases-2025/globalwafers_2025q2-consolidated-financial-statement_en",
+    "https://pitchbook.com/profiles/company/124282-09"
+   ],
+   "operators": [],
+   "makes": [
+    {
+     "node_id": "nd_e1e9c10c2a77467f82acd5c372bb4b17",
+     "label": "TSMC",
+     "kind": "organization",
+     "predicate": "SUPPLIES",
+     "scope": "generic",
+     "share": 1.0,
+     "share_basis": "uniform_prior",
+     "claim_ids": [
+      "clm_a79f8b289d76427fa9d8b8b571e04f0f"
+     ],
+     "sources": [
+      "https://pitchbook.com/profiles/company/124282-09"
+     ]
+    },
+    {
+     "node_id": "nd_dbbf85a211dc490ea2c6cc42416cbf3b",
+     "label": "Texas Instruments",
+     "kind": "organization",
+     "predicate": "SUPPLIES",
+     "scope": "generic",
+     "share": 1.0,
+     "share_basis": "uniform_prior",
+     "claim_ids": [
+      "clm_684c8a7e3f554a06be16b2f48eeae7f0"
+     ],
+     "sources": [
+      "https://pitchbook.com/profiles/company/124282-09"
+     ]
+    }
+   ]
+  },
+  {
+   "node_id": "nd_dbbf85a211dc490ea2c6cc42416cbf3b",
+   "kind": "organization",
+   "role": "organization",
+   "label": "Texas Instruments",
+   "country_iso2": "US",
+   "admin1": "Texas",
+   "city": null,
+   "lat": 31.5,
+   "lon": -99.3,
+   "precision": "region",
+   "geocoding": {
+    "method": "gazetteer_v1",
+    "precision": "region",
+    "note": "Approximate centre from a reference gazetteer; not a facility address."
+   },
+   "location_claim_ids": [
+    "clm_8c47bed9828242d499405975748923fa"
+   ],
+   "location_sources": [
+    "https://www.ti.com/about-ti/newsroom/news-releases/2025/texas-instruments-begins-production-at-its-newest-300mm-semiconductor-manufacturing-facility-in-sherman-texas.html"
+   ],
+   "operators": [],
+   "makes": []
+  },
+  {
+   "node_id": "nd_bfba39c3d5ae40e9ba9b2a1461b9f711",
+   "kind": "facility",
+   "role": "plant",
+   "label": "Melaka, Malaysia assembly and test factory",
+   "country_iso2": "MY",
+   "admin1": "Melaka",
+   "city": "Melaka, Malaysia",
+   "lat": 4.2,
+   "lon": 102.0,
+   "precision": "country",
+   "geocoding": {
+    "method": "gazetteer_v1",
+    "precision": "country",
+    "note": "Approximate centre from a reference gazetteer; not a facility address."
+   },
+   "location_claim_ids": [
+    "clm_29f22d5cf24d42569b8ef985613b4dd7"
+   ],
+   "location_sources": [
+    "https://www.bisinfotech.com/texas-instruments-opens-advanced-assembly-test-factory-in-malaysia"
+   ],
+   "operators": [
+    {
+     "node_id": "nd_dbbf85a211dc490ea2c6cc42416cbf3b",
+     "label": "Texas Instruments"
+    }
+   ],
+   "makes": []
+  },
+  {
+   "node_id": "nd_a9db0e4e008d4fe2b16ff2de362a0c44",
+   "kind": "organization",
+   "role": "organization",
+   "label": "STMicroelectronics",
+   "country_iso2": "NL",
+   "admin1": "North Holland",
+   "city": "Amsterdam",
+   "lat": 52.37,
+   "lon": 4.9,
+   "precision": "city",
+   "geocoding": {
+    "method": "gazetteer_v1",
+    "precision": "city",
+    "note": "Approximate centre from a reference gazetteer; not a facility address."
+   },
+   "location_claim_ids": [
+    "clm_f7d2d1193a68479683d147f32f1b53c5"
+   ],
+   "location_sources": [
+    "https://investors.st.com/static-files/8bbeaf8e-a176-4894-8c10-42562671cde9"
+   ],
+   "operators": [],
+   "makes": [
+    {
+     "node_id": "nd_4e9163e3198e4f75ae51151c3a8c94aa",
+     "label": "Apple",
+     "kind": "organization",
+     "predicate": "SUPPLIES",
+     "scope": "generic",
+     "share": 0.5,
+     "share_basis": "uniform_prior",
+     "claim_ids": [
+      "clm_faf94fa4db76410eb38e4765db9240c4"
+     ],
+     "sources": [
+      "https://medias.yolegroup.com/uploads/2019/01/Yole_-_STMicroelectronics_Proximity__Flood_Illuminator_iPhone_X_-_Sample_-_SP18383.pdf"
+     ]
+    },
+    {
+     "node_id": "nd_22a21ace3280447dbc208b74488c4665",
+     "label": "flood illuminator",
+     "kind": "component",
+     "predicate": "PRODUCES",
+     "scope": "generic",
+     "share": 1.0,
+     "share_basis": "uniform_prior",
+     "claim_ids": [
+      "clm_be6c8c40a6b343ab8afbc546d8901128"
+     ],
+     "sources": [
+      "https://medias.yolegroup.com/uploads/2019/01/Yole_-_STMicroelectronics_Proximity__Flood_Illuminator_iPhone_X_-_Sample_-_SP18383.pdf"
+     ]
+    }
+   ]
+  },
+  {
+   "node_id": "nd_c613983e8a764dcabc279adeebe2c669",
+   "kind": "facility",
+   "role": "plant",
+   "label": "MP Materials flagship Independence facility",
+   "country_iso2": "US",
+   "admin1": "Texas",
+   "city": "Fort Worth",
+   "lat": 32.75,
+   "lon": -97.33,
+   "precision": "city",
+   "geocoding": {
+    "method": "gazetteer_v1",
+    "precision": "city",
+    "note": "Approximate centre from a reference gazetteer; not a facility address."
+   },
+   "location_claim_ids": [
+    "clm_7cb62485cef14e1ebd4d5ee4118f7dab"
+   ],
+   "location_sources": [
+    "https://www.apple.com/newsroom/2025/07/apple-expands-us-supply-chain-with-500-million-usd-commitment"
+   ],
+   "operators": [],
+   "makes": []
+  },
+  {
+   "node_id": "nd_0e12c523027f4406b4112257a5362e91",
+   "kind": "facility",
+   "role": "plant",
+   "label": "Texas factory",
+   "country_iso2": "US",
+   "admin1": "Texas",
+   "city": null,
+   "lat": 31.5,
+   "lon": -99.3,
+   "precision": "region",
+   "geocoding": {
+    "method": "gazetteer_v1",
+    "precision": "region",
+    "note": "Approximate centre from a reference gazetteer; not a facility address."
+   },
+   "location_claim_ids": [
+    "clm_9f37fb17ee1b4684b8704b81a3e4b747"
+   ],
+   "location_sources": [
+    "https://www.apple.com/newsroom/2025/07/apple-expands-us-supply-chain-with-500-million-usd-commitment"
+   ],
+   "operators": [],
+   "makes": []
+  },
+  {
+   "node_id": "nd_4b419f3e00654272b73eb0f18011d3fa",
+   "kind": "facility",
+   "role": "plant",
+   "label": "sixth-generation new display production line in Beijing",
+   "country_iso2": "CN",
+   "admin1": "Beijing",
+   "city": "Beijing",
+   "lat": 39.9,
+   "lon": 116.41,
+   "precision": "city",
+   "geocoding": {
+    "method": "gazetteer_v1",
+    "precision": "city",
+    "note": "Approximate centre from a reference gazetteer; not a facility address."
+   },
+   "location_claim_ids": [
+    "clm_891c899614a34f389093388e42c0caa3"
+   ],
+   "location_sources": [
+    "https://convergencemedia.boe.com.cn/pdf/w1xfCR9DsfLcMGizwhKASu6Qw75uZz/ANNUAL+REPORT+2025.pdf"
+   ],
+   "operators": [],
+   "makes": []
+  },
+  {
+   "node_id": "nd_78b49fda9d4042f4aa2f3f61ab968096",
+   "kind": "facility",
+   "role": "plant",
+   "label": "Wuhan BOE 10.5th generation TFT-LCD production line",
+   "country_iso2": "CN",
+   "admin1": "Hubei",
+   "city": "Wuhan",
+   "lat": 30.59,
+   "lon": 114.31,
+   "precision": "city",
+   "geocoding": {
+    "method": "gazetteer_v1",
+    "precision": "city",
+    "note": "Approximate centre from a reference gazetteer; not a facility address."
+   },
+   "location_claim_ids": [
+    "clm_80197a2dc1104af0a159537b18b7d4cb"
+   ],
+   "location_sources": [
+    "https://convergencemedia.boe.com.cn/pdf/w1xfCR9DsfLcMGizwhKASu6Qw75uZz/ANNUAL+REPORT+2025.pdf"
+   ],
+   "operators": [
+    {
+     "node_id": "nd_f19432768b7e459abd7d9e8437cb9f37",
+     "label": "BOE Technology"
+    }
+   ],
+   "makes": [
+    {
+     "node_id": "nd_15038d5adb264591967f37da5ce322ec",
+     "label": "iPhone 17 Pro display support plate",
+     "kind": "component",
+     "predicate": "MANUFACTURES",
+     "scope": "product",
+     "share": 1.0,
+     "share_basis": "uniform_prior",
+     "claim_ids": [
+      "clm_b1845754ef854347a31aa0d8d9c85f29"
+     ],
+     "sources": [
+      "https://appleinsider.com/articles/25/11/19/boe-takes-another-hit-iphone-17-screen-orders-shifted-to-samsung"
+     ],
+     "via_organization_id": "nd_f19432768b7e459abd7d9e8437cb9f37"
+    }
+   ]
+  },
+  {
+   "node_id": "nd_2589657b2930437e89be0e9eeb28f22e",
+   "kind": "organization",
+   "role": "organization",
+   "label": "Samsung SDI America, Inc.",
+   "country_iso2": "US",
+   "admin1": null,
+   "city": null,
+   "lat": 39.8,
+   "lon": -98.6,
+   "precision": "country",
+   "geocoding": {
+    "method": "gazetteer_v1",
+    "precision": "country",
+    "note": "Approximate centre from a reference gazetteer; not a facility address."
+   },
+   "location_claim_ids": [
+    "clm_93229f86043c47b99500767c5f42cfc1"
+   ],
+   "location_sources": [
+    "https://ir.gsifn.io/samsungsdi/images/sdi_audit_report_fy20.pdf"
+   ],
+   "operators": [],
+   "makes": []
+  },
+  {
+   "node_id": "nd_fda5682ee10043b5a47faaed5ec22f9d",
+   "kind": "organization",
+   "role": "organization",
+   "label": "Samsung SDI Hungary Rt.",
+   "country_iso2": "HU",
+   "admin1": null,
+   "city": null,
+   "lat": 47.2,
+   "lon": 19.5,
+   "precision": "country",
+   "geocoding": {
+    "method": "gazetteer_v1",
+    "precision": "country",
+    "note": "Approximate centre from a reference gazetteer; not a facility address."
+   },
+   "location_claim_ids": [
+    "clm_d908c9f57e504ffc8e915e50c6d2043b"
+   ],
+   "location_sources": [
+    "https://ir.gsifn.io/samsungsdi/images/sdi_audit_report_fy20.pdf"
+   ],
+   "operators": [],
+   "makes": []
+  },
+  {
+   "node_id": "nd_792de8d336c24736bf4a5fb35d00c324",
+   "kind": "organization",
+   "role": "organization",
+   "label": "Samsung SDI Energy Malaysia Sdn, Bhd.",
+   "country_iso2": "MY",
+   "admin1": null,
+   "city": null,
+   "lat": 4.2,
+   "lon": 102.0,
+   "precision": "country",
+   "geocoding": {
+    "method": "gazetteer_v1",
+    "precision": "country",
+    "note": "Approximate centre from a reference gazetteer; not a facility address."
+   },
+   "location_claim_ids": [
+    "clm_95e80a2059de4e9a822a8d2a759dd875"
+   ],
+   "location_sources": [
+    "https://ir.gsifn.io/samsungsdi/images/sdi_audit_report_fy20.pdf"
+   ],
+   "operators": [],
+   "makes": []
+  },
+  {
+   "node_id": "nd_f9d1e64c6a414d27a196feb72baa8cec",
+   "kind": "organization",
+   "role": "organization",
+   "label": "Skyward Ivy",
+   "country_iso2": "US",
+   "admin1": null,
+   "city": null,
+   "lat": 39.8,
+   "lon": -98.6,
+   "precision": "country",
+   "geocoding": {
+    "method": "gazetteer_v1",
+    "precision": "country",
+    "note": "Approximate centre from a reference gazetteer; not a facility address."
+   },
+   "location_claim_ids": [
+    "clm_4226b52f26be45719551bdfc2a4f2047"
+   ],
+   "location_sources": [
+    "https://www.apple.com/legal/procurement/docs/Supplier_Connect_User_Guide.pdf"
+   ],
+   "operators": [],
+   "makes": []
+  },
+  {
+   "node_id": "nd_f00a763b3f9845d0a0f5413bbaddcb10",
+   "kind": "facility",
+   "role": "plant",
+   "label": "Ulsan Plant",
+   "country_iso2": "KR",
+   "admin1": null,
+   "city": null,
+   "lat": 35.9,
+   "lon": 127.8,
+   "precision": "country",
+   "geocoding": {
+    "method": "gazetteer_v1",
+    "precision": "country",
+    "note": "Approximate centre from a reference gazetteer; not a facility address."
+   },
+   "location_claim_ids": [
+    "clm_ec35252026024cfb8a9d419fd51141ac"
+   ],
+   "location_sources": [
+    "https://www.samsungsdi.com/about-sdi/global-network.html"
+   ],
+   "operators": [],
+   "makes": []
+  },
+  {
+   "node_id": "nd_d574296f205e49bebd14c2769c51c9a7",
+   "kind": "facility",
+   "role": "plant",
+   "label": "Yantai Materials Research Institute",
+   "country_iso2": "CN",
+   "admin1": null,
+   "city": null,
+   "lat": 35.9,
+   "lon": 104.2,
+   "precision": "country",
+   "geocoding": {
+    "method": "gazetteer_v1",
+    "precision": "country",
+    "note": "Approximate centre from a reference gazetteer; not a facility address."
+   },
+   "location_claim_ids": [
+    "clm_59740e4bc0ed4b37a80549309efb9f92"
+   ],
+   "location_sources": [
+    "https://convergencemedia.boe.com.cn/pdf/w1xfCR9DsfLcMGizwhKASu6Qw75uZz/ANNUAL+REPORT+2025.pdf"
+   ],
+   "operators": [],
+   "makes": []
+  }
+ ],
+ "distributions": [
+  {
+   "target_node_id": "nd_a10d17029d1e4e4fb9d399a4d3b4b497",
+   "target_label": "A19 Pro",
+   "family": "makers",
+   "entries": [
+    {
+     "node_id": "nd_e1e9c10c2a77467f82acd5c372bb4b17",
+     "label": "TSMC",
+     "kind": "organization",
+     "predicate": "MANUFACTURES",
+     "scope": "generic",
+     "share": null,
+     "share_basis": null,
+     "share_estimate": 0.5,
+     "estimate_basis": "uniform_prior",
+     "claim_ids": [
+      "clm_fa9553d8a1fb4bd8a997937e80b59565"
+     ]
+    },
+    {
+     "node_id": "nd_4e9163e3198e4f75ae51151c3a8c94aa",
+     "label": "Apple",
+     "kind": "organization",
+     "predicate": "PRODUCES",
+     "scope": "generic",
+     "share": null,
+     "share_basis": null,
+     "share_estimate": 0.5,
+     "estimate_basis": "uniform_prior",
+     "claim_ids": [
+      "clm_c003d61306e6458faed7e73db699ebad"
+     ]
+    }
+   ],
+   "stated_total": 0.0,
+   "unassigned": 1.0
+  },
+  {
+   "target_node_id": "nd_44a2e777ee964555b842e37e7279bde4",
+   "target_label": "Rear camera section",
+   "family": "makers",
+   "entries": [
+    {
+     "node_id": "nd_f89120f11b3846e488e6bca7796e0ea2",
+     "label": "ZLMYJPMLJ",
+     "kind": "organization",
+     "predicate": "MANUFACTURES",
+     "scope": "generic",
+     "share": null,
+     "share_basis": null,
+     "share_estimate": 1.0,
+     "estimate_basis": "uniform_prior",
+     "claim_ids": [
+      "clm_b0b6c4da34a847e3b075559a423116ad"
+     ]
+    }
+   ],
+   "stated_total": 0.0,
+   "unassigned": 1.0
+  },
+  {
+   "target_node_id": "nd_17cb0c6d2eab452b835e8c4f85f9075d",
+   "target_label": "iPhone 17 Pro battery",
+   "family": "makers",
+   "entries": [
+    {
+     "node_id": "nd_a33e10e796394f48be6ab01b541b0a16",
+     "label": "Sunwoda Electronic",
+     "kind": "organization",
+     "predicate": "MANUFACTURES",
+     "scope": "generic",
+     "share": null,
+     "share_basis": null,
+     "share_estimate": 0.25,
+     "estimate_basis": "uniform_prior",
+     "claim_ids": [
+      "clm_563eb7289bb84c8983eb351fc3a90d38",
+      "clm_46414b362a7648fc8250a5f06ed2d3c4"
+     ]
+    },
+    {
+     "node_id": "nd_2af3ab7bfd6c4dc4a0c65cba65e9fcb8",
+     "label": "Simplo Technology",
+     "kind": "organization",
+     "predicate": "MANUFACTURES",
+     "scope": "generic",
+     "share": null,
+     "share_basis": null,
+     "share_estimate": 0.25,
+     "estimate_basis": "uniform_prior",
+     "claim_ids": [
+      "clm_88509bd835b64efbbaffd9cd3ba86fbb"
+     ]
+    },
+    {
+     "node_id": "nd_27b54a99059c404d86644b55b9043dd1",
+     "label": "Haisic",
+     "kind": "organization",
+     "predicate": "MANUFACTURES",
+     "scope": "generic",
+     "share": null,
+     "share_basis": null,
+     "share_estimate": 0.25,
+     "estimate_basis": "uniform_prior",
+     "claim_ids": [
+      "clm_baba2e584b0b4619a44329a05fd0365b",
+      "clm_ce63751ea17f4c27afa06af36bda79f4",
+      "clm_bbd108ee4c084be396950327d6c8c539"
+     ]
+    },
+    {
+     "node_id": "nd_ecae2f17f3ac46bd980a011f01d455d6",
+     "label": "Huizhou Desay Battery",
+     "kind": "organization",
+     "predicate": "MANUFACTURES",
+     "scope": "generic",
+     "share": null,
+     "share_basis": null,
+     "share_estimate": 0.25,
+     "estimate_basis": "uniform_prior",
+     "claim_ids": [
+      "clm_ea166d5edeb642c4adcbb191d7783ddb"
+     ]
+    }
+   ],
+   "stated_total": 0.0,
+   "unassigned": 1.0
+  },
+  {
+   "target_node_id": "nd_15038d5adb264591967f37da5ce322ec",
+   "target_label": "iPhone 17 Pro display support plate",
+   "family": "makers",
+   "entries": [
+    {
+     "node_id": "nd_f19432768b7e459abd7d9e8437cb9f37",
+     "label": "BOE Technology",
+     "kind": "organization",
+     "predicate": "MANUFACTURES",
+     "scope": "product",
+     "share": null,
+     "share_basis": null,
+     "share_estimate": 1.0,
+     "estimate_basis": "uniform_prior",
+     "claim_ids": [
+      "clm_b1845754ef854347a31aa0d8d9c85f29"
+     ]
+    }
+   ],
+   "stated_total": 0.0,
+   "unassigned": 1.0
+  },
+  {
+   "target_node_id": "nd_22a21ace3280447dbc208b74488c4665",
+   "target_label": "flood illuminator",
+   "family": "makers",
+   "entries": [
+    {
+     "node_id": "nd_a9db0e4e008d4fe2b16ff2de362a0c44",
+     "label": "STMicroelectronics",
+     "kind": "organization",
+     "predicate": "PRODUCES",
+     "scope": "generic",
+     "share": null,
+     "share_basis": null,
+     "share_estimate": 1.0,
+     "estimate_basis": "uniform_prior",
+     "claim_ids": [
+      "clm_be6c8c40a6b343ab8afbc546d8901128"
+     ]
+    }
+   ],
+   "stated_total": 0.0,
+   "unassigned": 1.0
+  },
+  {
+   "target_node_id": "nd_b56fb0d3e4b8420cbd52a544fc2bbdbe",
+   "target_label": "IMX903",
+   "family": "makers",
+   "entries": [
+    {
+     "node_id": "nd_09d89cb6fc184fa7bc22634b9478c01e",
+     "label": "Sony",
+     "kind": "organization",
+     "predicate": "PRODUCES",
+     "scope": "generic",
+     "share": null,
+     "share_basis": null,
+     "share_estimate": 1.0,
+     "estimate_basis": "uniform_prior",
+     "claim_ids": [
+      "clm_6be1768516604ca7961a522398ad18f7"
+     ]
+    }
+   ],
+   "stated_total": 0.0,
+   "unassigned": 1.0
+  },
+  {
+   "target_node_id": "nd_285dc321fd054d84a60ecd41a5bc806c",
+   "target_label": "Ceramic Shield",
+   "family": "makers",
+   "entries": [
+    {
+     "node_id": "nd_f173279422894924ad4a35145c656ca4",
+     "label": "Corning",
+     "kind": "organization",
+     "predicate": "MANUFACTURES",
+     "scope": "generic",
+     "share": null,
+     "share_basis": null,
+     "share_estimate": 0.5,
+     "estimate_basis": "uniform_prior",
+     "claim_ids": [
+      "clm_67eb117769774461b1c312a40d011714"
+     ]
+    },
+    {
+     "node_id": "nd_4db6c2abe9554d5caeed9c94af92dc20",
+     "label": "Corning Harrodsburg facility",
+     "kind": "facility",
+     "predicate": "MANUFACTURES",
+     "scope": "generic",
+     "share": null,
+     "share_basis": null,
+     "share_estimate": 0.5,
+     "estimate_basis": "uniform_prior",
+     "claim_ids": [
+      "clm_ebb358a7022b422f887446f4af6cbc13"
+     ]
+    }
+   ],
+   "stated_total": 0.0,
+   "unassigned": 1.0
+  },
+  {
+   "target_node_id": "nd_988b1efde3794f22b81071c53f91b753",
+   "target_label": "Qualcomm SDR875-004",
+   "family": "makers",
+   "entries": [
+    {
+     "node_id": "nd_cb96c209c5c14ea59590ddd7495cf296",
+     "label": "Qualcomm",
+     "kind": "organization",
+     "predicate": "PRODUCES",
+     "scope": "company",
+     "share": null,
+     "share_basis": null,
+     "share_estimate": 1.0,
+     "estimate_basis": "uniform_prior",
+     "claim_ids": [
+      "clm_893b7c970643414fb65ac0e8657b7b5a",
+      "clm_624949f7775d4d1bbc6629843f08556a",
+      "clm_de8b277493204e4da5c1da6b2ca9e330"
+     ]
+    }
+   ],
+   "stated_total": 0.0,
+   "unassigned": 1.0
+  },
+  {
+   "target_node_id": "nd_e1e9c10c2a77467f82acd5c372bb4b17",
+   "target_label": "TSMC",
+   "family": "suppliers",
+   "entries": [
+    {
+     "node_id": "nd_d1da2ce9a1c144739f9bf69df9ea4d82",
+     "label": "GlobalWafers",
+     "kind": "organization",
+     "predicate": "SUPPLIES",
+     "scope": "generic",
+     "share": null,
+     "share_basis": null,
+     "share_estimate": 1.0,
+     "estimate_basis": "uniform_prior",
+     "claim_ids": [
+      "clm_a79f8b289d76427fa9d8b8b571e04f0f"
+     ]
+    }
+   ],
+   "stated_total": 0.0,
+   "unassigned": 1.0
+  },
+  {
+   "target_node_id": "nd_27b54a99059c404d86644b55b9043dd1",
+   "target_label": "Haisic",
+   "family": "suppliers",
+   "entries": [
+    {
+     "node_id": "nd_4b0df183c2f9419c952c09591673f718",
+     "label": "Samsung SDI",
+     "kind": "organization",
+     "predicate": "SUPPLIES",
+     "scope": "generic",
+     "share": null,
+     "share_basis": null,
+     "share_estimate": 0.5,
+     "estimate_basis": "uniform_prior",
+     "claim_ids": [
+      "clm_d9346ae69cdf49ccb57721681b5c21fd"
+     ]
+    },
+    {
+     "node_id": "nd_f6bf7406218a424bb88cf79019e27026",
+     "label": "LG Chem",
+     "kind": "organization",
+     "predicate": "SUPPLIES",
+     "scope": "generic",
+     "share": null,
+     "share_basis": null,
+     "share_estimate": 0.5,
+     "estimate_basis": "uniform_prior",
+     "claim_ids": [
+      "clm_9d14f37977ed4466bb91467501ddc47c"
+     ]
+    }
+   ],
+   "stated_total": 0.0,
+   "unassigned": 1.0
+  },
+  {
+   "target_node_id": "nd_4e9163e3198e4f75ae51151c3a8c94aa",
+   "target_label": "Apple",
+   "family": "suppliers",
+   "entries": [
+    {
+     "node_id": "nd_a9db0e4e008d4fe2b16ff2de362a0c44",
+     "label": "STMicroelectronics",
+     "kind": "organization",
+     "predicate": "SUPPLIES",
+     "scope": "generic",
+     "share": null,
+     "share_basis": null,
+     "share_estimate": 0.5,
+     "estimate_basis": "uniform_prior",
+     "claim_ids": [
+      "clm_faf94fa4db76410eb38e4765db9240c4"
+     ]
+    },
+    {
+     "node_id": "nd_5be59c5f1eb948979aef6f2c19e5d5cf",
+     "label": "Samsung Electronics",
+     "kind": "organization",
+     "predicate": "SUPPLIES",
+     "scope": "generic",
+     "share": null,
+     "share_basis": null,
+     "share_estimate": 0.5,
+     "estimate_basis": "uniform_prior",
+     "claim_ids": [
+      "clm_b967dd9a8dc147d999882bacd8325066"
+     ]
+    }
+   ],
+   "stated_total": 0.0,
+   "unassigned": 1.0
+  },
+  {
+   "target_node_id": "nd_06a7fbab810141aa9a2ab26e1191ebe2",
+   "target_label": "General Motors",
+   "family": "suppliers",
+   "entries": [
+    {
+     "node_id": "nd_f6bf7406218a424bb88cf79019e27026",
+     "label": "LG Chem",
+     "kind": "organization",
+     "predicate": "SUPPLIES",
+     "scope": "company",
+     "share": null,
+     "share_basis": null,
+     "share_estimate": 1.0,
+     "estimate_basis": "uniform_prior",
+     "claim_ids": [
+      "clm_c76fcbfd1fe74d66a66abfc5c367d7f6"
+     ]
+    }
+   ],
+   "stated_total": 0.0,
+   "unassigned": 1.0
+  },
+  {
+   "target_node_id": "nd_d1da2ce9a1c144739f9bf69df9ea4d82",
+   "target_label": "GlobalWafers",
+   "family": "suppliers",
+   "entries": [
+    {
+     "node_id": "nd_f173279422894924ad4a35145c656ca4",
+     "label": "Corning",
+     "kind": "organization",
+     "predicate": "SUPPLIES",
+     "scope": "generic",
+     "share": null,
+     "share_basis": null,
+     "share_estimate": 1.0,
+     "estimate_basis": "uniform_prior",
+     "claim_ids": [
+      "clm_00eaa09658ad4399881dc334ece1e9cf"
+     ]
+    }
+   ],
+   "stated_total": 0.0,
+   "unassigned": 1.0
+  },
+  {
+   "target_node_id": "nd_dbbf85a211dc490ea2c6cc42416cbf3b",
+   "target_label": "Texas Instruments",
+   "family": "suppliers",
+   "entries": [
+    {
+     "node_id": "nd_d1da2ce9a1c144739f9bf69df9ea4d82",
+     "label": "GlobalWafers",
+     "kind": "organization",
+     "predicate": "SUPPLIES",
+     "scope": "generic",
+     "share": null,
+     "share_basis": null,
+     "share_estimate": 1.0,
+     "estimate_basis": "uniform_prior",
+     "claim_ids": [
+      "clm_684c8a7e3f554a06be16b2f48eeae7f0"
+     ]
+    }
+   ],
+   "stated_total": 0.0,
+   "unassigned": 1.0
+  },
+  {
+   "target_node_id": "nd_a9db0e4e008d4fe2b16ff2de362a0c44",
+   "target_label": "STMicroelectronics",
+   "family": "suppliers",
+   "entries": [
+    {
+     "node_id": "nd_acd5c5ddb8364e9bb1ff5003ae5f6044",
+     "label": "SiCrystal",
+     "kind": "organization",
+     "predicate": "SUPPLIES",
+     "scope": "generic",
+     "share": null,
+     "share_basis": null,
+     "share_estimate": 1.0,
+     "estimate_basis": "uniform_prior",
+     "claim_ids": [
+      "clm_f7d0d51f042a4cdcb5ab8da45754cf07"
+     ]
+    }
+   ],
+   "stated_total": 0.0,
+   "unassigned": 1.0
+  }
+ ]
+}
