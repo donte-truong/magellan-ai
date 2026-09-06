@@ -134,9 +134,9 @@ describe("demo graph adapter", () => {
     expect(summary).toMatchObject({
       nodes: 160,
       edges: 210,
-      sites: 3,
+      sites: 2,
       plants: 1,
-      organizations: 2,
+      organizations: 1,
       connections: 2,
       countries: 1,
       runs: 1,
