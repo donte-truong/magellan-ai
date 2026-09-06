@@ -530,6 +530,9 @@ def test_name_variants_resolve_through_recorded_identifiers_and_flag_near_duplic
     # Containment and shared part-number tokens are review signals, never merges.
     assert [n["id"] for n in near_duplicates(graph, "component", "RP1 southbridge")] == ["n2"]
     assert [n["id"] for n in near_duplicates(graph, "component", "LPDDR4X RAM")] == ["n3"]
+    assert [
+        n["id"] for n in near_duplicates(graph, "component", "Raspberry Pi RP1 south bridge")
+    ] == ["n2"]
     assert near_duplicates(graph, "component", "Sony UK Technology Centre") == []
     assert near_duplicates(graph, "material", "RP1") == []  # kind must match
     assert software_artifact("brcmfmac43455-sdio.bin") and software_artifact("brcmfmac driver")

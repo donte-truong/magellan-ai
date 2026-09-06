@@ -127,11 +127,11 @@ def resolve_entity(graph, kind, label, part_number=None, manufacturer=None):
     return node, None
 
 
-PART_TOKEN = re.compile(r"\b[a-z0-9]{4,}\b")
+PART_TOKEN = re.compile(r"\b[a-z0-9]{3,}\b")
 
 
 def part_tokens(key):
-    """Part-number-like tokens: four or more alphanumerics including a digit (lpddr4x, bcm2712)."""
+    """Part-number-like tokens: three or more alphanumerics including a digit (rp1, a76, bcm2712)."""
     return {t for t in PART_TOKEN.findall(key) if any(c.isdigit() for c in t)}
 
 
