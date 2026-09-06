@@ -26,7 +26,9 @@ async def api(tmp_path):
             .render_as_string(hide_password=False)
         )
     settings = Settings(
+        _env_file=None,
         environment="test",
+        research_provider="fixture",
         database_url=database_url,
         embedded_worker=False,
         workspace_tokens={"alpha-token": "alpha", "beta-token": "beta"},

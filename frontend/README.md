@@ -15,7 +15,7 @@ bun run dev
 
 Open **http://127.0.0.1:3000**. Select **Raspberry Pi 5**, then **Deconstruct product** for an immediately usable example. The backend's default curated provider returns three sourced components and explicit research gaps. Arbitrary-product research uses the backend's optional live provider; the frontend never substitutes fabricated components for missing research.
 
-The application also works with the API started by `docker compose up --build` from the repository root. Browser calls use the same-origin Next.js proxy, so a separate backend CORS setting is unnecessary for this frontend.
+To run the entire MVP in containers, use `docker compose --env-file backend/.env up --build -d` from the repository root, then open http://localhost:3000. Compose builds a standalone Next.js server with Bun and Node.js 22, includes `public/assets`, and connects it to the API over the internal Docker network. Environment files are excluded from the image; the backend workspace token is supplied at runtime. Omit the `--env-file` option for fixture-only defaults. Browser calls use the same-origin Next.js proxy, so a separate backend CORS setting is unnecessary for this frontend.
 
 ## What the MVP includes
 

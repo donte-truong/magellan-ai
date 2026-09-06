@@ -22,8 +22,14 @@ services:
       EMBEDDED_WORKER: "false"
       RESEARCH_PROVIDER: ${RESEARCH_PROVIDER:-fixture}
       TAVILY_API_KEY: ${TAVILY_API_KEY:-}
+      LLM_PROVIDER: ${LLM_PROVIDER:-openai}
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
       OPENAI_MODEL: ${OPENAI_MODEL:-}
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
+      OPENROUTER_MODEL: ${OPENROUTER_MODEL:-openrouter/free}
+      OPENROUTER_VERIFIER_MODEL: ${OPENROUTER_VERIFIER_MODEL:-}
+      OPENROUTER_RESPONSE_FORMAT: ${OPENROUTER_RESPONSE_FORMAT:-json_schema}
+      PROVIDER_TIMEOUT_SECONDS: ${PROVIDER_TIMEOUT_SECONDS:-30}
     depends_on:
       db:
         condition: service_healthy
@@ -47,5 +53,20 @@ services:
     depends_on:
       migrate:
         condition: service_completed_successfully
+  frontend:
+    build: ./frontend
+    environment:
+      MAGELLAN_API_URL: http://api:8000
+      MAGELLAN_API_TOKEN: ${MAGELLAN_API_TOKEN:-dev-token}
+    ports:
+      - "127.0.0.1:3000:3000"
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
 volumes:
   postgres-data:

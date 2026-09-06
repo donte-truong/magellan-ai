@@ -31,14 +31,39 @@ The response is `202 Run`, with `graph_id`, `events_url`, and `bom_url`. Poll th
 
 The included Raspberry Pi 5 example contains three manufacturer-evidenced components. It reports `provider: curated_fixture`, `status: partial`, and explicit research gaps. An unknown product produces an unresolved root and open questions. Quantities, factories and suppliers are never filled from plausibility. Generic/company-scope relationships stay in the graph and are excluded from the product BOM view. BOM coverage measures the supported fraction of **returned rows**, not physical product completeness.
 
-Live arbitrary-product research requires these `.env` settings:
+Live arbitrary-product research uses Tavily plus your choice of model provider. For OpenAI, configure `backend/.env`:
 
 ```dotenv
 RESEARCH_PROVIDER=live
 TAVILY_API_KEY=your-key
+LLM_PROVIDER=openai
 OPENAI_API_KEY=your-key
 OPENAI_MODEL=your-available-structured-output-model
 ```
+
+For OpenRouter free models, use the following instead. An OpenAI key is unnecessary:
+
+```dotenv
+RESEARCH_PROVIDER=live
+TAVILY_API_KEY=your-key
+LLM_PROVIDER=openrouter
+OPENROUTER_API_KEY=your-key
+OPENROUTER_MODEL=openrouter/free
+OPENROUTER_VERIFIER_MODEL=
+OPENROUTER_RESPONSE_FORMAT=json_schema
+```
+
+`OPENROUTER_MODEL` accepts `openrouter/free` or a specific `:free` model ID. `OPENROUTER_VERIFIER_MODEL` optionally selects a separate free model for the independent relationship and geography verification passes; an empty value uses the extraction model. The [free-model router](https://openrouter.ai/docs/cookbook/get-started/free-models-router-playground) selects an available compatible model. All requests require supported parameters and set zero prompt, completion, and per-request price ceilings using [provider routing](https://openrouter.ai/docs/guides/routing/provider-selection#max-price). There is no fallback to paid models or OpenAI. Tavily search remains a separate service with its own usage limits.
+
+The default `json_schema` mode uses [strict structured output](https://openrouter.ai/docs/guides/features/structured-outputs). For a free model that supports JSON mode but not JSON-schema enforcement, set `OPENROUTER_RESPONSE_FORMAT=json_object`; the schema is included in the instructions and Pydantic validates the complete response locally. Malformed, refused, truncated, or schema-invalid output is rejected. The configured `minimax/minimax-m3:free` model was verified with JSON-object mode during implementation. Model availability and [free-tier limits](https://openrouter.ai/docs/faq) can change; rate limits and unavailable routes end research with visible gaps rather than switching providers.
+
+To run the complete MVP using `backend/.env`, from the repository root:
+
+```bash
+docker compose --env-file backend/.env up --build -d
+```
+
+Open http://localhost:3000 for the frontend and http://localhost:8000/docs for the API. `Run.provider` identifies `tavily_openrouter` or `tavily_openai`. Restart the API and worker after changing model configuration.
 
 Live research searches Tavily with fetched `raw_content`, extracts structured relationships, checks exact quoted spans locally, and separately verifies entailment and scope. Search snippets are never evidence. Extraction has no tools or graph-write capability. Only the worker commits validated findings. Geography searches named facilities and verifies their country/address; coordinates stay null unless quoted explicitly. No address-to-coordinate inference is performed. Model verification is fallible: claims remain inspectable and subject to human review.
 
@@ -72,7 +97,7 @@ Market enrichment provides explicit **fixture** commodity mappings for tin and c
 
 ## PostgreSQL and separate worker
 
-From the repository root, `docker compose up --build` starts PostgreSQL, runs Alembic migrations, then starts the API and a separate worker. The Compose defaults are for local development; the API is bound to loopback. Runtime and test dependency versions are locked separately.
+From the repository root, `docker compose up --build -d` starts PostgreSQL, runs Alembic migrations, then starts the API, a separate worker, and the Next.js frontend. This default uses fixture research. Add `--env-file backend/.env` before `up` to use your live provider settings. Frontend and API ports are bound to loopback, and the database stays internal. Set `MAGELLAN_API_TOKEN` to a provisioned token if you change `WORKSPACE_TOKENS`. Runtime and test dependency versions are locked separately.
 
 For a managed PostgreSQL deployment, set `DATABASE_URL=postgresql+psycopg://...`, provision `WORKSPACE_TOKENS`, set `AUTO_CREATE_SCHEMA=false` and `EMBEDDED_WORKER=false`, then run from `backend`:
 
