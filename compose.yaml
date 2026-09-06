@@ -1,0 +1,51 @@
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: magellan
+      POSTGRES_USER: magellan
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-local-development-only}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U magellan -d magellan"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+  migrate:
+    build: ./backend
+    command: ["alembic", "upgrade", "head"]
+    environment: &backend-env
+      DATABASE_URL: postgresql+psycopg://magellan:${POSTGRES_PASSWORD:-local-development-only}@db:5432/magellan
+      WORKSPACE_TOKENS: '${WORKSPACE_TOKENS:-{"dev-token":"demo"}}'
+      AUTO_CREATE_SCHEMA: "false"
+      EMBEDDED_WORKER: "false"
+      RESEARCH_PROVIDER: ${RESEARCH_PROVIDER:-fixture}
+      TAVILY_API_KEY: ${TAVILY_API_KEY:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_MODEL: ${OPENAI_MODEL:-}
+    depends_on:
+      db:
+        condition: service_healthy
+  api:
+    build: ./backend
+    environment: *backend-env
+    ports:
+      - "127.0.0.1:8000:8000"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/healthz')"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+  worker:
+    build: ./backend
+    command: ["python", "-m", "app.worker"]
+    environment: *backend-env
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+volumes:
+  postgres-data:
