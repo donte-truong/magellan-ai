@@ -14,8 +14,13 @@ class Settings(BaseSettings):
     cors_origins: list[str] = Field(default_factory=lambda: ["http://localhost:5173"])
     research_provider: Literal["fixture", "live"] = "fixture"
     tavily_api_key: SecretStr = SecretStr("")
+    llm_provider: Literal["openai", "openrouter"] = "openai"
     openai_api_key: SecretStr = SecretStr("")
     openai_model: str = ""
+    openrouter_api_key: SecretStr = SecretStr("")
+    openrouter_model: str = "openrouter/free"
+    openrouter_verifier_model: str = ""
+    openrouter_response_format: Literal["json_schema", "json_object"] = "json_schema"
     provider_timeout_seconds: float = Field(default=30, gt=0, le=60)
     worker_slots: int = Field(default=3, ge=1, le=16)
     worker_poll_seconds: float = Field(default=0.5, gt=0, le=30)
@@ -40,10 +45,29 @@ class Settings(BaseSettings):
                 raise ValueError("Production requires explicitly provisioned workspace tokens")
             if self.auto_create_schema or self.embedded_worker:
                 raise ValueError("Production requires migrations and a separate worker")
-        if self.research_provider == "live" and not (
-            self.tavily_api_key.get_secret_value()
-            and self.openai_api_key.get_secret_value()
-            and self.openai_model
-        ):
-            raise ValueError("Live research requires TAVILY_API_KEY, OPENAI_API_KEY, OPENAI_MODEL")
+        if self.research_provider == "live":
+            if not self.tavily_api_key.get_secret_value().strip():
+                raise ValueError("Live research requires TAVILY_API_KEY")
+            if self.llm_provider == "openai":
+                if (
+                    not self.openai_api_key.get_secret_value().strip()
+                    or not self.openai_model.strip()
+                ):
+                    raise ValueError("OpenAI research requires OPENAI_API_KEY and OPENAI_MODEL")
+            else:
+                if not self.openrouter_api_key.get_secret_value().strip():
+                    raise ValueError("OpenRouter research requires OPENROUTER_API_KEY")
+                for name, model in [
+                    ("OPENROUTER_MODEL", self.openrouter_model),
+                    (
+                        "OPENROUTER_VERIFIER_MODEL",
+                        self.openrouter_verifier_model or self.openrouter_model,
+                    ),
+                ]:
+                    if model != "openrouter/free" and not (
+                        "/" in model and model.endswith(":free")
+                    ):
+                        raise ValueError(
+                            f"{name} must be openrouter/free or a model ID ending in :free"
+                        )
         return self

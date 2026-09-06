@@ -151,7 +151,7 @@ class LocationVerification(Model):
 
 
 def strict_schema(model):
-    """All object fields are required for Responses strict JSON schema mode."""
+    """Require all object fields for provider-enforced JSON schema mode."""
     schema = model.model_json_schema()
 
     def visit(value):
@@ -176,6 +176,7 @@ class LiveProvider:
     def __init__(self, settings: Settings, client: httpx.AsyncClient | None = None):
         self.settings = settings
         self.client = client
+        self.name = f"tavily_{settings.llm_provider}"
 
     async def request(self, url, token, body):
         try:
@@ -205,7 +206,7 @@ class LiveProvider:
                 "source_unavailable", "Research provider failed or returned invalid data"
             ) from exc
 
-    async def structured(self, model, instructions, data, budget):
+    async def structured(self, model, instructions, data, budget, *, verify=False):
         # UTF-8 byte count is a conservative token upper bound, including schema overhead.
         payload = json.dumps(data, ensure_ascii=False)
         schema = strict_schema(model)
@@ -214,7 +215,57 @@ class LiveProvider:
         max_output = min(4000, budget.remaining("output_tokens"))
         if max_output < 128:
             raise BudgetExceeded("max_output_tokens")
-        response = await self.request(
+        if self.settings.llm_provider == "openrouter":
+            response = await self.openrouter_request(
+                model, instructions, payload, schema, max_output, verify
+            )
+            input_key, output_key = "prompt_tokens", "completion_tokens"
+        else:
+            response = await self.openai_request(model, instructions, payload, schema, max_output)
+            input_key, output_key = "input_tokens", "output_tokens"
+        usage = response.get("usage") or {}
+        if not isinstance(usage, dict):
+            raise ProviderFailure("source_unavailable", "Invalid model usage response")
+        actual_input = usage.get(input_key, reservation)
+        actual_output = usage.get(output_key, max_output)
+        if any(type(value) is not int or value < 0 for value in (actual_input, actual_output)):
+            raise ProviderFailure("source_unavailable", "Invalid model usage response")
+        budget.usage["input_tokens"] += actual_input - reservation
+        budget.charge("output_tokens", actual_output)
+        if budget.usage["input_tokens"] > budget.limits["max_input_tokens"]:
+            raise BudgetExceeded("max_input_tokens")
+        try:
+            if self.settings.llm_provider == "openrouter":
+                choice = response["choices"][0]
+                message = choice["message"]
+                if (
+                    choice.get("finish_reason") != "stop"
+                    or message.get("refusal")
+                    or response.get("error")
+                ):
+                    raise ValueError("Refused or incomplete response")
+                output = message["content"]
+                if not isinstance(output, str):
+                    raise ValueError("Expected JSON text")
+            else:
+                if response.get("status") != "completed":
+                    raise ValueError("Refused or incomplete response")
+                output = "".join(
+                    part.get("text", "")
+                    for item in response.get("output", [])
+                    if item.get("type") == "message"
+                    for part in item.get("content", [])
+                    if part.get("type") == "output_text"
+                )
+            return model.model_validate_json(output)
+        except (ValueError, KeyError, IndexError, TypeError, AttributeError) as exc:
+            raise ProviderFailure(
+                "source_unavailable",
+                "Extraction was refused, incomplete, or did not match the required schema",
+            ) from exc
+
+    async def openai_request(self, model, instructions, payload, schema, max_output):
+        return await self.request(
             "https://api.openai.com/v1/responses",
             self.settings.openai_api_key.get_secret_value(),
             {
@@ -233,27 +284,44 @@ class LiveProvider:
                 },
             },
         )
-        usage = response.get("usage", {})
-        actual_input = usage.get("input_tokens", reservation)
-        budget.usage["input_tokens"] += actual_input - reservation
-        budget.charge("output_tokens", usage.get("output_tokens", max_output))
-        if budget.usage["input_tokens"] > budget.limits["max_input_tokens"]:
-            raise BudgetExceeded("max_input_tokens")
-        if response.get("status") != "completed":
-            raise ProviderFailure("source_unavailable", "Extraction was refused or incomplete")
-        output = "".join(
-            part.get("text", "")
-            for item in response.get("output", [])
-            if item.get("type") == "message"
-            for part in item.get("content", [])
-            if part.get("type") == "output_text"
+
+    async def openrouter_request(self, model, instructions, payload, schema, max_output, verify):
+        selected = (
+            self.settings.openrouter_verifier_model if verify else ""
+        ) or self.settings.openrouter_model
+        response_format = {"type": self.settings.openrouter_response_format}
+        if self.settings.openrouter_response_format == "json_schema":
+            response_format["json_schema"] = {
+                "name": model.__name__.lower(),
+                "strict": True,
+                "schema": schema,
+            }
+        else:
+            # JSON mode guarantees JSON syntax, not schema conformance. The same
+            # local Pydantic validation and independent evidence checks still apply.
+            instructions += (
+                "\nReturn only a JSON object matching this JSON Schema, without markdown:\n"
+                + json.dumps(schema)
+            )
+        response = await self.request(
+            "https://openrouter.ai/api/v1/chat/completions",
+            self.settings.openrouter_api_key.get_secret_value(),
+            {
+                "model": selected,
+                "messages": [
+                    {"role": "system", "content": instructions},
+                    {"role": "user", "content": payload},
+                ],
+                "max_tokens": max_output,
+                "stream": False,
+                "response_format": response_format,
+                "provider": {
+                    "require_parameters": True,
+                    "max_price": {"prompt": 0, "completion": 0, "request": 0},
+                },
+            },
         )
-        try:
-            return model.model_validate_json(output)
-        except ValueError as exc:
-            raise ProviderFailure(
-                "source_unavailable", "Extraction did not match the required schema"
-            ) from exc
+        return response
 
     async def research(self, target, product, company, budget) -> AsyncIterator[Document]:
         budget.charge("searches")
@@ -336,6 +404,7 @@ class LiveProvider:
                         ],
                     },
                     budget,
+                    verify=True,
                 )
                 judgments = {j.index: j for j in verified.findings}
                 for i in eligible:
@@ -406,6 +475,7 @@ class LiveProvider:
                     "location": extracted.location.model_dump(),
                 },
                 budget,
+                verify=True,
             )
             if not verdict.identity_and_country_supported:
                 continue

@@ -955,7 +955,7 @@ components:
         open_questions: { type: array, items: { type: string } }
         events_url: { type: string }
         bom_url: { type: string, description: 'Poll for the evidence-backed BOM view' }
-        provider: { type: string, description: 'curated_fixture or tavily_openai; separate from replay mode' }
+        provider: { type: string, description: 'curated_fixture, tavily_openai, or tavily_openrouter; separate from replay mode' }
         created_at: { type: string, format: date-time }
         completed_at: { type: [string, 'null'], format: date-time }
 
