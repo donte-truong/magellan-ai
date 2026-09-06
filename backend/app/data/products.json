@@ -1,0 +1,43 @@
+[
+  {
+    "product": "Raspberry Pi 5",
+    "aliases": ["raspberry pi 5", "rpi 5", "rpi5"],
+    "company": "Raspberry Pi",
+    "notes": ["Curated public-source example, not an exhaustive manufacturer BOM.", "Memory capacity, component quantities, factories, suppliers and raw-material provenance remain unknown unless explicitly evidenced."],
+    "components": [
+      {
+        "label": "Broadcom BCM2712",
+        "kind": "component",
+        "predicate": "PART_OF",
+        "url": "https://www.raspberrypi.com/documentation/computers/processors.html",
+        "title": "Raspberry Pi processor documentation",
+        "publisher": "Raspberry Pi",
+        "span": "Broadcom BCM2712 is the 16nm application processor used in Raspberry Pi 5",
+        "locator": "BCM2712 section; curated excerpt",
+        "rationale": "The manufacturer identifies the processor used in Raspberry Pi 5. This does not identify its fabrication facility."
+      },
+      {
+        "label": "RP1 I/O controller",
+        "kind": "component",
+        "predicate": "PART_OF",
+        "url": "https://www.raspberrypi.com/products/raspberry-pi-5/",
+        "title": "Raspberry Pi 5 product page",
+        "publisher": "Raspberry Pi",
+        "span": "Raspberry Pi 5 is built using the RP1 I/O controller",
+        "locator": "RP1 section; curated excerpt",
+        "rationale": "The product page directly names the I/O controller."
+      },
+      {
+        "label": "LPDDR4X-4267 SDRAM",
+        "kind": "component",
+        "predicate": "PART_OF",
+        "url": "https://datasheets.raspberrypi.com/rpi5/raspberry-pi-5-product-brief.pdf",
+        "title": "Raspberry Pi 5 product brief",
+        "publisher": "Raspberry Pi",
+        "span": "LPDDR4X-4267 SDRAM",
+        "locator": "Specification, page 3; curated excerpt",
+        "rationale": "The product specification names the memory technology; capacity and manufacturer depend on the board variant."
+      }
+    ]
+  }
+]

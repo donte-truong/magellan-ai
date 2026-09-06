@@ -1,0 +1,16 @@
+[
+  {
+    "commodity": "tin",
+    "aliases": ["sn"],
+    "year": 2024,
+    "stage": "mine",
+    "unit": "metric_tonnes_tin_content",
+    "url": "https://pubs.usgs.gov/periodicals/mcs2025/mcs2025_ver.1.0.pdf",
+    "title": "USGS Mineral Commodity Summaries 2025 — Tin",
+    "publisher": "U.S. Geological Survey",
+    "locator": "Tin: World Mine Production and Reserves, 2024 estimates",
+    "production": {"AU": 9900, "BO": 21000, "BR": 29000, "MM": 34000, "CN": 69000, "CD": 25000, "ID": 50000, "LA": 1500, "MY": 3000, "NG": 7000, "PE": 31000, "RU": 3000, "RW": 3600, "VN": 6700},
+    "unallocated_production": 1800,
+    "notes": ["2024 estimates from the original 2025 publication, not current-year production.", "Shares use the sum of transcribed country estimates plus the reported Other countries category; no ISO2 is invented for Other countries.", "HHI sums only identified country shares and is a lower bound because Other countries is unallocated.", "Global production is geographic context, not evidence that this product sources from these countries."]
+  }
+]
