@@ -47,6 +47,22 @@ SOFTWARE_PATTERN = re.compile(
 )
 
 
+INTERFACE_PATTERN = re.compile(
+    r"\b(ports?|slots?|headers?|connectors?|sockets?|jacks?|interfaces?|pinouts?|pin header)\b"
+    r"|\b(wi-?fi|bluetooth|usb|pcie|pci express|hdmi|displayport|ethernet|sata|nvme|sd|microsd)\s*\d"
+    r"|\b802\.11|\bgigabit ethernet\b|\bfast ethernet\b",
+    re.IGNORECASE,
+)
+
+
+def interface_feature(label, part_number=None, manufacturer=None):
+    """Ports, slots, headers, and interface standards describe interfaces, not parts, unless a
+    specific part is identified by number or maker."""
+    if part_number or manufacturer:
+        return False
+    return bool(INTERFACE_PATTERN.search(label or ""))
+
+
 def software_artifact(label):
     """Firmware, drivers, and other software are not parts or materials."""
     return bool(SOFTWARE_PATTERN.search(label or ""))

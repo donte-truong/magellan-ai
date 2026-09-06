@@ -537,6 +537,13 @@ def test_name_variants_resolve_through_recorded_identifiers_and_flag_near_duplic
     assert near_duplicates(graph, "material", "RP1") == []  # kind must match
     assert software_artifact("brcmfmac43455-sdio.bin") and software_artifact("brcmfmac driver")
     assert not software_artifact("Arm Cortex-A76 CPU cluster")
+    from app.resolution import interface_feature
+
+    for label in ("USB 3.0 Ports", "Wi-Fi 6 (802.11ax)", "40-pin GPIO header", "Gigabit Ethernet"):
+        assert interface_feature(label), label
+    assert not interface_feature("Broadcom BCM54213 PHY")
+    assert not interface_feature("micro-HDMI connector", part_number="10118194")
+    assert not interface_feature("Molex CSI connector", manufacturer="Molex")
 
 
 class SoftwareProvider(PageProvider):
@@ -548,6 +555,9 @@ class SoftwareProvider(PageProvider):
         if target["kind"] == "product":
             findings = [
                 Finding("CYW43455", "component", "PART_OF", "Widget contains tin", "stated"),
+                Finding(
+                    "USB 3.0 Ports", "component", "PART_OF", "Widget contains tin", "interface"
+                ),
                 Finding(
                     "brcmfmac driver", "component", "INPUT_TO", "Widget contains tin", "software"
                 ),
@@ -581,6 +591,5 @@ async def test_software_is_rejected_variants_merge_by_maker_and_near_duplicates_
     events = sse_events(await client.get(run["events_url"]))
     reviews = [e["payload"]["reason"] for e in events if e["type"] == "entity.review_needed"]
     assert any(r.startswith("near_duplicate") and "CYW43455 wireless module" in r for r in reviews)
-    assert any(
-        e["type"] == "claim.rejected" and e["payload"]["detail"] == "software" for e in events
-    )
+    rejected = {e["payload"]["detail"] for e in events if e["type"] == "claim.rejected"}
+    assert {"software", "interface"} <= rejected

@@ -23,6 +23,7 @@ from app.providers import Budget, BudgetExceeded, ProviderFailure, build_provide
 from app.resolution import (
     NON_DEPENDENCY_KINDS,
     RELATION_TYPES,
+    interface_feature,
     near_duplicates,
     normalize_label,
     record_identity,
@@ -1057,6 +1058,16 @@ class Worker:
                     software_artifact(finding.label) or software_artifact(object_label)
                 ):
                     rejected = "predicate_invalid"  # firmware, drivers, software are not parts
+                elif finding.predicate in {"PART_OF", "INPUT_TO"} and (
+                    (
+                        finding.kind == "component"
+                        and interface_feature(
+                            finding.label, finding.part_number, finding.manufacturer
+                        )
+                    )
+                    or (object_kind == "component" and interface_feature(object_label))
+                ):
+                    rejected = "predicate_invalid"  # ports, slots, and standards are interfaces
                 elif any(
                     kind == "product" and normalize_label(label) != normalize_label(root["label"])
                     for kind, label in ((finding.kind, finding.label), (object_kind, object_label))
