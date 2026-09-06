@@ -1,4 +1,4 @@
-# Supply Chain OSINT AI — Project Overview
+# Magellan — Project Overview
 
 **One line:** Type a product, get a sourced map of its supply chain. Then watch it, stress it, and ask it questions.
 

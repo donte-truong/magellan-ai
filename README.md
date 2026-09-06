@@ -1,4 +1,4 @@
-# Magellan AI
+# Magellan
 
 Evidence-backed supply chain research: start with a product name and build a sourced graph and research bill of materials. Built at DNHacks 2026.
 
@@ -22,3 +22,4 @@ The **Next.js frontend** (`frontend/`) provides the MVP flow: **enter a product 
 
 The **Next.js backend** (`backend-node/`) is the earlier implementation. Its BOM estimate, OpenRouter support, and BOM import have been ported to the FastAPI backend; it still serves the frontend's routes on port 3001 (`MAGELLAN_API_URL=http://127.0.0.1:3001`) and is kept for reference only.
 The Next.js frontend opens with a dark navy **iPhone 17 Pro demo: product input → animated 3D decomposition → supplier network on an interactive globe**. The featured exploration uses sourced, curated data and clearly labels headquarters and illustrative routes. The existing backend-driven workspace remains at **http://localhost:3000/research**. TypeScript, Three.js, Zustand, React Flow, Vite/Vitest, and Playwright support the application.
+The **Magellan landing page at http://localhost:3000/home** introduces the product with scroll-driven iPhone decomposition, an interactive 3D globe, and animated source connections. The dark navy **iPhone 17 Pro demo at `/`** follows product input → animated 3D decomposition → supplier network on an interactive globe. The featured exploration uses sourced, curated data and clearly labels headquarters and illustrative routes. The existing backend-driven workspace remains at **http://localhost:3000/research**. TypeScript, Three.js, Zustand, React Flow, Vite/Vitest, and Playwright support the application.

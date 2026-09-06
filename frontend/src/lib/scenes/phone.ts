@@ -16,6 +16,21 @@ function labelTexture(text: string, small = false) {
   return texture;
 }
 
+function roundedOutline<T extends THREE.Path>(path: T, w: number, h: number, r: number): T {
+  const left = -w / 2,
+    bottom = -h / 2;
+  path.moveTo(left + r, bottom);
+  path.lineTo(left + w - r, bottom);
+  path.quadraticCurveTo(left + w, bottom, left + w, bottom + r);
+  path.lineTo(left + w, bottom + h - r);
+  path.quadraticCurveTo(left + w, bottom + h, left + w - r, bottom + h);
+  path.lineTo(left + r, bottom + h);
+  path.quadraticCurveTo(left, bottom + h, left, bottom + h - r);
+  path.lineTo(left, bottom + r);
+  path.quadraticCurveTo(left, bottom, left + r, bottom);
+  return path;
+}
+
 export function buildPhone() {
   const root = new THREE.Group();
   const groups = Object.fromEntries(
@@ -67,19 +82,7 @@ export function buildPhone() {
   ) {
     let geometry: THREE.BufferGeometry;
     if (w > 1.9 && h > 1.2) {
-      const r = h > 3 ? 0.22 : 0.17;
-      const left = -w / 2,
-        bottom = -h / 2;
-      const shape = new THREE.Shape();
-      shape.moveTo(left + r, bottom);
-      shape.lineTo(left + w - r, bottom);
-      shape.quadraticCurveTo(left + w, bottom, left + w, bottom + r);
-      shape.lineTo(left + w, bottom + h - r);
-      shape.quadraticCurveTo(left + w, bottom + h, left + w - r, bottom + h);
-      shape.lineTo(left + r, bottom + h);
-      shape.quadraticCurveTo(left, bottom + h, left, bottom + h - r);
-      shape.lineTo(left, bottom + r);
-      shape.quadraticCurveTo(left, bottom, left + r, bottom);
+      const shape = roundedOutline(new THREE.Shape(), w, h, h > 3 ? 0.22 : 0.17);
       geometry = new THREE.ExtrudeGeometry(shape, {
         depth: d,
         bevelEnabled: true,
@@ -132,20 +135,36 @@ export function buildPhone() {
     parent.add(mesh);
   }
 
-  // Original, stylized model; the six assemblies are separable groups.
-  box(groups.enclosure, 2.28, 4.75, 0.25, edgeMetal, 0, 0, 0, 0.125);
-  box(groups.enclosure, 2.24, 4.71, 0.24, metal, 0, 0, 0.015, 0.12);
+  // A hollow perimeter holds the internals between a rear panel and front display.
+  // A solid box here would intersect the battery, board and charging coil.
+  const frameShape = roundedOutline(new THREE.Shape(), 2.28, 4.75, 0.22);
+  frameShape.holes.push(roundedOutline(new THREE.Path(), 2.16, 4.63, 0.16));
+  const frameGeometry = new THREE.ExtrudeGeometry(frameShape, {
+    depth: 0.34,
+    bevelEnabled: true,
+    bevelThickness: 0.006,
+    bevelSize: 0.006,
+    bevelSegments: 2,
+    steps: 1,
+    curveSegments: 10,
+  });
+  frameGeometry.translate(0, 0, -0.195);
+  const frame = new THREE.Mesh(frameGeometry, edgeMetal);
+  frame.name = "phone-frame";
+  groups.enclosure.add(frame);
+  const backPanel = box(groups.enclosure, 2.2, 4.67, 0.045, metal, 0, 0, 0.145);
+  backPanel.name = "phone-back-panel";
   box(
     groups.enclosure,
     2.08,
     2.92,
-    0.025,
+    0.014,
     new THREE.MeshStandardMaterial({ color: "#18273f", roughness: 0.45, metalness: 0.46 }),
     0,
     -0.67,
-    0.147,
+    0.18,
   );
-  box(groups.enclosure, 2.18, 1.38, 0.17, metal, 0, 1.57, 0.19);
+  box(groups.enclosure, 2.18, 1.43, 0.08, metal, 0, 1.58, 0.205);
   // A restrained embossed maker mark, drawn locally rather than loading external art.
   const markCanvas = document.createElement("canvas");
   markCanvas.width = markCanvas.height = 256;
@@ -168,7 +187,7 @@ export function buildPhone() {
     new THREE.PlaneGeometry(0.8, 0.8),
     new THREE.MeshBasicMaterial({ map: markTexture, transparent: true, depthWrite: false }),
   );
-  markMesh.position.set(0, -0.52, 0.18);
+  markMesh.position.set(0, -0.52, 0.2);
   groups.enclosure.add(markMesh);
   for (const y of [0.73, 0.12]) box(groups.enclosure, 0.065, 0.39, 0.1, edgeMetal, -1.15, y, 0);
   box(groups.enclosure, 0.065, 0.6, 0.1, edgeMetal, 1.15, 0.56, 0);
@@ -186,51 +205,51 @@ export function buildPhone() {
     iridescence: 1,
   });
   for (const [x, y] of [
-    [-0.55, 1.88],
-    [-0.55, 1.26],
-    [0.14, 1.57],
+    [-0.58, 1.94],
+    [-0.58, 1.27],
+    [0.14, 1.605],
   ]) {
-    cylinder(groups.camera, 0.305, 0.17, edgeMetal, x, y, 0.34);
-    cylinder(groups.camera, 0.273, 0.178, black, x, y, 0.355);
-    cylinder(groups.camera, 0.225, 0.018, lensGlass, x, y, 0.453);
+    cylinder(groups.camera, 0.278, 0.11, edgeMetal, x, y, 0.305);
+    cylinder(groups.camera, 0.249, 0.1, black, x, y, 0.314);
+    cylinder(groups.camera, 0.208, 0.01, lensGlass, x, y, 0.371);
     cylinder(
       groups.camera,
-      0.11,
-      0.02,
+      0.098,
+      0.008,
       new THREE.MeshStandardMaterial({ color: "#153956", metalness: 1, roughness: 0.13 }),
       x,
       y,
-      0.466,
+      0.379,
     );
-    cylinder(groups.camera, 0.055, 0.023, black, x, y, 0.48);
+    cylinder(groups.camera, 0.049, 0.004, black, x, y, 0.384);
     const ring = new THREE.Mesh(
-      new THREE.TorusGeometry(0.182, 0.007, 6, 64),
+      new THREE.TorusGeometry(0.169, 0.0055, 6, 64),
       new THREE.MeshBasicMaterial({ color: "#376688", transparent: true, opacity: 0.7 }),
     );
-    ring.position.set(x, y, 0.47);
+    ring.position.set(x, y, 0.38);
     groups.camera.add(ring);
     cylinder(
       groups.camera,
-      0.027,
-      0.015,
+      0.02,
+      0.004,
       new THREE.MeshBasicMaterial({ color: "#a0d4ff" }),
       x - 0.07,
       y + 0.09,
-      0.474,
+      0.384,
     );
   }
   cylinder(
     groups.camera,
-    0.106,
-    0.04,
+    0.073,
+    0.025,
     new THREE.MeshStandardMaterial({ color: "#e0d4bc", roughness: 0.25 }),
-    0.73,
-    1.89,
-    0.3,
+    0.78,
+    1.94,
+    0.275,
   );
-  cylinder(groups.camera, 0.104, 0.03, black, 0.73, 1.24, 0.3);
+  cylinder(groups.camera, 0.078, 0.027, black, 0.78, 1.27, 0.274);
 
-  box(groups.display, 2.22, 4.65, 0.085, black, 0, 0, -0.19);
+  box(groups.display, 2.22, 4.65, 0.07, black, 0, 0, -0.245);
   const screen = new THREE.MeshStandardMaterial({
     color: "#243d67",
     emissive: "#143860",
@@ -238,38 +257,38 @@ export function buildPhone() {
     metalness: 0.7,
     roughness: 0.15,
   });
-  box(groups.display, 2.11, 4.53, 0.022, screen, 0, 0, -0.25);
-  box(groups.display, 0.63, 0.18, 0.03, black, 0, 2.01, -0.27);
+  box(groups.display, 2.11, 4.53, 0.016, screen, 0, 0, -0.298);
+  box(groups.display, 0.63, 0.18, 0.012, black, 0, 2.01, -0.312);
 
   box(
     groups.battery,
-    1.43,
+    1.32,
     2.44,
-    0.13,
+    0.12,
     new THREE.MeshStandardMaterial({ color: "#252c37", metalness: 0.7, roughness: 0.5 }),
-    -0.24,
+    -0.34,
     -0.62,
-    -0.055,
+    -0.06,
   );
   for (let i = 0; i < 8; i++)
-    box(groups.battery, 1.31, 0.006, 0.006, edgeMetal, -0.24, -1.61 + i * 0.27, 0.014);
-  label(groups.battery, "Li-ion", 1.08, -0.24, -0.5, 0.02);
-  label(groups.battery, "+    −", 0.8, -0.24, -1.26, 0.02, true);
-  box(groups.battery, 0.14, 0.45, 0.025, gold, 0.29, 0.63, -0.03);
+    box(groups.battery, 1.2, 0.006, 0.004, edgeMetal, -0.34, -1.61 + i * 0.27, 0.004);
+  label(groups.battery, "Li-ion", 1.08, -0.34, -0.5, 0.009);
+  label(groups.battery, "+    −", 0.8, -0.34, -1.26, 0.009, true);
+  box(groups.battery, 0.1, 0.3, 0.025, gold, 0.18, 0.63, -0.03);
 
   box(groups.silicon, 0.66, 2.62, 0.09, board, 0.66, -0.02, -0.07);
   box(groups.silicon, 1.38, 0.63, 0.09, board, 0.27, 1.11, -0.07);
   box(
     groups.silicon,
-    0.6,
+    0.55,
     0.64,
     0.07,
     new THREE.MeshStandardMaterial({ color: "#3f465b", metalness: 0.9, roughness: 0.35 }),
-    0.61,
+    0.66,
     0.68,
     0.02,
   );
-  label(groups.silicon, "A19", 0.59, 0.61, 0.69, 0.065);
+  label(groups.silicon, "A19", 0.54, 0.66, 0.69, 0.065);
   for (let i = 0; i < 18; i++) {
     const y = -0.96 + i * 0.105;
     box(
@@ -287,24 +306,16 @@ export function buildPhone() {
   for (let i = 0; i < 4; i++)
     box(groups.silicon, 0.19, 0.21, 0.04, black, -0.24 + i * 0.3, 1.13, 0.005);
 
-  box(groups.connectivity, 1.6, 0.38, 0.075, black, 0, -1.9, -0.03);
-  label(groups.connectivity, "TAPTIC ENGINE", 1.3, 0, -1.9, 0.012, true);
+  box(groups.connectivity, 1.6, 0.27, 0.075, black, 0, -2.12, -0.03);
+  label(groups.connectivity, "TAPTIC ENGINE", 1.3, 0, -2.12, 0.012, true);
   const coil = new THREE.Mesh(new THREE.TorusGeometry(0.59, 0.042, 8, 80), gold);
-  coil.position.set(-0.1, -0.44, -0.07);
+  coil.position.set(-0.1, -0.44, 0.065);
   groups.connectivity.add(coil);
   const coil2 = new THREE.Mesh(new THREE.TorusGeometry(0.52, 0.015, 8, 80), gold);
   coil2.position.copy(coil.position);
   groups.connectivity.add(coil2);
 
-  const targets: Record<PartId, THREE.Vector3> = {
-    enclosure: new THREE.Vector3(-2.4, -0.22, -0.1),
-    battery: new THREE.Vector3(-0.4, -0.05, 0.4),
-    silicon: new THREE.Vector3(0.95, 0.25, 0.35),
-    camera: new THREE.Vector3(-0.4, 1.05, 0.5),
-    connectivity: new THREE.Vector3(1.15, -0.8, 0.5),
-    display: new THREE.Vector3(3.8, 0.25, 0.4),
-  };
-  return { root, groups, targets };
+  return { root, groups };
 }
 
 export function disposeScene(scene: THREE.Object3D) {

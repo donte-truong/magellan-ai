@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState, type CSSProperties, type FormEvent } from "react";
 import dynamic from "next/dynamic";
+import Link from "next/link";
+import { MagellanMark as Mark } from "@/components/magellan-mark";
 import {
   ArrowDownToLine,
   ArrowLeft,
@@ -61,18 +63,8 @@ const steps: { id: DemoStage; label: string }[] = [
   { id: "network", label: "Explore" },
 ];
 
-function Mark() {
-  return (
-    <svg className="magellan-mark" viewBox="0 0 36 36" fill="none" aria-hidden="true">
-      <circle cx="18" cy="18" r="15" stroke="currentColor" strokeWidth="1" opacity=".35" />
-      <path d="m24.5 10-4 12.5L11.5 26l4-12.5L24.5 10Z" stroke="currentColor" strokeWidth="1.4" />
-      <path d="m15.5 13.5 5 9M18 1v4m0 26v4M1 18h4m26 0h4" stroke="currentColor" strokeWidth="1" />
-    </svg>
-  );
-}
-
 export function Experience() {
-  const { stage, started, paused, setStage, reset, togglePaused } = useDemo();
+  const { stage, started, paused, setStage, togglePaused } = useDemo();
   const [info, setInfo] = useState(false);
   const heading = useRef<HTMLHeadingElement>(null);
   const dialog = useRef<HTMLDialogElement>(null);
@@ -106,12 +98,10 @@ export function Experience() {
         Skip to exploration
       </a>
       <header className="experience-header">
-        <button className="experience-brand" onClick={reset} aria-label="Magellan home">
+        <Link className="experience-brand" href="/home" aria-label="Magellan home">
           <Mark />
-          <span>
-            magellan<span className="brand-period">.</span>
-          </span>
-        </button>
+          <span>Magellan</span>
+        </Link>
         <nav className="journey-nav" aria-label="Exploration steps">
           {steps.map((step, i) => (
             <button
