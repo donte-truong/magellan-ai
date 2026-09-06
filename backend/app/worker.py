@@ -123,6 +123,7 @@ RELATIONS_BY_KIND = {
     "facility": ["location"],
 }
 LOCATION_TASK_SEARCHES = 2
+MAX_CONSECUTIVE_PROVIDER_FAILURES = 5
 
 
 def research_depth(node, graph):
@@ -179,6 +180,7 @@ class RunState:
         self.attempts = {}  # node id -> tasks run for it
         self.attempted = {}  # node id -> relation types already sought
         self.tasks_done = 0
+        self.provider_failures = 0  # consecutive tasks lost to search or model outages
         self.invalid_documents = []  # pages whose model output was unusable
         self.stale = {}  # branch id -> consecutive tasks without a verified finding
         self.paused = set()  # branches paused by the stagnation rule
@@ -468,7 +470,12 @@ class Worker:
         state = RunState()
         if run.get("instruction"):
             state.instruction = run["instruction"]
-            state.focus = set(run.get("_target_ids") or [])
+        if run.get("instruction") or run.get("_resume") is not None:
+            targets = run.get("_target_ids") or []
+            state.focus = set(targets) if targets else None
+        if run.get("_resume"):
+            state.attempts = dict(run["_resume"].get("attempts", {}))
+            state.attempted = {k: set(v) for k, v in run["_resume"].get("attempted", {}).items()}
 
         def checkpoint():
             with self.db.transaction(workspace, write=True) as repo:
@@ -541,6 +548,10 @@ class Worker:
                 repo.put("run", current)
                 return
             graph = repo.graph(current["graph_id"])
+            current["_scheduling"] = {
+                "attempts": dict(state.attempts),
+                "attempted": {k: sorted(v) for k, v in state.attempted.items()},
+            }
             self.queue_geography(repo, current, graph)
             current.update(
                 status="partial",
@@ -766,7 +777,10 @@ class Worker:
             searches_used = documents_used = 0
             queries = list(plan["queries"])
             replanned = False
+            outage = None
             while queries and searches_used < limits["max_searches_per_task"]:
+                if outage:
+                    break
                 query = queries.pop(0)
                 if documents_used >= limits["max_documents_per_task"]:
                     break
@@ -774,19 +788,31 @@ class Worker:
                 searches_used += 1
                 before = found
                 before_invalid = len(state.invalid_documents)
-                found_here, docs = await self.run_query(
-                    workspace,
-                    identifier,
-                    run,
-                    target,
-                    query,
-                    plan,
-                    budget,
-                    state,
-                    limits,
-                    documents_used,
-                    remaining_queries=len(queries) + 1,
-                )
+                try:
+                    found_here, docs = await self.run_query(
+                        workspace,
+                        identifier,
+                        run,
+                        target,
+                        query,
+                        plan,
+                        budget,
+                        state,
+                        limits,
+                        documents_used,
+                        remaining_queries=len(queries) + 1,
+                    )
+                except ProviderFailure as exc:
+                    if exc.code not in {"source_unavailable", "provider_timeout"}:
+                        raise
+                    # A search or model outage fails this task; the run ends only after several
+                    # tasks in a row are lost to it (credits gone, route down).
+                    outage = exc
+                    failure = exc.code
+                    questions.append(
+                        f"{exc.code} while researching {target['label']}: {exc.message}"
+                    )
+                    break
                 if len(state.invalid_documents) > before_invalid and not found_here:
                     failure = "model_output_invalid"
                     questions.append(
@@ -827,6 +853,10 @@ class Worker:
                 found += self.retry_orphans(workspace, identifier, budget, state)
         state.done[branch] = state.done.get(branch, 0) + 1
         state.tasks_done += 1
+        if failure in {"source_unavailable", "provider_timeout"}:
+            state.provider_failures += 1
+        elif found:
+            state.provider_failures = 0
         state.in_flight.discard(target["id"])
         if not found and not plan["skip"] and not failure:
             questions.append(f"No further verified upstream inputs for {target['label']}.")
@@ -869,6 +899,11 @@ class Worker:
             self.emit(repo, current, "task.finished", {**task, "outcome": outcome})
             self.save_trace(repo, identifier, state)
             repo.put("run", current)
+        if state.provider_failures >= MAX_CONSECUTIVE_PROVIDER_FAILURES:
+            raise ProviderFailure(
+                failure,
+                f"{state.provider_failures} consecutive tasks lost to {failure}; research stopped",
+            )
 
     @staticmethod
     def relevant(body, run, target):
@@ -1592,7 +1627,9 @@ class Worker:
                 finding.predicate = normalized_predicate(
                     finding.predicate, finding.kind, object_kind
                 )
-                finding.scope_type = normalized_scope(finding.predicate, finding.scope_type)
+                finding.scope_type = normalized_scope(
+                    finding.predicate, finding.scope_type, finding.kind, object_kind
+                )
                 if not share_stated(finding.span, finding.share):
                     finding.share = None
                 rejected = finding.rejection

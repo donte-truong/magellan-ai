@@ -1132,7 +1132,7 @@ async def test_a_relation_between_two_names_of_one_node_is_rejected(api):
 
 
 class ScopedProvider(PageProvider):
-    """The same relation is stated once generically and once for the product."""
+    """The same relation into the product is stated twice; both claims land on one edge."""
 
     name = "test_scoped"
 
@@ -1145,17 +1145,9 @@ class ScopedProvider(PageProvider):
                     "material",
                     "INPUT_TO",
                     "Widget contains tin",
-                    "generic first",
-                    scope_type="generic",
-                    object_label="Acme Smelting",
-                    object_kind="component",
-                ),
-                Finding(
-                    "Acme Smelting",
-                    "component",
-                    "PART_OF",
-                    "Tin is refined by Acme Smelting",
-                    "connects",
+                    "first",
+                    object_label="Widget",
+                    object_kind="product",
                 ),
                 Finding(
                     "tin",
@@ -1163,8 +1155,6 @@ class ScopedProvider(PageProvider):
                     "INPUT_TO",
                     "Widget contains tin and a battery",
                     "then product scope",
-                    object_label="Acme Smelting",
-                    object_kind="component",
                 ),
             ]
         return Document(url, title, "example.org", body, findings=findings)
@@ -1179,10 +1169,7 @@ async def test_one_edge_per_relation_takes_the_strongest_scope(api):
     assert len(tin_edges) == 1
     assert tin_edges[0]["scope"]["type"] == "product" and len(tin_edges[0]["claim_ids"]) == 2
     claims = {c["id"]: c for c in graph["claims"]}
-    assert sorted(claims[i]["scope"]["type"] for i in tin_edges[0]["claim_ids"]) == [
-        "generic",
-        "product",
-    ]
+    assert [claims[i]["scope"]["type"] for i in tin_edges[0]["claim_ids"]] == ["product"] * 2
 
 
 def test_gazetteer_resolves_places_with_precision():
@@ -1596,3 +1583,33 @@ async def test_second_pass_asks_the_next_unanswered_relation(api):
     assert tasks[labels["tin"]["id"]] == [(1, "material_origin")]
     assert run["progress"]["tasks_done"] == run["progress"]["tasks_total"] == 6
     assert run["stop_reason"] == "research_exhausted"
+
+
+async def test_resume_continues_the_frontier_with_inherited_attempts(api):
+    client, app = api
+    app.state.worker.settings = app.state.worker.settings.model_copy(update={"research_passes": 1})
+    app.state.worker.provider = TwoPassProvider()
+    run, graph = await researched(api, "Widget")
+    root = graph["nodes"][0]["id"]
+    # One pass only: the product asked for its inputs and nothing else.
+    assert run["progress"]["tasks_done"] == 4
+    # Resume with a second pass allowed: the product's inherited attempt means it now asks the
+    # maker question, and the materials (already at one attempt with nothing left) are skipped.
+    app.state.worker.settings = app.state.worker.settings.model_copy(update={"research_passes": 2})
+    resumed = await client.post(f"/v1/graphs/{run['graph_id']}/research", json={"resume": True})
+    assert resumed.status_code == 202, resumed.text
+    assert await app.state.worker.tick()
+    job = (await client.get(f"/v1/runs/{resumed.json()['id']}")).json()
+    events = sse_events(await client.get(job["events_url"]))
+    planned = [
+        (e["payload"]["target_node_id"], e["payload"]["pass"], e["payload"]["relation_sought"])
+        for e in events
+        if e["type"] == "task.planned"
+    ]
+    # The product's second pass came first; the maker it found was then researched as new.
+    assert planned[0] == (root, 2, "manufacturer_or_facility")
+    assert all(p[1] == 1 and p[0] != root for p in planned[1:])
+    graph = (await client.get(f"/v1/graphs/{run['graph_id']}")).json()
+    assert "MANUFACTURES" in {e["predicate"] for e in graph["edges"]}
+    rejected = await client.post(f"/v1/graphs/{run['graph_id']}/research", json={})
+    assert rejected.status_code == 400

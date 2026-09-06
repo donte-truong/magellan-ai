@@ -198,8 +198,15 @@ def bom_view(run, graph):
         if e["predicate"] in {"PART_OF", "INPUT_TO"}
         and nodes[e["source_node_id"]]["kind"] in {"component", "material"}
         and nodes[e["target_node_id"]]["kind"] in {"product", "component", "material"}
-        and e["scope"]["type"] == "product"
-        and e["scope"].get("product_node_id") == graph["root_node_id"]
+        and (
+            # Into the product itself, the relation must be established for this product;
+            # composition below it (a core inside a chip) is a generic fact about the part.
+            (
+                e["scope"]["type"] == "product"
+                and e["scope"].get("product_node_id") == graph["root_node_id"]
+            )
+            or (e["scope"]["type"] == "generic" and nodes[e["target_node_id"]]["kind"] != "product")
+        )
     ]
     depths = {graph["root_node_id"]: 0}
     for _ in graph["nodes"]:
@@ -300,6 +307,18 @@ def create_followup(repo, graph_id, request, provider):
     usage = RunUsage().model_dump(exclude_none=True)
     if provider.name == "curated_fixture":
         usage["cost_minor"] = 0
+    scheduling = None
+    if request.resume:
+        # The latest terminal run on this graph: its saved scheduling state, or the state
+        # rebuilt from its task events for runs that predate saving it.
+        previous = [
+            r
+            for r in repo.all("run")
+            if r.get("graph_id") == graph["id"] and r["status"] in TERMINAL_RUN
+        ]
+        if previous:
+            last = previous[0]
+            scheduling = last.get("_scheduling") or scheduling_from_events(repo, last["id"])
     run = {
         "id": identifier,
         "product": root["label"],
@@ -318,7 +337,10 @@ def create_followup(repo, graph_id, request, provider):
         "open_questions": [],
         "instruction": request.instruction,
         "provider": provider.name,
-        "_target_ids": list(dict.fromkeys(targets)),
+        "_target_ids": list(dict.fromkeys(targets))
+        if (request.target_node_ids or not request.resume)
+        else [],
+        "_resume": scheduling,
         "events_url": f"/v1/runs/{identifier}/events",
         "bom_url": f"/v1/runs/{identifier}/bom",
         "created_at": now(),
@@ -327,6 +349,22 @@ def create_followup(repo, graph_id, request, provider):
     repo.emit(run, "run.status", {"status": "queued", "progress": run["progress"]})
     repo.put("run", run)
     return public(run)
+
+
+def scheduling_from_events(repo, run_id):
+    """Per-node attempts and relation types sought, rebuilt from a run's task events."""
+    attempts, attempted, after = {}, {}, 0
+    while True:
+        page = repo.event_page(run_id, after=after, limit=1000)
+        if not page:
+            break
+        for event in page:
+            after = max(after, event["seq"])
+            if event["type"] == "task.planned":
+                target = event["payload"]["target_node_id"]
+                attempts[target] = attempts.get(target, 0) + 1
+                attempted.setdefault(target, []).append(event["payload"]["relation_sought"])
+    return {"attempts": attempts, "attempted": attempted}
 
 
 def create_scenario(repo, graph_id, request):

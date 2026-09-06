@@ -513,7 +513,15 @@ async def test_provider_failure_and_bad_spans_do_not_commit_claims(api):
 
     app.state.worker.provider = BrokenProvider()
     run, graph = await researched(api, "product")
-    assert run["stop_reason"] == "provider_timeout" and graph["edges"] == []
+    # One outage fails the task, not the run; the run ends only after several in a row.
+    assert run["stop_reason"] == "research_exhausted" and graph["edges"] == []
+    assert any("provider_timeout" in q for q in run["open_questions"])
+    outcomes = [
+        e["payload"]["outcome"]
+        for e in sse_events(await client.get(run["events_url"]))
+        if e["type"] == "task.finished"
+    ]
+    assert outcomes == ["failed:provider_timeout"]
     assert any(
         e["type"] == "claim.rejected" for e in sse_events(await client.get(run["events_url"]))
     )

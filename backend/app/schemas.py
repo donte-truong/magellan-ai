@@ -818,11 +818,21 @@ class FollowupCreate(Model):
     """Deepen or refine an existing graph with a natural-language instruction. Research runs
     with the same evidence rules; the instruction only steers planning and extraction."""
 
-    instruction: str = Field(min_length=3, max_length=1000)
+    instruction: str | None = Field(default=None, min_length=3, max_length=1000)
     # Nodes to research; the product root when omitted. New nodes found under them are
     # researched too, within the hop limit.
     target_node_ids: list[str] | None = Field(default=None, max_length=50)
+    # Continue the whole frontier where the graph's last run stopped: the previous run's
+    # per-node attempts and questions are inherited, so nothing is asked twice, and no
+    # target restriction applies unless target_node_ids is given.
+    resume: bool = False
     limits: RunLimits = Field(default_factory=RunLimits)
+
+    @model_validator(mode="after")
+    def instruction_or_resume(self):
+        if not self.instruction and not self.resume:
+            raise ValueError("A follow-up needs an instruction, resume=true, or both")
+        return self
 
 
 class ScenarioCreate(Model):

@@ -110,6 +110,7 @@ def quote_window(body, quote, margin=400):
 RATE_LIMIT_WAIT_SECONDS = 5.0
 RATE_LIMIT_MAX_WAIT_SECONDS = 30.0
 MAX_PAGE_CHARS = 60000
+VERIFY_BATCH = 10
 
 
 class ProviderFailure(Exception):
@@ -1135,7 +1136,11 @@ class LiveProvider:
             if reason:
                 findings[i].rejection = reason  # not worth a verification call
         eligible = [i for i, f in enumerate(findings) if not f.rejection]
-        if eligible:
+        judgments = {}
+        # Ten claims per call: larger batches made the verifier drop judgments.
+        for chunk in [
+            eligible[i : i + VERIFY_BATCH] for i in range(0, len(eligible), VERIFY_BATCH)
+        ]:
             verified = await self.structured(
                 Verification,
                 "Independently verify proposed relationships using only each claim's quote and its "
@@ -1164,13 +1169,14 @@ class LiveProvider:
                             **extraction.findings[i].model_dump(),
                             "context": quote_window(body, extraction.findings[i].quote),
                         }
-                        for i in eligible
+                        for i in chunk
                     ],
                 },
                 budget,
                 role="verifier",
             )
-            judgments = {j.index: j for j in verified.findings}
+            judgments.update({j.index: j for j in verified.findings})
+        if eligible:
             for i in eligible:
                 judgment = judgments.get(i)
                 if not judgment or not judgment.entailed:

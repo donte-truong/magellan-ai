@@ -51,8 +51,17 @@ def share_stated(span, share):
     return share is not None and bool(SHARE_WORDS.search(span or ""))
 
 
-def normalized_scope(predicate, scope_type):
-    return "generic" if predicate in GENERIC_PREDICATES else scope_type
+def normalized_scope(predicate, scope_type, kind=None, object_kind=None):
+    """Relations that describe an entity (its location, operator, owner) are generic; so is any
+    relation that does not touch the researched product (a maker of a chip, a metal in an
+    alloy), because 'product scope' would demand that the page name the phone in the same
+    breath, which maker pages never do. The chain to the product is carried by the part's own
+    PART_OF or INPUT_TO edge, which keeps product scope."""
+    if predicate in GENERIC_PREDICATES:
+        return "generic"
+    if kind is not None and object_kind is not None and "product" not in (kind, object_kind):
+        return "generic" if scope_type == "product" else scope_type
+    return scope_type
 
 
 NON_DEPENDENCY_KINDS = {"organization", "facility", "geography"}
