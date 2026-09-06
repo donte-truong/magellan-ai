@@ -258,7 +258,9 @@ def static_rejection(
             object_kind == "component" and interface_feature(object_label)
         ):
             return "predicate_invalid"  # ports, slots, and standards are interfaces
-        if kind == "component" and accessory(label, part_number, manufacturer):
+        if (kind == "component" and accessory(label, part_number, manufacturer)) or (
+            object_kind == "component" and accessory(object_label)
+        ):
             return "predicate_invalid"  # boxed or sold-with items are not parts
     if any(
         k == "product" and normalize_label(name) != normalize_label(root_label)

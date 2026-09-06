@@ -43,6 +43,8 @@ class RunStopped(Exception):
 
 MAX_TRACE_ENTRIES = 200
 MAX_SOURCES_PER_EDGE = 4
+MAX_ORPHANS = 300
+ROOT_MIN_FINDINGS = 3  # the product task replans once if it yields fewer verified entities
 
 
 def corroborated(graph, subject_id, object_id, predicate, scope_type):
@@ -111,6 +113,9 @@ class RunState:
         self.sources = {}  # content hash -> stored source record
         self.analyzed = {}  # content hash -> set of (target id, relation sought)
         self.documents = {}  # content hash -> analyzed Document, reusable for any later target
+        # Findings whose whole is not yet connected to the product, retried as the graph grows
+        # and rejected as "disconnected" only when the run ends.
+        self.orphans = {}  # (url, span, label, object_label) -> (target, Document, Finding)
         self.spend = {}  # branch id -> documents consumed
         self.done = {}  # branch id -> tasks completed
         self.branch_of = {}  # node id -> branch id
@@ -438,6 +443,7 @@ class Worker:
             questions.append(exc.message)
         except RunStopped:
             return
+        self.reject_orphans(workspace, identifier, state)
         usage["elapsed_seconds"] = round(time.monotonic() - budget.started, 3)
         if self.provider.name != "curated_fixture":
             rates = (
@@ -644,7 +650,13 @@ class Worker:
             repo.put("run", current)
         found, failure = 0, None
         if not plan["skip"]:
-            limits = run["limits"]
+            # Everything descends from the product task, so it gets twice the per-task allowance.
+            scale = 2 if target.get("tier") == 0 else 1
+            limits = {
+                **run["limits"],
+                "max_searches_per_task": run["limits"]["max_searches_per_task"] * scale,
+                "max_documents_per_task": run["limits"]["max_documents_per_task"] * scale,
+            }
             searches_used = documents_used = 0
             queries = list(plan["queries"])
             replanned = False
@@ -679,21 +691,33 @@ class Worker:
                 state.spend[branch] = state.spend.get(branch, 0) + docs
                 if found == before:
                     state.failed.setdefault(target["id"], []).append(query)
-                    # Replan once with the failed query on record; per-task planning is the experiment.
-                    if (
-                        not replanned
-                        and not queries
-                        and budget.remaining("searches")
-                        and plan["source"] == "planner"
-                    ):
-                        replanned = True
-                        again = await self.plan_task(
-                            run, graph, target, budget, questions, state, failed=[query]
-                        )
-                        tried = set(state.queries.get(target["id"], []))
-                        queries = [q for q in again["queries"] if q not in tried]
-                        if again["skip"]:
-                            queries = []
+                # Replan once, with the failed queries on record, when the plan ran dry without
+                # a verified finding, or when the product task found too little to build on.
+                thin = found == 0 or (target.get("tier") == 0 and found < ROOT_MIN_FINDINGS)
+                if (
+                    thin
+                    and not replanned
+                    and not queries
+                    and searches_used < limits["max_searches_per_task"]
+                    and budget.remaining("searches")
+                    and plan["source"] == "planner"
+                ):
+                    replanned = True
+                    again = await self.plan_task(
+                        run,
+                        graph,
+                        target,
+                        budget,
+                        questions,
+                        state,
+                        failed=state.failed.get(target["id"], [])[-3:],
+                    )
+                    tried = set(state.queries.get(target["id"], []))
+                    queries = [q for q in again["queries"] if q not in tried]
+                    if again["skip"]:
+                        queries = []
+            if found and state.orphans:
+                found += self.retry_orphans(workspace, identifier, budget, state)
         state.done[branch] = state.done.get(branch, 0) + 1
         if not found and not plan["skip"] and not failure:
             questions.append(f"No further verified upstream inputs for {target['label']}.")
@@ -903,6 +927,47 @@ class Worker:
             )
             await asyncio.sleep(0)
         return found, docs
+
+    def retry_orphans(self, workspace, identifier, budget, state):
+        """Re-commit findings whose whole was missing, now that the graph has grown. Still
+        disconnected findings are re-orphaned by commit_document; nothing is emitted for them."""
+        pending = list(state.orphans.values())
+        state.orphans.clear()
+        committed = 0
+        by_document = {}
+        for target, document, finding in pending:
+            by_document.setdefault((target["id"], document.url), (target, document, []))[2].append(
+                finding
+            )
+        for target, document, findings in by_document.values():
+            retry = deepcopy(document)
+            retry.findings = [deepcopy(f) for f in findings]
+            for finding in retry.findings:
+                finding.resolved = {}
+            committed += len(
+                self.commit_document(workspace, identifier, target, retry, budget, state)
+            )
+        return committed
+
+    def reject_orphans(self, workspace, identifier, state):
+        """At the end of a run, findings that never found their whole are rejected visibly."""
+        if not state.orphans:
+            return
+        with self.db.transaction(workspace, write=True) as repo:
+            run = self.owned(repo, identifier)
+            for _, _, finding in state.orphans.values():
+                self.emit(
+                    repo,
+                    run,
+                    "claim.rejected",
+                    {
+                        "claim_id": new_id("clm"),
+                        "reason": "disconnected",
+                        "detail": finding.rationale,
+                    },
+                )
+            repo.put("run", run)
+        state.orphans.clear()
 
     async def commit_reused(self, workspace, identifier, run, target, document, budget, state):
         """Commit a copy of an earlier analysis for a new target; explicit objects keep the
@@ -1561,8 +1626,15 @@ class Worker:
                     changed = True
                     progress = True
                     eligible.remove(item)
-            for finding, _, _ in eligible:
-                reject(finding, "disconnected")
+            for finding, object_label, _ in eligible:
+                key = (document.url, finding.span, finding.label, object_label)
+                if state is None or (
+                    key not in state.orphans and len(state.orphans) >= MAX_ORPHANS
+                ):
+                    reject(finding, "disconnected")
+                elif key not in state.orphans:
+                    # Kept for retry: a later document may connect the whole to the product.
+                    state.orphans[key] = (target, document, finding)
             run["usage"] = deepcopy(budget.usage)
             self.emit(repo, run, "budget.updated", run["usage"])
             repo.put("run", run)

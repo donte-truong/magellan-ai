@@ -305,7 +305,9 @@ async def test_document_allowance_is_shared_across_queries_and_irrelevant_pages_
     # Both planned queries ran: the first got half the allowance, and its unrelated long pages
     # were skipped before any extraction call, so the useful page was still analyzed.
     assert [q for q, _ in provider.queries][:2] == ["Widget one", "Widget two"]
-    assert provider.queries[0][1] == 2
+    # The product task has twice the per-task document allowance (8), so each query got 4.
+    assert provider.queries[0][1] == 4
+    assert provider.queries[2][1] == 2  # a tier-1 task shares the plain allowance (4)
     assert "tin" in {n["label"] for n in graph["nodes"]}
     history = (await client.get(f"/v1/runs/{run['id']}/history")).json()["entries"]
     skipped = [e for e in history if e.get("skipped") == "no mention of product or target"]
@@ -954,13 +956,23 @@ def test_accessories_are_not_parts_and_predicates_are_normalized_by_kind():
 
 
 class DanglingWholeProvider(PageProvider):
-    """A material is stated to be part of a board that is never tied to the product."""
+    """A material is stated to be part of a board; a second page may or may not tie the board
+    to the product."""
 
     name = "test_dangling"
+    connects = False
+
+    async def search_pages(self, query, count, budget, **kwargs):
+        budget.charge("searches")
+        which = query.rsplit(" ", 1)[-1]
+        if which == "two" and not self.connects:
+            return []
+        # Distinct bodies, so the second page is not treated as a reuse of the first.
+        return [Page(url=f"https://example.org/{which}", title=which, body=f"{self.body} {which}")]
 
     async def analyze(self, target, product, company, url, title, body, budget):
         findings = []
-        if target["kind"] == "product":
+        if target["kind"] == "product" and url.endswith("one"):
             findings = [
                 Finding("tin", "material", "PART_OF", "Widget contains tin", "material as part"),
                 Finding(
@@ -968,25 +980,46 @@ class DanglingWholeProvider(PageProvider):
                     "material",
                     "INPUT_TO",
                     "Tin is refined by Acme Smelting",
-                    "whole never connected",
+                    "whole not yet connected",
                     object_label="main logic board",
                     object_kind="component",
                 ),
             ]
+        elif target["kind"] == "product":
+            findings = [
+                Finding(
+                    "main logic board",
+                    "component",
+                    "PART_OF",
+                    "Widget contains tin and a battery",
+                    "connects the board",
+                )
+            ]
         return Document(url, title, "example.org", body, findings=findings)
 
 
-async def test_a_whole_is_never_created_from_a_claim_about_its_part(api):
+@pytest.mark.parametrize("connects", [False, True])
+async def test_a_whole_is_never_created_from_a_claim_about_its_part(api, connects):
     client, app = api
-    app.state.worker.provider = DanglingWholeProvider()
+    provider = DanglingWholeProvider()
+    provider.connects = connects
+    app.state.worker.provider = provider
     run, graph = await researched(api, "Widget")
-    labels = {n["label"] for n in graph["nodes"]}
-    assert labels == {"Widget", "tin"}
-    # The material PART_OF claim was committed as INPUT_TO.
-    assert [e["predicate"] for e in graph["edges"]] == ["INPUT_TO"]
+    labels = {n["label"]: n for n in graph["nodes"]}
     events = sse_events(await client.get(run["events_url"]))
-    # Rejected once for the product task and once more when the tin task reused the analysis.
-    assert [e["payload"]["reason"] for e in events if e["type"] == "claim.rejected"] == [
-        "disconnected",
-        "disconnected",
-    ]
+    rejected = [e["payload"]["reason"] for e in events if e["type"] == "claim.rejected"]
+    predicates = sorted(e["predicate"] for e in graph["edges"])
+    if connects:
+        # The second page tied the board to the product, so the orphaned material claim was
+        # committed on retry and the board became a tier-1 part with tin under it at tier 2.
+        assert set(labels) == {"Widget", "tin", "main logic board"}
+        assert labels["main logic board"]["tier"] == 1
+        assert predicates == ["INPUT_TO", "INPUT_TO", "PART_OF"]
+        assert rejected == []
+    else:
+        assert set(labels) == {"Widget", "tin"}
+        assert predicates == ["INPUT_TO"]  # the material PART_OF claim committed as INPUT_TO
+        # Rejected once, at the end of the run, after retries found no whole to attach to.
+        assert rejected == ["disconnected"]
+        kinds = [e["type"] for e in events]
+        assert kinds.index("claim.rejected") > len(kinds) - 1 - kinds[::-1].index("task.finished")

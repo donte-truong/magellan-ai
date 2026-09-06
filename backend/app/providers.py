@@ -49,7 +49,19 @@ SOURCE_TYPE_HINTS = {
     "supplier_list": ("supplier", "suppliers", "supply-chain", "responsibility"),
     "government_dataset": (".gov", "usgs", "comtrade", "europa.eu", "trade.gov"),
 }
-LOW_VALUE_HINTS = ("shop", "buy", "cart", "price", "deals", "review", "best-", "top-", "blog")
+LOW_VALUE_HINTS = (
+    "shop",
+    "buy",
+    "cart",
+    "price",
+    "deals",
+    "review",
+    "best-",
+    "top-",
+    "blog",
+    "refurbished",
+    "/product/",
+)
 
 
 def rank_pages(pages, source_types=None, product=None, company=None):
@@ -537,6 +549,8 @@ class VerificationItem(Model):
     entailed: bool
     scope_matches: bool
     quantity_supported: bool
+    # Short reason, kept with the rejection so reviewers can see why the verifier disagreed.
+    reason: str = Field(max_length=200)
 
 
 class Verification(Model):
@@ -942,7 +956,10 @@ class LiveProvider:
             "Bluetooth 5.2, Gigabit Ethernet, PCIe, HDMI) are interfaces, not components, unless the "
             "document names the specific part with its maker or part number. Prefer relationships into the "
             "target, but also report relationships between other entities the document explicitly states, "
-            "such as a part inside a named component or a facility that makes a named part. For each "
+            "such as a part inside a named component or a facility that makes a named part. When a "
+            "document about the researched product ties a part or material to one of its sub-assemblies "
+            "(a battery, a logic board, a camera module), also report that sub-assembly PART_OF the "
+            "product, quoting a span that supports it. For each "
             "relationship quote a verbatim span (at most 600 characters); the span must establish the "
             "relationship, both identities and scope. Use PART_OF for components and INPUT_TO for material "
             "inputs; MANUFACTURES/PRODUCES/SUPPLIES only when explicitly established. Record part_number "
@@ -952,7 +969,8 @@ class LiveProvider:
             "alloy) is generic scope unless the span ties it to the researched product. Do not confuse "
             "a designer with a manufacturer. No quantities unless explicit. Use one "
             "consistent label for an entity throughout, preferring its part number or proper name to "
-            "a description. Return an empty list if nothing is supported.",
+            "a description. Keep each rationale under twenty words. Return an empty list if nothing "
+            "is supported.",
             {
                 "product": product,
                 "company": company,
@@ -960,6 +978,7 @@ class LiveProvider:
                 "document": passages,
             },
             budget,
+            max_output=6000,
         )
         findings = []
         for entry in extraction.findings:
@@ -1040,6 +1059,8 @@ class LiveProvider:
                     findings[i].rejection = "entailment_failed"
                 elif not judgment.scope_matches:
                     findings[i].rejection = "scope_mismatch"
+                if findings[i].rejection and judgment and judgment.reason:
+                    findings[i].rationale = f"{findings[i].rationale} | verifier: {judgment.reason}"
                 if not judgment or not judgment.quantity_supported:
                     findings[i].quantity = findings[i].unit = None
         return Document(url, title or url, urlsplit(url).hostname or "", body, findings=findings)
