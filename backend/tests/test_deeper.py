@@ -605,3 +605,135 @@ def test_relevance_gate_accepts_pages_that_name_only_the_part_number():
         body, run, {"label": "Infineon Wi-Fi chip", "external_ids": {"mpn": "CYW43455"}}
     )
     assert not Worker.relevant(body, run, {"label": "BCM54213 Gigabit Ethernet PHY", "aliases": []})
+
+
+def test_resolution_candidates_and_preferred_label():
+    from app.resolution import preferred_label, resolution_candidates
+
+    graph = {
+        "nodes": [
+            {"id": "p", "kind": "product", "label": "Widget", "aliases": []},
+            {"id": "rp1", "kind": "component", "label": "RP1", "aliases": []},
+            {"id": "dma", "kind": "component", "label": "8-channel DMA controller", "aliases": []},
+            {"id": "pll", "kind": "component", "label": "PLL", "aliases": []},
+            {"id": "tin", "kind": "material", "label": "tin", "aliases": []},
+        ],
+        "edges": [
+            {"source_node_id": "dma", "target_node_id": "rp1", "predicate": "PART_OF"},
+            {"source_node_id": "pll", "target_node_id": "rp1", "predicate": "PART_OF"},
+            {"source_node_id": "tin", "target_node_id": "rp1", "predicate": "INPUT_TO"},
+            {"source_node_id": "rp1", "target_node_id": "p", "predicate": "PART_OF"},
+        ],
+    }
+    # Siblings under the same anchor of the same kind, plus token near-duplicates anywhere.
+    labels = {
+        n["label"]
+        for n in resolution_candidates(graph, "component", "eight-channel DMA controller", "rp1")
+    }
+    assert labels == {"8-channel DMA controller", "PLL"}
+    assert resolution_candidates(graph, "component", "eight-channel DMA controller") == []
+    assert preferred_label("D0 stepping of the BCM2712 application processor", "BCM2712")
+    assert not preferred_label("Broadcom BCM2712", "BCM2712")  # short names are kept
+    assert not preferred_label("D0 stepping of the BCM2712 application processor", "the chip")
+
+
+class ResolvingProvider(PageProvider):
+    """Two pages describe RP1's DMA block in different words; the model says they match."""
+
+    name = "test_resolving"
+    bodies = {
+        "one": "Widget uses the RP1 chip. RP1 has an 8-channel DMA controller. RP1 contains a PLL.",
+        "two": "RP1 also has an eight-channel direct memory access (DMA) controller inside.",
+    }
+
+    def __init__(self):
+        super().__init__()
+        self.resolve_calls = []
+
+    async def search_pages(self, query, count, budget, **kwargs):
+        budget.charge("searches")
+        which = query.rsplit(" ", 1)[-1]
+        return [Page(url=f"https://example.org/{which}", title=which, body=self.bodies[which])]
+
+    async def resolve(self, product, items, budget):
+        from app.providers import ResolutionItem
+
+        self.resolve_calls.append(items)
+        out = []
+        for item in items:
+            match = next(
+                (c["index"] for c in item["candidates"] if "8-channel" in c["label"]), None
+            )
+            out.append(
+                ResolutionItem(
+                    index=item["index"],
+                    match=match,
+                    verdict="same" if match is not None else "different",
+                    rationale="same block, spelled out",
+                )
+            )
+        return out
+
+    async def analyze(self, target, product, company, url, title, body, budget):
+        self.analyzed.append(target["label"])
+        findings = []
+        if target["kind"] == "product" and url.endswith("one"):
+            findings = [
+                Finding("RP1", "component", "PART_OF", "Widget uses the RP1 chip", "stated")
+            ]
+        elif target["label"] == "RP1" and url.endswith("one"):
+            findings = [
+                Finding(
+                    "8-channel DMA controller",
+                    "component",
+                    "PART_OF",
+                    "RP1 has an 8-channel DMA controller",
+                    "a",
+                ),
+                Finding("PLL", "component", "PART_OF", "RP1 contains a PLL", "b"),
+            ]
+        elif target["label"] == "RP1":
+            findings = [
+                Finding(
+                    "eight-channel direct memory access (DMA) controller",
+                    "component",
+                    "PART_OF",
+                    "eight-channel direct memory access (DMA) controller inside",
+                    "paraphrase",
+                ),
+            ]
+        return Document(url, title, "example.org", body, findings=findings)
+
+
+@pytest.mark.parametrize("mode", ["merge", "flag"])
+async def test_model_resolution_merges_or_flags_paraphrase_duplicates(api, mode):
+    client, app = api
+    app.state.worker.settings = app.state.worker.settings.model_copy(
+        update={"model_resolution": mode}
+    )
+    provider = ResolvingProvider()
+    app.state.worker.provider = provider
+    run, graph = await researched(api, "Widget", limits={"max_hops": 3})
+    labels = {n["label"]: n for n in graph["nodes"]}
+    events = sse_events(await client.get(run["events_url"]))
+    # One resolution call, for the second RP1 page: the paraphrase had siblings to compare with,
+    # and the model saw only that short sibling list. Cross-document paraphrases are the case
+    # this exists for; within one document the extraction prompt asks for consistent labels.
+    assert len(provider.resolve_calls) == 1
+    item = provider.resolve_calls[0][0]
+    assert item["label"].startswith("eight-channel")
+    assert {c["label"] for c in item["candidates"]} <= {"8-channel DMA controller", "PLL"}
+    if mode == "merge":
+        assert "eight-channel direct memory access (DMA) controller" not in labels
+        dma = labels["8-channel DMA controller"]
+        assert "eight-channel direct memory access (DMA) controller" in dma["aliases"]
+        merged = [e["payload"] for e in events if e["type"] == "entity.merged"]
+        assert merged and merged[0]["resolver"] == "model" and merged[0]["node_id"] == dma["id"]
+        # Both spans became claims on one edge.
+        edge = next(e for e in graph["edges"] if e["source_node_id"] == dma["id"])
+        assert len(edge["claim_ids"]) == 2
+    else:
+        assert "eight-channel direct memory access (DMA) controller" in labels
+        reasons = [e["payload"]["reason"] for e in events if e["type"] == "entity.review_needed"]
+        assert any(r.startswith("model_unsure") for r in reasons)
+        assert not any(e["type"] == "entity.merged" for e in events)

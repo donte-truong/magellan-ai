@@ -28,6 +28,7 @@ from app.resolution import (
     normalize_label,
     part_tokens,
     record_identity,
+    resolution_candidates,
     resolve_entity,
     software_artifact,
     valid_relation,
@@ -761,6 +762,7 @@ class Worker:
                     state.record({"stage": "document", "url": page.url, "failure": failure})
                     invalid.append(page.url)
                     continue
+                await self.resolve_findings(workspace, run, target, document, budget, state)
                 committed = len(
                     self.commit_document(workspace, identifier, target, document, budget, state)
                 )
@@ -789,6 +791,97 @@ class Worker:
             )
             await asyncio.sleep(0)
         return found, docs
+
+    async def resolve_findings(self, workspace, run, target, document, budget, state):
+        """Ask the model whether labels about to become new nodes paraphrase existing ones.
+
+        Runs just before the document commits, against the current graph, with a bounded candidate
+        list per label. Decisions are hints: commit_document re-runs the deterministic rules first
+        and only uses a hint when they find nothing.
+        """
+        mode = self.settings.model_resolution
+        if mode == "off" or not hasattr(self.provider, "resolve"):
+            return
+        with self.db.transaction(workspace) as repo:
+            graph = repo.graph(run["graph_id"])
+        target_node = next((n for n in graph["nodes"] if n["id"] == target["id"]), None)
+        if target_node is None:
+            return
+        items, slots = [], []
+        for finding in document.findings:
+            if finding.rejection:
+                continue
+            object_label = finding.object_label or target_node["label"]
+            object_kind = finding.object_kind or target_node["kind"]
+            subject, s_review = resolve_entity(
+                graph, finding.kind, finding.label, finding.part_number, finding.manufacturer
+            )
+            if finding.object_label is None:
+                obj, o_review = target_node, None
+            else:
+                obj, o_review = resolve_entity(graph, object_kind, object_label)
+            if s_review or o_review:
+                continue  # identifier conflicts and ambiguity stay with the deterministic rules
+            for role, node, kind, label, ids in (
+                (
+                    "subject",
+                    subject,
+                    finding.kind,
+                    finding.label,
+                    (finding.part_number, finding.manufacturer),
+                ),
+                ("object", obj, object_kind, object_label, (None, None)),
+            ):
+                if node is not None:
+                    continue
+                anchor = obj if role == "subject" else subject
+                candidates = resolution_candidates(
+                    graph, kind, label, anchor["id"] if anchor else None
+                )
+                if not candidates:
+                    continue
+                items.append(
+                    {
+                        "index": len(items),
+                        "label": label,
+                        "kind": kind,
+                        "part_number": ids[0],
+                        "manufacturer": ids[1],
+                        "quote": finding.span[:300],
+                        "candidates": [
+                            {
+                                "index": i,
+                                "label": c["label"],
+                                "aliases": c.get("aliases", [])[:4],
+                                "external_ids": c.get("external_ids") or {},
+                            }
+                            for i, c in enumerate(candidates)
+                        ],
+                    }
+                )
+                slots.append((finding, role, candidates))
+        if not items:
+            return
+        try:
+            decisions = await self.provider.resolve(run["product"], items, budget)
+        except ProviderFailure as exc:
+            if exc.code != "model_output_invalid":
+                raise
+            return  # unresolved labels simply become new nodes, flagged by the token rule
+        for decision in decisions:
+            if not 0 <= decision.index < len(slots):
+                continue
+            finding, role, candidates = slots[decision.index]
+            if decision.verdict == "different" or decision.match is None:
+                continue
+            if not 0 <= decision.match < len(candidates):
+                continue
+            verdict = "same" if decision.verdict == "same" and mode == "merge" else "unsure"
+            finding.resolved[role] = {
+                "node_id": candidates[decision.match]["id"],
+                "verdict": verdict,
+                "rationale": decision.rationale,
+            }
 
     def ingest_upload(self, workspace, identifier, budget):
         with self.db.transaction(workspace) as repo:
@@ -1108,6 +1201,39 @@ class Worker:
                         obj, o_review = target_node, None
                     else:
                         obj, o_review = resolve_entity(graph, object_kind, object_label)
+                    hinted = []
+                    for role, node in (("subject", subject), ("object", obj)):
+                        hint = finding.resolved.get(role)
+                        if node is not None or not hint or s_review or o_review:
+                            continue
+                        kind = finding.kind if role == "subject" else object_kind
+                        match = next(
+                            (
+                                n
+                                for n in graph["nodes"]
+                                if n["id"] == hint["node_id"] and n["kind"] == kind
+                            ),
+                            None,
+                        )
+                        if match is None:
+                            continue
+                        if hint["verdict"] == "same":
+                            if role == "subject":
+                                subject = match
+                            else:
+                                obj = match
+                            hinted.append((role, match, hint))
+                        else:
+                            self.emit(
+                                repo,
+                                run,
+                                "entity.review_needed",
+                                {
+                                    "candidate_ids": [match["id"]],
+                                    "reason": f"model_unsure: '{finding.label if role == 'subject' else object_label}' "
+                                    f"may be '{match['label']}': {hint['rationale']}",
+                                },
+                            )
                     review = s_review or o_review
                     if review:
                         self.emit(
@@ -1217,6 +1343,18 @@ class Worker:
                     )
                     if finding.object_label:
                         record_identity(obj, finding.object_label)
+                    for role, match, hint in hinted:
+                        self.emit(
+                            repo,
+                            run,
+                            "entity.merged",
+                            {
+                                "node_id": match["id"],
+                                "alias": finding.label if role == "subject" else object_label,
+                                "resolver": "model",
+                                "rationale": hint["rationale"],
+                            },
+                        )
                     edge, claim = add_claim_edge(
                         repo,
                         graph,

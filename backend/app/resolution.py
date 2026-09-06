@@ -173,10 +173,48 @@ def near_duplicates(graph, kind, label, exclude_id=None):
     return found
 
 
+MAX_RESOLUTION_CANDIDATES = 12
+
+
+def resolution_candidates(graph, kind, label, anchor_id=None):
+    """Existing same-kind nodes a new label might paraphrase: token near-duplicates anywhere in
+    the graph, plus siblings that already relate to the same anchor (other parts of the same
+    whole, other makers of the same part). Bounded so the model sees a short list, not the graph."""
+    key = normalize_label(label)
+    found = {n["id"]: n for n in near_duplicates(graph, kind, label)}
+    if anchor_id:
+        nodes = {n["id"]: n for n in graph["nodes"]}
+        for edge in graph["edges"]:
+            sibling = nodes.get(edge["source_node_id"])
+            if (
+                edge["target_node_id"] == anchor_id
+                and sibling is not None
+                and sibling["kind"] == kind
+                and normalize_label(sibling["label"]) != key
+            ):
+                found.setdefault(sibling["id"], sibling)
+    return list(found.values())[:MAX_RESOLUTION_CANDIDATES]
+
+
+def preferred_label(current, candidate):
+    """Prefer a short identifier-bearing name ("BCM2712") over a long descriptive phrase
+    ("D0 stepping of the BCM2712 application processor") once both are evidenced."""
+    current_words, candidate_words = len(current.split()), len(candidate.split())
+    return (
+        current_words > 4
+        and candidate_words < current_words
+        and bool(part_tokens(normalize_label(candidate)))
+    )
+
+
 def record_identity(node, label, part_number=None, manufacturer=None):
     """Attach an evidence-backed alias and identifiers to a resolved node."""
     if normalize_label(label) != normalize_label(node["label"]) and label not in node["aliases"]:
-        node["aliases"].append(label)
+        if preferred_label(node["label"], label):
+            node["aliases"].append(node["label"])
+            node["label"] = label
+        else:
+            node["aliases"].append(label)
     ids = node.setdefault("external_ids", {})
     if part_number and not ids.get("mpn"):
         ids["mpn"] = part_number.strip()
