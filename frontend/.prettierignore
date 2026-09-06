@@ -6,3 +6,5 @@ test-results
 playwright-report
 coverage
 *.tsbuildinfo
+# Generated, compact geographic point data.
+public/assets/models/world-points.json
