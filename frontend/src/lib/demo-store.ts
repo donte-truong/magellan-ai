@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { suppliers as curatedSuppliers, type PartId, type Supplier } from "./demo-data";
 import type { DemoGraphSummary, DemoSite } from "./demo-graph";
+import type { Graph } from "./types";
 
 export type DemoStage = "input" | "bom" | "network";
 export const useDemo = create<{
@@ -18,8 +19,19 @@ export const useDemo = create<{
   view: "globe" | "graph";
   /** A graph node picked in the graph view; mirrors the pin when the node is a located site. */
   graphNode: string | null;
+  /** The full export shown in the graph view; replaced after live research or a scenario edit. */
+  fullGraph: Graph | null;
+  /** The base graph's id on the local backend, from the export's index; null when unknown. */
+  liveGraphId: string | null;
+  /** An active scenario (a fork of the base graph) whose id the views currently show. */
+  scenarioId: string | null;
+  /** A live request in flight, with a short status for the panel. */
+  busy: string | null;
   setView: (view: "globe" | "graph") => void;
   selectGraphNode: (node: string | null) => void;
+  setFullGraph: (graph: Graph | null) => void;
+  setLive: (liveGraphId: string | null, scenarioId: string | null) => void;
+  setBusy: (busy: string | null) => void;
   setGraph: (suppliers: DemoSite[], summary: DemoGraphSummary) => void;
   setGraphState: (graphState: "placeholder" | "loading" | "generated" | "unavailable") => void;
   setStage: (stage: DemoStage) => void;
@@ -40,8 +52,15 @@ export const useDemo = create<{
   graphState: "placeholder",
   view: "globe",
   graphNode: null,
+  fullGraph: null,
+  liveGraphId: null,
+  scenarioId: null,
+  busy: null,
   setView: (view) => set({ view }),
   selectGraphNode: (graphNode) => set({ graphNode }),
+  setFullGraph: (fullGraph) => set({ fullGraph }),
+  setLive: (liveGraphId, scenarioId) => set({ liveGraphId, scenarioId }),
+  setBusy: (busy) => set({ busy }),
   setGraph: (suppliers, summary) => set({ suppliers, summary, graphState: "generated" }),
   setGraphState: (graphState) => set({ graphState }),
   setStage: (stage) => set((s) => ({ stage, started: s.started || stage !== "input" })),

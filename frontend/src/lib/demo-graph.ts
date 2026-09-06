@@ -6,6 +6,7 @@
  */
 import type { PartId, Supplier } from "./demo-data";
 import { parts as curatedParts } from "./demo-data";
+import { api } from "./api";
 import type { Graph, Site, SiteMake, Sites } from "./types";
 
 export const DEMO_SLUG = "iphone-17-pro";
@@ -288,4 +289,12 @@ export async function downloadDemoGraph() {
   const response = await fetch(`${DEMO_DATA_PATH}/graph.json`);
   if (!response.ok) throw new Error("graph export unavailable");
   return response.blob();
+}
+
+/** Re-read a graph and its sites from the local backend (after live research or an edit). */
+export async function refreshLive(graphId: string, anchor: Supplier, index: DemoGraphIndex) {
+  const [graph, sites] = await Promise.all([api.graph(graphId), api.sites(graphId)]);
+  const records = sitesToSuppliers(sites, anchor);
+  const summary = summarize({ ...index, graph_id: graphId, stats: graph.stats }, sites, records);
+  return { graph, sites, records, summary };
 }

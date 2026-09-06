@@ -38,8 +38,8 @@ import {
   type DemoSite,
 } from "@/lib/demo-graph";
 import { kindLabels, nodeColors } from "@/lib/graph-layout";
-import type { Graph } from "@/lib/types";
 import { useDemo, type DemoStage } from "@/lib/demo-store";
+import { AskPanel } from "./ask-panel";
 import { useReducedMotion } from "@/lib/use-reduced-motion";
 
 const ProductScene = dynamic(() => import("./product-scene"), {
@@ -135,6 +135,7 @@ export function Experience() {
       }
       const records = sitesToSuppliers(data.sites, curatedSuppliers[0]);
       useDemo.getState().setGraph(records, summarize(data.index, data.sites, records));
+      useDemo.getState().setLive(data.index.graph_id, null);
     });
     return () => {
       mounted = false;
@@ -529,10 +530,11 @@ function NetworkStage({ headingRef }: HeadingProps) {
     setView,
     graphNode,
     selectGraphNode,
+    fullGraph,
+    setFullGraph,
   } = useDemo();
   const [query, setQuery] = useState("");
   const [exported, setExported] = useState(false);
-  const [fullGraph, setFullGraph] = useState<Graph | null>(null);
   const [graphFailed, setGraphFailed] = useState(false);
   const supplier = suppliers.find((s) => s.id === selected);
   const site = supplier && "role" in supplier ? (supplier as DemoSite) : null;
@@ -549,7 +551,7 @@ function NetworkStage({ headingRef }: HeadingProps) {
     return () => {
       mounted = false;
     };
-  }, [view, fullGraph, generatedGraph]);
+  }, [view, fullGraph, generatedGraph, setFullGraph]);
   const pickNode = (edge: string | null, node?: string | null) => {
     const id = node ?? null;
     selectGraphNode(id);
@@ -861,6 +863,7 @@ function NetworkStage({ headingRef }: HeadingProps) {
           </div>
         </div>
       )}
+      {generatedGraph && <AskPanel />}
       <div className="network-bottom">
         <div className="map-legend">
           <span>
