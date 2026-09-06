@@ -26,6 +26,7 @@ from app.resolution import (
     interface_feature,
     near_duplicates,
     normalize_label,
+    part_tokens,
     record_identity,
     resolve_entity,
     software_artifact,
@@ -651,7 +652,10 @@ class Worker:
         if len(body) <= 2000:
             return True
         text = body.casefold()
-        names = [run["product"], target["label"], *target.get("aliases", [])]
+        ids = target.get("external_ids") or {}
+        names = [run["product"], target["label"], ids.get("mpn"), *target.get("aliases", [])]
+        # A datasheet names the part number, not the descriptive label the graph carries.
+        names.extend(part_tokens(normalize_label(target["label"])))
         return any(name and name.casefold() in text for name in names)
 
     async def run_query(

@@ -593,3 +593,15 @@ async def test_software_is_rejected_variants_merge_by_maker_and_near_duplicates_
     assert any(r.startswith("near_duplicate") and "CYW43455 wireless module" in r for r in reviews)
     rejected = {e["payload"]["detail"] for e in events if e["type"] == "claim.rejected"}
     assert {"software", "interface"} <= rejected
+
+
+def test_relevance_gate_accepts_pages_that_name_only_the_part_number():
+    from app.worker import Worker
+
+    run = {"product": "Raspberry Pi 5"}
+    body = "CYW43455 single-chip 802.11ac Wi-Fi and Bluetooth combo. " * 60
+    assert Worker.relevant(body, run, {"label": "CYW43455 combo chip", "aliases": []})
+    assert Worker.relevant(
+        body, run, {"label": "Infineon Wi-Fi chip", "external_ids": {"mpn": "CYW43455"}}
+    )
+    assert not Worker.relevant(body, run, {"label": "BCM54213 Gigabit Ethernet PHY", "aliases": []})
