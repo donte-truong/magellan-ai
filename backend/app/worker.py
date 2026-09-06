@@ -23,9 +23,11 @@ from app.providers import Budget, BudgetExceeded, ProviderFailure, build_provide
 from app.resolution import (
     NON_DEPENDENCY_KINDS,
     RELATION_TYPES,
+    near_duplicates,
     normalize_label,
     record_identity,
     resolve_entity,
+    software_artifact,
     valid_relation,
 )
 from app.schemas import RunLimits
@@ -1051,6 +1053,10 @@ class Worker:
                     rejected = "predicate_invalid"
                 elif normalize_label(finding.label) == normalize_label(object_label):
                     rejected = "predicate_invalid"
+                elif finding.predicate in {"PART_OF", "INPUT_TO"} and (
+                    software_artifact(finding.label) or software_artifact(object_label)
+                ):
+                    rejected = "predicate_invalid"  # firmware, drivers, software are not parts
                 elif any(
                     kind == "product" and normalize_label(label) != normalize_label(root["label"])
                     for kind, label in ((finding.kind, finding.label), (object_kind, object_label))
@@ -1153,6 +1159,24 @@ class Worker:
                         break
                     previous_nodes = {n["id"]: deepcopy(n) for n in graph["nodes"]}
                     previous_edges = {e["id"] for e in graph["edges"]}
+                    for created_kind, created_label in (
+                        (finding.kind, finding.label) if subject is None else (None, None),
+                        (object_kind, object_label) if obj is None else (None, None),
+                    ):
+                        # Name variants that resolution refused to merge are flagged for review.
+                        similar = near_duplicates(graph, created_kind, created_label)
+                        if created_label is not None and similar:
+                            self.emit(
+                                repo,
+                                run,
+                                "entity.review_needed",
+                                {
+                                    "candidate_ids": [n["id"] for n in similar],
+                                    "reason": f"near_duplicate: new {created_kind} '{created_label}' "
+                                    "resembles "
+                                    + ", ".join(f"'{n['label']}'" for n in similar[:3]),
+                                },
+                            )
                     if subject is None:
                         subject = make_node(
                             finding.kind, finding.label, status=finding.support_label

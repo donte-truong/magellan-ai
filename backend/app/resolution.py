@@ -5,6 +5,7 @@ alias; a part number matches only with the same manufacturer and kind. Anything 
 is reported for review, never merged. Imported BOM hints are never consulted here.
 """
 
+import re
 import unicodedata
 
 # predicate -> (allowed subject kinds, allowed object kinds). Direction is literal:
@@ -39,17 +40,63 @@ def normalize_label(value):
     return " ".join(unicodedata.normalize("NFKC", value or "").casefold().split())
 
 
-def resolve_entity(graph, kind, label, part_number=None, manufacturer=None):
-    """Return (node, review_reason). node is None when nothing matches or the match is ambiguous."""
+SOFTWARE_PATTERN = re.compile(
+    r"(\.(bin|txt|clm_blob|dtbo?|ko|so|py|c|h|elf|img|hex|json|cfg|yaml|yml)$)"
+    r"|\b(driver|drivers|firmware|kernel module|software|package|library|bootloader|blob|sdk|api)\b",
+    re.IGNORECASE,
+)
+
+
+def software_artifact(label):
+    """Firmware, drivers, and other software are not parts or materials."""
+    return bool(SOFTWARE_PATTERN.search(label or ""))
+
+
+def strip_manufacturer(label, manufacturer):
+    """'Broadcom BCM2712' -> 'bcm2712' when the maker is known; otherwise the normalized label."""
     key = normalize_label(label)
+    maker = normalize_label(manufacturer)
+    if maker and key.startswith(maker + " "):
+        return key[len(maker) + 1 :]
+    return key
+
+
+def name_variants(label, manufacturer=None, node=None):
+    """Normalized forms a label may take: as given, and with a known maker prefix removed."""
+    variants = {normalize_label(label)}
+    makers = [manufacturer]
+    if node is not None:
+        makers.append((node.get("external_ids") or {}).get("manufacturer"))
+    for maker in makers:
+        if maker:
+            variants.add(strip_manufacturer(label, maker))
+    return variants
+
+
+def node_names(node):
+    """Normalized label, evidence-backed aliases, and the recorded part number."""
+    names = {normalize_label(node["label"])} | {normalize_label(a) for a in node.get("aliases", [])}
+    ids = node.get("external_ids") or {}
+    if ids.get("mpn"):
+        names.add(normalize_label(ids["mpn"]))
+    maker = ids.get("manufacturer")
+    if maker:
+        names.add(strip_manufacturer(node["label"], maker))
+    return names
+
+
+def resolve_entity(graph, kind, label, part_number=None, manufacturer=None):
+    """Return (node, review_reason). node is None when nothing matches or the match is ambiguous.
+
+    A label matches a node by normalized text, an evidence-backed alias, the node's recorded part
+    number, or the same text with a known manufacturer prefix removed (the maker must be recorded
+    on the node or stated by the finding). Containment alone never matches; see near_duplicates.
+    """
     candidates = []
     for node in graph["nodes"]:
         if node["kind"] != kind:
             continue
-        names = {normalize_label(node["label"])} | {
-            normalize_label(a) for a in node.get("aliases", [])
-        }
-        if key in names:
+        if name_variants(label, manufacturer, node) & node_names(node):
             candidates.append(node)
     if part_number and manufacturer:
         mpn, maker = part_number.strip(), normalize_label(manufacturer)
@@ -78,6 +125,36 @@ def resolve_entity(graph, kind, label, part_number=None, manufacturer=None):
     ):
         return None, "identifier_conflict"
     return node, None
+
+
+PART_TOKEN = re.compile(r"\b[a-z0-9]{4,}\b")
+
+
+def part_tokens(key):
+    """Part-number-like tokens: four or more alphanumerics including a digit (lpddr4x, bcm2712)."""
+    return {t for t in PART_TOKEN.findall(key) if any(c.isdigit() for c in t)}
+
+
+def near_duplicates(graph, kind, label, exclude_id=None):
+    """Same-kind nodes whose label contains, is contained by, or shares a part-number-like token
+    with this label. A review signal only; it never authorizes a merge."""
+    if label is None:
+        return []
+    key = normalize_label(label)
+    tokens = part_tokens(key)
+    found = []
+    for node in graph["nodes"]:
+        if node["kind"] != kind or node["id"] == exclude_id:
+            continue
+        other = normalize_label(node["label"])
+        if other == key:
+            continue
+        contained = (len(key) >= 3 and re.search(rf"\b{re.escape(key)}\b", other)) or (
+            len(other) >= 3 and re.search(rf"\b{re.escape(other)}\b", key)
+        )
+        if contained or (tokens & part_tokens(other)):
+            found.append(node)
+    return found
 
 
 def record_identity(node, label, part_number=None, manufacturer=None):

@@ -496,3 +496,88 @@ def test_rank_pages_prefers_expected_source_types_and_first_party_hosts():
         "https://www.ifixit.com/Teardown/Widget",
     ]
     assert ranked[-1].url == "https://shop.example.com/buy-widget"
+
+
+def test_name_variants_resolve_through_recorded_identifiers_and_flag_near_duplicates():
+    from app.resolution import near_duplicates, software_artifact
+
+    graph = {
+        "nodes": [
+            {
+                "id": "n1",
+                "kind": "component",
+                "label": "Broadcom BCM2712",
+                "aliases": [],
+                "external_ids": {"mpn": "BCM2712", "manufacturer": "Broadcom"},
+            },
+            {"id": "n2", "kind": "component", "label": "RP1", "aliases": [], "external_ids": {}},
+            {
+                "id": "n3",
+                "kind": "component",
+                "label": "LPDDR4X-4267 SDRAM",
+                "aliases": [],
+                "external_ids": {},
+            },
+        ]
+    }
+    # Bare part number resolves to the node that recorded it; a maker prefix stated by the
+    # finding is stripped; an unknown maker prefix does not match.
+    assert resolve_entity(graph, "component", "BCM2712")[0]["id"] == "n1"
+    assert (
+        resolve_entity(graph, "component", "Cypress RP1", manufacturer="Cypress")[0]["id"] == "n2"
+    )
+    assert resolve_entity(graph, "component", "Cypress RP1") == (None, None)
+    # Containment and shared part-number tokens are review signals, never merges.
+    assert [n["id"] for n in near_duplicates(graph, "component", "RP1 southbridge")] == ["n2"]
+    assert [n["id"] for n in near_duplicates(graph, "component", "LPDDR4X RAM")] == ["n3"]
+    assert near_duplicates(graph, "component", "Sony UK Technology Centre") == []
+    assert near_duplicates(graph, "material", "RP1") == []  # kind must match
+    assert software_artifact("brcmfmac43455-sdio.bin") and software_artifact("brcmfmac driver")
+    assert not software_artifact("Arm Cortex-A76 CPU cluster")
+
+
+class SoftwareProvider(PageProvider):
+    name = "test_software"
+
+    async def analyze(self, target, product, company, url, title, body, budget):
+        self.analyzed.append(target["label"])
+        findings = []
+        if target["kind"] == "product":
+            findings = [
+                Finding("CYW43455", "component", "PART_OF", "Widget contains tin", "stated"),
+                Finding(
+                    "brcmfmac driver", "component", "INPUT_TO", "Widget contains tin", "software"
+                ),
+                Finding(
+                    "Cypress CYW43455",
+                    "component",
+                    "PART_OF",
+                    "Tin is refined by Acme Smelting",
+                    "variant",
+                    manufacturer="Cypress",
+                ),
+                Finding(
+                    "CYW43455 wireless module",
+                    "component",
+                    "PART_OF",
+                    "Widget contains tin and a battery",
+                    "near duplicate",
+                ),
+            ]
+        return Document(url, title, "example.org", body, findings=findings)
+
+
+async def test_software_is_rejected_variants_merge_by_maker_and_near_duplicates_are_flagged(api):
+    client, app = api
+    app.state.worker.provider = SoftwareProvider()
+    run, graph = await researched(api, "Widget")
+    labels = {n["label"]: n for n in graph["nodes"]}
+    assert set(labels) == {"Widget", "CYW43455", "CYW43455 wireless module"}
+    # "Cypress CYW43455" merged into CYW43455 by stated maker prefix, recording the alias.
+    assert "Cypress CYW43455" in labels["CYW43455"]["aliases"]
+    events = sse_events(await client.get(run["events_url"]))
+    reviews = [e["payload"]["reason"] for e in events if e["type"] == "entity.review_needed"]
+    assert any(r.startswith("near_duplicate") and "CYW43455 wireless module" in r for r in reviews)
+    assert any(
+        e["type"] == "claim.rejected" and e["payload"]["detail"] == "software" for e in events
+    )
