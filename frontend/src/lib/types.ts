@@ -60,6 +60,10 @@ export interface GraphNode {
   id: string;
   kind: NodeKind;
   label: string;
+  canonical_name?: string;
+  aliases?: string[];
+  external_ids?: Record<string, string>;
+  flags?: string[];
   tier: number | null;
   status: SupportLabel;
   data: DataLayers;

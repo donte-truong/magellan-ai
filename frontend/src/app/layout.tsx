@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "@xyflow/react/dist/style.css";
 import "./globals.css";
 import "./experience.css";
+import "./research.css";
 
 export const metadata: Metadata = {
   title: "Magellan — A world within",

@@ -3,14 +3,11 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import {
   ArrowRight,
-  Box,
-  Check,
+  ArrowUpRight,
   ChevronDown,
-  Globe2,
-  Layers3,
   Search,
   ShieldCheck,
-  Sparkles,
+  Smartphone,
 } from "lucide-react";
 import { api, errorMessage } from "@/lib/api";
 import { useWorkspace } from "@/lib/store";
@@ -55,204 +52,139 @@ export function ProductForm() {
   }
 
   return (
-    <div className="start-view">
-      <div className="hero-heading">
-        <div className="eyebrow">
-          <span className="status-dot" /> PRODUCT INTELLIGENCE, FROM THE SOURCE
-        </div>
-        <h1>
-          See what goes into
-          <br />
-          <span>what comes next.</span>
-        </h1>
-        <p>
-          Start with a product. Uncover its components.
-          <br className="desktop-break" /> Follow the connections back to the evidence.
-        </p>
+    <section className="studio-start" aria-labelledby="start-title">
+      <div className="studio-constellation" aria-hidden="true">
+        <svg viewBox="0 0 1000 640" fill="none">
+          <defs>
+            <radialGradient id="start-glow">
+              <stop stopColor="#82bffc" stopOpacity=".13" />
+              <stop offset="1" stopColor="#82bffc" stopOpacity="0" />
+            </radialGradient>
+          </defs>
+          <ellipse cx="500" cy="300" rx="450" ry="290" fill="url(#start-glow)" />
+          <g className="constellation-lines">
+            <path d="M65 155 210 90 320 180 200 305 70 430 235 535 370 480M65 155 200 305 40 295M320 180 370 480M210 90 465 45 660 100 785 65 930 210 800 315 940 470 755 550 650 460M660 100 800 315 650 460M785 65 800 315M755 550 505 595 370 480M930 210 975 355 940 470" />
+          </g>
+          {[
+            [65, 155],
+            [210, 90],
+            [320, 180],
+            [200, 305],
+            [70, 430],
+            [235, 535],
+            [370, 480],
+            [40, 295],
+            [465, 45],
+            [660, 100],
+            [785, 65],
+            [930, 210],
+            [800, 315],
+            [940, 470],
+            [755, 550],
+            [650, 460],
+            [505, 595],
+            [975, 355],
+          ].map(([cx, cy], i) => (
+            <circle
+              key={i}
+              cx={cx}
+              cy={cy}
+              r={i % 3 === 0 ? 4 : 2.5}
+              className="constellation-point"
+              style={{ animationDelay: `${i * 0.31}s` }}
+            />
+          ))}
+        </svg>
       </div>
-      <div className="start-grid">
-        <section className="product-card" aria-labelledby="form-title">
-          <div className="section-kicker">
-            <span className="square-icon">
-              <Search size={19} />
-            </span>
-            <span>START AN EXPLORATION</span>
-          </div>
-          <h2 id="form-title">What are you curious about?</h2>
-          <p className="muted">A specific product makes a good starting point.</p>
-          <form onSubmit={submit}>
-            <label htmlFor="product">
-              Product name <span className="required-dot">*</span>
+      <div className="studio-start-content">
+        <span className="studio-eyebrow">
+          <span className="studio-status-dot" /> YOUR NEXT DISCOVERY STARTS HERE
+        </span>
+        <h1 id="start-title">
+          Every product has
+          <br />
+          <span>a story beneath it.</span>
+        </h1>
+        <p>Trace its parts. Meet its makers. Follow the evidence.</p>
+        <form className="studio-product-form" onSubmit={submit}>
+          <div className="studio-product-input">
+            <Search size={21} />
+            <label htmlFor="product" className="sr-only">
+              Product name
             </label>
-            <div className="input-with-icon">
-              <Box size={19} />
-              <input
-                id="product"
-                ref={inputRef}
-                placeholder="e.g. Raspberry Pi 5"
-                value={product}
-                onChange={(event) => setProduct(event.target.value)}
-                maxLength={200}
-                required
-                disabled={busy}
-                autoComplete="off"
-              />
-            </div>
-            <details className="company-details">
-              <summary>
-                Add a company <span>Optional</span>
-                <ChevronDown size={14} />
-              </summary>
-              <label htmlFor="company" className="sr-only">
-                Company name
-              </label>
-              <input
-                id="company"
-                placeholder="e.g. Raspberry Pi"
-                value={company}
-                onChange={(event) => setCompany(event.target.value)}
-                maxLength={200}
-                disabled={busy}
-              />
-            </details>
-            <button
-              className="button button-primary submit-button"
-              disabled={busy || !product.trim()}
-              type="submit"
-            >
+            <input
+              id="product"
+              ref={inputRef}
+              placeholder="Which product will you explore?"
+              value={product}
+              onChange={(event) => setProduct(event.target.value)}
+              maxLength={200}
+              required
+              disabled={busy}
+              autoComplete="off"
+            />
+            <button className="studio-primary" disabled={busy || !product.trim()} type="submit">
               {busy ? (
                 <Spinner label="Starting exploration" />
               ) : (
                 <>
-                  <span>Deconstruct product</span>
-                  <ArrowRight size={18} />
+                  <span>Explore</span>
+                  <ArrowRight size={17} />
                 </>
               )}
             </button>
-            {error && <ErrorNotice message={error} />}
-          </form>
-          <div className="sample-row">
-            <span>Try an example</span>
+          </div>
+          <details className="studio-company">
+            <summary>
+              Add a company <span>Optional</span>
+              <ChevronDown size={13} />
+            </summary>
+            <label htmlFor="company" className="sr-only">
+              Company name
+            </label>
+            <input
+              id="company"
+              placeholder="Company or manufacturer"
+              value={company}
+              onChange={(event) => setCompany(event.target.value)}
+              maxLength={200}
+              disabled={busy}
+            />
+          </details>
+          {error && <ErrorNotice message={error} />}
+        </form>
+        <div className="studio-examples">
+          <span>Start with</span>
+          {["Raspberry Pi 5", "Framework Laptop 13"].map((name) => (
             <button
+              key={name}
               disabled={busy}
               onClick={() => {
-                setProduct("Raspberry Pi 5");
+                setProduct(name);
                 setCompany("");
                 setError(null);
                 inputRef.current?.focus();
               }}
             >
-              Raspberry Pi 5 <ArrowUpSmall />
+              {name}
+              <ArrowUpRight size={12} />
             </button>
-          </div>
-          <div className="form-footer">
-            <ShieldCheck size={15} />
-            <span>Public sources. Traceable claims. Visible uncertainty.</span>
-          </div>
-        </section>
-        <NetworkPreview />
+          ))}
+        </div>
+        <a className="studio-demo-link" href="/demo">
+          <span className="studio-demo-icon">
+            <Smartphone size={18} />
+          </span>
+          <span>
+            Just looking around?
+            <strong>
+              Explore the iPhone demo <ArrowRight size={14} />
+            </strong>
+          </span>
+        </a>
       </div>
-      <div className="value-row">
-        <div>
-          <span className="value-icon">
-            <Layers3 size={20} />
-          </span>
-          <section>
-            <h3>Break it down</h3>
-            <p>From finished product to the parts inside.</p>
-          </section>
-        </div>
-        <div>
-          <span className="value-icon">
-            <Globe2 size={20} />
-          </span>
-          <section>
-            <h3>Connect the dots</h3>
-            <p>Explore how the supply network fits together.</p>
-          </section>
-        </div>
-        <div>
-          <span className="value-icon">
-            <ShieldCheck size={20} />
-          </span>
-          <section>
-            <h3>Check the evidence</h3>
-            <p>Every relationship has a source to inspect.</p>
-          </section>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function ArrowUpSmall() {
-  return <ArrowRight size={13} className="sample-arrow" />;
-}
-
-function NetworkPreview() {
-  return (
-    <section
-      className="network-preview"
-      aria-label="Illustration of product, component, and material connections"
-    >
-      <div className="preview-top">
-        <span>
-          <span className="status-dot" /> A CLEARER PICTURE
-        </span>
-        <span className="preview-pill">From product to provenance</span>
-      </div>
-      <div className="preview-graph" aria-hidden="true">
-        <svg className="preview-lines" viewBox="0 0 520 280" preserveAspectRatio="none">
-          <path d="M130 142 C220 142 190 55 282 55 M130 142 C220 142 190 142 282 142 M130 142 C220 142 190 229 282 229 M360 55 C415 55 390 96 455 96 M360 142 C415 142 390 96 455 96 M360 229 C415 229 390 191 455 191" />
-          <path className="line-highlight" d="M130 142 C220 142 190 142 282 142" />
-        </svg>
-        <div className="preview-node preview-root">
-          <Box size={24} />
-          <span>Your product</span>
-          <small>THE STARTING POINT</small>
-        </div>
-        <div className="preview-node preview-component preview-one">
-          <span className="mini-node-dot" />
-          Component
-          <span className="node-check">
-            <Check size={11} />
-          </span>
-        </div>
-        <div className="preview-node preview-component preview-two">
-          <span className="mini-node-dot" />
-          Component
-          <span className="node-check">
-            <Check size={11} />
-          </span>
-        </div>
-        <div className="preview-node preview-component preview-three">
-          <span className="mini-node-dot" />
-          Component
-          <span className="node-check">
-            <Check size={11} />
-          </span>
-        </div>
-        <div className="preview-material material-one">
-          <span />
-          <small>Material</small>
-        </div>
-        <div className="preview-material material-two">
-          <span />
-          <small>Material</small>
-        </div>
-        <div className="preview-evidence">
-          <ShieldCheck size={13} />
-          <span>Evidence at every connection</span>
-        </div>
-      </div>
-      <div className="preview-bottom">
-        <Sparkles size={16} />
-        <p>
-          Complex supply chains.
-          <br />
-          <strong>A little more clarity.</strong>
-        </p>
-        <span className="preview-caption">ILLUSTRATIVE NETWORK</span>
+      <div className="studio-start-caption">
+        <ShieldCheck size={14} /> Public sources. Connections you can inspect.
       </div>
     </section>
   );

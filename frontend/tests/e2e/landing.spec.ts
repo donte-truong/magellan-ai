@@ -89,7 +89,7 @@ test("landing reveals the product, explores the globe, and opens the demo", asyn
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(
     page.viewportSize()!.width,
   );
-  await page.getByRole("link", { name: "Explore your first product" }).click();
+  await page.getByRole("link", { name: "iPhone Demo" }).click();
   await expect(page.getByLabel("Product name")).toHaveValue("iPhone 17 Pro");
   await page.getByRole("button", { name: "Deconstruct product", exact: true }).click();
   await expect(page.locator(".component-select")).toHaveCount(6);

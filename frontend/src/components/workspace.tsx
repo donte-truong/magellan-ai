@@ -2,24 +2,26 @@
 
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
+import Link from "next/link";
 import {
   ArrowDownToLine,
-  ArrowLeft,
   ArrowRight,
+  ArrowUpRight,
   Box,
   Check,
   ChevronRight,
   Clock3,
   Compass,
   FileText,
+  GitBranch,
   Layers3,
   LoaderCircle,
-  Network,
+  Menu,
   Plus,
   ShieldCheck,
   Square,
-  X,
 } from "lucide-react";
+import { MagellanMark } from "./magellan-mark";
 import { api, errorMessage } from "@/lib/api";
 import { useWorkspace } from "@/lib/store";
 import { useResearch } from "@/lib/use-research";
@@ -27,7 +29,7 @@ import { isActive, type Run } from "@/lib/types";
 import { BOMView } from "./bom-view";
 import { EvidencePanel } from "./evidence-panel";
 import { ProductForm } from "./product-form";
-import { Brand, ErrorNotice, Spinner, Stepper } from "./ui";
+import { ErrorNotice, Spinner } from "./ui";
 
 const NetworkView = dynamic(() => import("./network-view").then((module) => module.NetworkView), {
   ssr: false,
@@ -45,7 +47,7 @@ export function Workspace() {
   const [recentError, setRecentError] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
   const [action, setAction] = useState<string | null>(null);
-  const [showInfo, setShowInfo] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [recentRetry, setRecentRetry] = useState(0);
   const active = isActive(run?.status);
   const hasInspector = Boolean(graph && (selectedEdge || selectedNode));
@@ -65,6 +67,10 @@ export function Workspace() {
   }, [run?.id, run?.status, recentRetry]);
 
   useEffect(() => {
+    if (window.location.pathname === "/" && ["#network", "#bom"].includes(window.location.hash)) {
+      window.location.replace(`/demo${window.location.hash}`);
+      return;
+    }
     const runId = new URL(window.location.href).searchParams.get("run");
     if (!runId || !/^run_[a-zA-Z0-9_-]+$/.test(runId)) return;
     const controller = new AbortController();
@@ -90,10 +96,12 @@ export function Workspace() {
   }, [run]);
 
   async function openRecent(run: Run) {
+    setSidebarOpen(false);
     setActionError(null);
     useWorkspace.getState().begin(run);
   }
   function newExploration() {
+    setSidebarOpen(false);
     reset();
     setActionError(null);
     const url = new URL(window.location.href);
@@ -149,338 +157,283 @@ export function Workspace() {
   }
 
   return (
-    <div className="app-shell">
-      <a className="skip-link" href="#main-content">
+    <div className={`studio ${hasInspector ? "studio-inspecting" : ""}`}>
+      <a className="experience-skip" href="#main-content">
         Skip to exploration
       </a>
-      <aside className="sidebar">
-        <button className="brand-link" onClick={newExploration} aria-label="Magellan home">
-          <Brand />
-        </button>
-        <div className="workspace-label">
-          <span className="workspace-avatar">M</span>
-          <span>
-            My workspace<small>Product research</small>
-          </span>
-          <ShieldCheck size={15} />
-        </div>
-        <div className="sidebar-section-label">WORKSPACE</div>
-        <button
-          className="sidebar-nav active"
-          onClick={() => (run ? setStage("bom") : newExploration())}
-        >
-          <Compass size={18} />
-          Explorations<span>{recent.length || ""}</span>
-        </button>
-        <button className="new-exploration" onClick={newExploration}>
-          <Plus size={16} />
-          New exploration
-        </button>
-        <div className="recent-heading">
-          <span className="sidebar-section-label">RECENT EXPLORATIONS</span>
-          <Clock3 size={13} />
-        </div>
-        <div className="recent-list">
-          {recent.slice(0, 4).map((item) => (
-            <button
-              key={item.id}
-              className={run?.id === item.id ? "recent-active" : ""}
-              onClick={() => openRecent(item)}
-            >
-              <Box size={15} />
-              <span>
-                {item.product}
-                <small>
-                  {isActive(item.status)
-                    ? "Research in progress"
-                    : item.status === "cancelled"
-                      ? "Research stopped"
-                      : "Saved exploration"}
-                </small>
-              </span>
-              {isActive(item.status) ? (
-                <span className="status-dot pulse" />
-              ) : (
-                <ChevronRight size={13} />
-              )}
-            </button>
-          ))}
-          {recent.length === 0 && !recentError && (
-            <p className="sidebar-empty">
-              Your explorations will
-              <br />
-              find a home here.
-            </p>
-          )}
-          {recentError && (
-            <button className="recent-retry" onClick={() => setRecentRetry((v) => v + 1)}>
-              Reconnect to recent explorations <ArrowRight size={13} />
-            </button>
-          )}
-        </div>
-        <div className="sidebar-bottom">
-          <div className="sidebar-note">
-            <span className="sidebar-note-icon">
-              <ShieldCheck size={18} />
-            </span>
-            <strong>Clarity, with receipts.</strong>
-            <p>
-              Every connection leads back
-              <br />
-              to the evidence behind it.
-            </p>
-          </div>
-          <button className="about-button" onClick={() => setShowInfo(true)}>
-            <span className="help-icon">?</span>About this workspace
-            <ArrowRight size={14} />
-          </button>
-          <div className="sidebar-footer">
-            <span className="status-dot" />
-            PUBLIC-SOURCE INTELLIGENCE
-          </div>
-        </div>
-      </aside>
-      <div className="main-shell">
-        <header className="topbar">
-          <div className="mobile-brand">
-            <Brand compact />
-          </div>
-          <div className="breadcrumb">
-            <Compass size={15} />
-            <span>Explorations</span>
-            <ChevronRight size={13} />
-            <strong>{run?.product ?? "New exploration"}</strong>
-          </div>
-          <span className="workspace-status">
-            <span className="status-dot" />
-            Research workspace
-          </span>
+      <header className="studio-header">
+        <div className="studio-header-start">
           <button
-            className="mobile-new icon-button"
-            onClick={newExploration}
-            aria-label="New exploration"
+            className="studio-icon studio-menu"
+            aria-label="Toggle explorations"
+            aria-expanded={sidebarOpen}
+            onClick={() => setSidebarOpen(!sidebarOpen)}
           >
-            <Plus size={18} />
+            <Menu size={19} />
           </button>
-        </header>
-        <main
-          id="main-content"
-          className={`main-content ${stage !== "input" ? "results-content" : ""}`}
-        >
-          <div className="page-topline">
-            <span className="section-kicker">
-              <Compass size={15} />
-              SUPPLY CHAIN EXPLORER
-            </span>
-            <span className="mvp-label">An open view of what’s inside</span>
-          </div>
-          <Stepper
-            step={stage === "input" ? 0 : stage === "bom" ? 1 : 2}
-            canNavigate={Boolean(graph)}
-            onChange={(index) => setStage(index === 0 ? "input" : index === 1 ? "bom" : "network")}
+          <Link className="experience-brand" href="/home" aria-label="Magellan home">
+            <MagellanMark />
+            <span>Magellan</span>
+          </Link>
+          <span className="studio-header-divider" />
+          <span className="studio-header-label">Explorer</span>
+        </div>
+        <nav aria-label="Main navigation">
+          <Link href="/home">Discover</Link>
+          <Link href="/demo">
+            iPhone Demo <ArrowUpRight size={13} />
+          </Link>
+        </nav>
+        <div className="studio-workspace-badge">
+          <span className="studio-status-dot" />
+          Personal Workspace
+        </div>
+      </header>
+      <div className="studio-body">
+        {sidebarOpen && (
+          <button
+            className="studio-sidebar-scrim"
+            aria-label="Close explorations"
+            onClick={() => setSidebarOpen(false)}
           />
+        )}
+        <aside
+          className={`studio-sidebar ${sidebarOpen ? "is-open" : ""}`}
+          aria-label="Explorations"
+        >
+          <button className="studio-new" onClick={newExploration}>
+            <Plus size={16} />
+            New Exploration<span>↗</span>
+          </button>
+          <div className="studio-sidebar-label">
+            <span>YOUR EXPLORATIONS</span>
+            <Clock3 size={12} />
+          </div>
+          <div className="studio-recent">
+            {recent.map((item) => (
+              <button
+                key={item.id}
+                className={run?.id === item.id ? "is-active" : ""}
+                onClick={() => openRecent(item)}
+              >
+                <span className="studio-recent-icon">
+                  <GitBranch size={16} />
+                </span>
+                <span>
+                  <strong>{item.product}</strong>
+                  <small>
+                    {isActive(item.status)
+                      ? "Researching"
+                      : item.status === "cancelled"
+                        ? "Stopped"
+                        : new Date(item.created_at).toLocaleDateString(undefined, {
+                            month: "short",
+                            day: "numeric",
+                          })}
+                  </small>
+                </span>
+                <ChevronRight size={12} />
+              </button>
+            ))}
+            {!recent.length && !recentError && (
+              <p className="studio-sidebar-empty">
+                A place for everything
+                <br />
+                you discover.
+              </p>
+            )}
+            {recentError && (
+              <button className="studio-reconnect" onClick={() => setRecentRetry((v) => v + 1)}>
+                Reconnect to explorations
+                <ArrowRight size={14} />
+              </button>
+            )}
+          </div>
+          {run && graph && (
+            <div className="studio-summary">
+              <div className="studio-sidebar-label">IN THIS EXPLORATION</div>
+              <div>
+                <span>
+                  <Box size={14} />
+                  Entities
+                </span>
+                <strong>{graph.nodes.length}</strong>
+              </div>
+              <div>
+                <span>
+                  <GitBranch size={14} />
+                  Connections
+                </span>
+                <strong>{graph.edges.length}</strong>
+              </div>
+              <div>
+                <span>
+                  <FileText size={14} />
+                  Documents Read
+                </span>
+                <strong>{run.usage.documents}</strong>
+              </div>
+              <div>
+                <span>
+                  <Layers3 size={14} />
+                  Supply Tiers
+                </span>
+                <strong>{graph.stats.max_tier}</strong>
+              </div>
+            </div>
+          )}
+          <div className="studio-sidebar-bottom">
+            <Compass size={23} />
+            <p>
+              A little curiosity.
+              <br />
+              <span>A much bigger picture.</span>
+            </p>
+            <Link href="/demo">
+              Take the guided demo
+              <ArrowUpRight size={13} />
+            </Link>
+          </div>
+        </aside>
+        <main id="main-content" className={`studio-main ${run ? "has-research" : ""}`}>
           {actionError && <ErrorNotice message={actionError} />}
-          {stage === "input" ? (
+          {!run ? (
             <ProductForm />
           ) : (
-            run && (
-              <>
-                <div className="product-header">
-                  <div className="product-heading-group">
-                    <button
-                      className="icon-button back-button"
-                      onClick={stage === "network" ? () => setStage("bom") : newExploration}
-                      aria-label={
-                        stage === "network"
-                          ? "Back to bill of materials"
-                          : "Start a new exploration"
-                      }
-                    >
-                      <ArrowLeft size={19} />
-                    </button>
-                    <span className="product-avatar">
-                      <Box size={27} />
-                    </span>
-                    <div>
-                      <div className="product-header-eyebrow">EXPLORING THE SUPPLY CHAIN</div>
-                      <h1>{run.product}</h1>
-                      {run.company && <p>{run.company}</p>}
-                    </div>
-                  </div>
-                  <div className="product-header-actions">
-                    {run.provider === "curated_fixture" && (
-                      <span
-                        className="fixture-badge"
-                        title="This exploration uses a curated set of public-source excerpts."
-                      >
-                        Curated example
-                      </span>
-                    )}
-                    {run.mode === "replay" && <span className="fixture-badge">Replay</span>}
-                    <button
-                      className="button button-secondary export-button"
-                      onClick={download}
-                      disabled={!graph || action === "export"}
-                    >
-                      <ArrowDownToLine size={15} />
-                      {action === "export" ? "Exporting…" : "Export JSON"}
-                    </button>
-                  </div>
+            <>
+              <div className="studio-research-heading">
+                <div>
+                  <span className="studio-eyebrow">SUPPLY CHAIN EXPLORATION</span>
+                  <h1>{run.product}</h1>
+                  {run.company && <p>{run.company}</p>}
                 </div>
-                <div
-                  className={`research-status ${run.status === "failed" ? "research-failed" : ""}`}
-                  aria-live="polite"
-                >
-                  <span className="research-status-icon">
-                    {active ? (
-                      <LoaderCircle className="spin" size={17} />
-                    ) : run.status === "failed" ? (
-                      <X size={17} />
-                    ) : (
-                      <Check size={17} />
-                    )}
-                  </span>
-                  <div>
-                    <strong>
-                      {run.status === "awaiting_input"
-                        ? "A quick clarification before we continue"
-                        : active
-                          ? "Following sources and connecting the parts"
-                          : run.status === "failed"
-                            ? "Research couldn’t finish"
-                            : run.status === "cancelled"
-                              ? "Research stopped. Your findings are saved."
-                              : "Exploration ready. Every finding has a source."}
-                    </strong>
-                    <span>
-                      {active
-                        ? `${run.usage.documents} documents examined · New findings appear automatically`
-                        : run.status === "partial"
-                          ? "Some branches remain unresolved. Review the open questions below."
-                          : "Select a component or a connection to look closer."}
-                    </span>
-                  </div>
-                  {active && (
-                    <button
-                      className="text-button cancel-button"
-                      onClick={cancel}
-                      disabled={Boolean(action)}
-                    >
-                      <Square size={12} />
-                      {action === "cancel" ? "Stopping…" : "Stop research"}
-                    </button>
+                <div className="studio-research-actions">
+                  {run.provider === "curated_fixture" && (
+                    <span className="studio-tag">Curated Example</span>
                   )}
-                </div>
-                {syncError && <ErrorNotice message={syncError} retry={refresh} />}
-                {run.pending_questions.map((question) => (
-                  <section className="clarification-card" key={question.question_id}>
-                    <h2>{question.prompt}</h2>
-                    <div>
-                      {question.choices.map((choice) => (
-                        <button
-                          className="button button-secondary"
-                          key={choice.id}
-                          onClick={() => answer(question.question_id, choice.id)}
-                          disabled={Boolean(action)}
-                        >
-                          {choice.label}
-                          <ArrowRight size={15} />
-                        </button>
-                      ))}
-                    </div>
-                  </section>
-                ))}
-                <div className="view-tabs" aria-label="Exploration views">
+                  {run.mode === "replay" && <span className="studio-tag">Replay</span>}
                   <button
-                    onClick={() => setStage("bom")}
+                    className="studio-secondary"
+                    onClick={download}
+                    disabled={!graph || action === "export"}
+                  >
+                    <ArrowDownToLine size={15} />
+                    <span>{action === "export" ? "Exporting…" : "Export JSON"}</span>
+                  </button>
+                </div>
+              </div>
+              <div className="studio-viewbar">
+                <nav aria-label="Research views">
+                  <button
+                    className={stage === "network" ? "is-active" : ""}
+                    aria-pressed={stage === "network"}
+                    onClick={() => setStage("network")}
+                  >
+                    <GitBranch size={16} />
+                    Network
+                  </button>
+                  <button
+                    className={stage === "bom" ? "is-active" : ""}
                     aria-pressed={stage === "bom"}
-                    className={stage === "bom" ? "active" : ""}
+                    onClick={() => setStage("bom")}
                   >
                     <Layers3 size={16} />
-                    Bill of materials{graph && <span>{bom?.items.length ?? 0}</span>}
+                    Bill of Materials<span>{bom?.items.length ?? 0}</span>
                   </button>
-                  <button
-                    onClick={() => setStage("network")}
-                    disabled={!graph}
-                    aria-pressed={stage === "network"}
-                    className={stage === "network" ? "active" : ""}
-                  >
-                    <Network size={16} />
-                    Network overlay
-                  </button>
-                  <span className="revision-label">
-                    {graph ? `REV ${String(graph.revision).padStart(2, "0")}` : "CONNECTING"}
-                  </span>
-                </div>
-                <div className={`exploration-layout ${hasInspector ? "with-inspector" : ""}`}>
-                  <div className="exploration-main">
-                    {stage === "bom" ? <BOMView /> : <NetworkView />}
+                </nav>
+                <span className={`studio-run-status ${active ? "is-live" : ""}`} role="status">
+                  {active ? (
+                    <LoaderCircle className="spin" size={13} />
+                  ) : run.status === "completed" ? (
+                    <Check size={13} />
+                  ) : (
+                    <span className="studio-status-dot" />
+                  )}
+                  {run.status === "awaiting_input"
+                    ? "Needs Your Input"
+                    : active
+                      ? "Following Sources"
+                      : run.status === "partial"
+                        ? "Partial Findings"
+                        : run.status === "failed"
+                          ? "Research Interrupted"
+                          : run.status === "cancelled"
+                            ? "Research Stopped"
+                            : "Research Complete"}
+                  {active && (
+                    <button onClick={cancel} disabled={Boolean(action)} aria-label="Stop research">
+                      <Square size={12} />
+                    </button>
+                  )}
+                </span>
+              </div>
+              {syncError && <ErrorNotice message={syncError} retry={refresh} />}
+              {run.pending_questions.map((question) => (
+                <section className="studio-clarification" key={question.question_id}>
+                  <div>
+                    <Compass size={21} />
+                    <div>
+                      <h2>A quick clarification before we continue</h2>
+                      <p>{question.prompt}</p>
+                    </div>
                   </div>
-                  {hasInspector && <EvidencePanel />}
-                </div>
-              </>
-            )
+                  <div>
+                    {question.choices.map((choice) => (
+                      <button
+                        className="studio-secondary"
+                        key={choice.id}
+                        disabled={Boolean(action)}
+                        onClick={() => answer(question.question_id, choice.id)}
+                      >
+                        {choice.label}
+                        <ArrowRight size={14} />
+                      </button>
+                    ))}
+                  </div>
+                </section>
+              ))}
+              <div className="studio-results">
+                {stage === "bom" ? (
+                  <BOMView />
+                ) : graph ? (
+                  <NetworkView />
+                ) : (
+                  <div className="studio-graph-loading">
+                    <MagellanMark />
+                    <Spinner label="Opening your exploration" />
+                  </div>
+                )}
+              </div>
+              {run.open_questions.length > 0 && (
+                <details className="studio-questions">
+                  <summary>
+                    <span>
+                      <ShieldCheck size={14} />
+                      Open Questions<span>{run.open_questions.length}</span>
+                    </span>
+                    <ChevronRight size={15} />
+                  </summary>
+                  <ul>
+                    {run.open_questions.map((question, i) => (
+                      <li key={i}>{question}</li>
+                    ))}
+                  </ul>
+                </details>
+              )}
+              <footer className="studio-result-footer">
+                <span>
+                  <ShieldCheck size={12} />
+                  Built on public evidence
+                </span>
+                <span>
+                  {graph?.nodes.length ?? 0} entities · {graph?.edges.length ?? 0} connections
+                </span>
+              </footer>
+            </>
           )}
-          <footer className="main-footer">
-            <span>Magellan</span>
-            <p>Follow the parts. Find the bigger picture.</p>
-            <span>
-              Built on public evidence <ShieldCheck size={12} />
-            </span>
-          </footer>
         </main>
+        {hasInspector && <EvidencePanel />}
       </div>
-      {showInfo && <AboutDialog close={() => setShowInfo(false)} />}
     </div>
-  );
-}
-
-function AboutDialog({ close }: { close: () => void }) {
-  useEffect(() => {
-    const dialog = document.querySelector<HTMLDialogElement>("#about-dialog");
-    dialog?.showModal();
-    return () => dialog?.close();
-  }, []);
-  return (
-    <dialog
-      id="about-dialog"
-      className="about-dialog"
-      onCancel={close}
-      onClick={(event) => {
-        if (event.target === event.currentTarget) close();
-      }}
-    >
-      <div className="about-dialog-heading">
-        <Brand />
-        <button className="icon-button" onClick={close} aria-label="Close about dialog" autoFocus>
-          <X size={20} />
-        </button>
-      </div>
-      <span className="eyebrow">A LITTLE CONTEXT</span>
-      <h2>Explore what you can verify.</h2>
-      <p>
-        Magellan turns a product name into an evidence-backed bill of materials and an explorable
-        supply network.
-      </p>
-      <div className="about-feature">
-        <FileText size={20} />
-        <p>
-          <strong>Sources, not certainty.</strong> Claims carry exact source excerpts and support
-          labels. A gap in evidence is an open question.
-        </p>
-      </div>
-      <div className="about-feature">
-        <ShieldCheck size={20} />
-        <p>
-          <strong>A clear starting point.</strong> The Raspberry Pi 5 example uses curated
-          manufacturer sources. Other products depend on the research sources available to this
-          workspace.
-        </p>
-      </div>
-      <button className="button button-primary" onClick={close}>
-        Let’s explore
-        <ArrowRight size={16} />
-      </button>
-    </dialog>
   );
 }

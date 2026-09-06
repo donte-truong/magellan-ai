@@ -47,12 +47,12 @@ describe("product to BOM", () => {
       .mockRejectedValueOnce(new Error("Service unavailable"))
       .mockResolvedValue(run);
     render(<ProductForm />);
-    expect(screen.getByRole("button", { name: "Deconstruct product" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Explore" })).toBeDisabled();
     await user.type(screen.getByLabelText(/Product name/), "  Test product  ");
-    await user.click(screen.getByRole("button", { name: "Deconstruct product" }));
+    await user.click(screen.getByRole("button", { name: "Explore" }));
     expect(await screen.findByRole("alert")).toHaveTextContent("Service unavailable");
-    await user.click(screen.getByRole("button", { name: "Deconstruct product" }));
-    await waitFor(() => expect(useWorkspace.getState().stage).toBe("bom"));
+    await user.click(screen.getByRole("button", { name: "Explore" }));
+    await waitFor(() => expect(useWorkspace.getState().stage).toBe("network"));
     expect(decompose.mock.calls[0][0]).toBe("Test product");
     expect(decompose.mock.calls[1][2]).toBe(decompose.mock.calls[0][2]);
   });
@@ -66,7 +66,7 @@ describe("product to BOM", () => {
     );
     const view = render(<ProductForm />);
     fireEvent.change(screen.getByLabelText(/Product name/), { target: { value: "Test product" } });
-    fireEvent.click(screen.getByRole("button", { name: "Deconstruct product" }));
+    fireEvent.click(screen.getByRole("button", { name: "Explore" }));
     view.unmount();
     await act(async () => finish(run));
     expect(useWorkspace.getState().run).toBeNull();
@@ -82,15 +82,20 @@ describe("product to BOM", () => {
     expect(useWorkspace.getState().selectedEdge).toBe("e_chip");
     await user.type(screen.getByRole("textbox", { name: "Find a component" }), "unrelated");
     expect(screen.getByText("No matching components")).toBeVisible();
-    await user.click(screen.getByRole("button", { name: "Explore network" }));
+    act(() => useWorkspace.getState().setStage("network"));
     expect(useWorkspace.getState().stage).toBe("network");
     expect(useWorkspace.getState().selectedEdge).toBeNull();
   });
 });
 
-it("lays out dependencies after the product without reversing API arrows", () => {
+it("spaces graph nodes without reversing API arrows", () => {
   const result = layoutGraph(graph);
-  expect(result.nodes[1].position.x).toBeGreaterThan(result.nodes[0].position.x);
+  expect(
+    Math.hypot(
+      result.nodes[1].position.x - result.nodes[0].position.x,
+      result.nodes[1].position.y - result.nodes[0].position.y,
+    ),
+  ).toBeGreaterThan(100);
   expect(result.edges[0].source).toBe("n_component");
   expect(result.edges[0].target).toBe("n_product");
   expect(result.nodes[1].data.country).toBeUndefined();

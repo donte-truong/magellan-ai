@@ -366,7 +366,7 @@ export function Landing() {
               <span>
                 <span className="landing-status-dot" /> Real companies. Connected by components.
               </span>
-              <Link className="landing-text-button" href="/#network">
+              <Link className="landing-text-button" href="/demo#network">
                 Explore the network <ArrowUpRight size={16} />
               </Link>
             </div>
@@ -458,8 +458,8 @@ export function Landing() {
             <Link href="/">
               Explore <ArrowUpRight size={13} />
             </Link>
-            <Link href="/research">
-              Live Research <ArrowUpRight size={13} />
+            <Link href="/demo">
+              iPhone Demo <ArrowUpRight size={13} />
             </Link>
           </nav>
         </footer>

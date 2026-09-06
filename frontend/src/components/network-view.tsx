@@ -1,11 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import {
-  Background,
-  BackgroundVariant,
   Handle,
-  MiniMap,
   Position,
   ReactFlow,
   ReactFlowProvider,
@@ -14,116 +11,79 @@ import {
   type NodeProps,
 } from "@xyflow/react";
 import {
-  Box,
-  Check,
-  Factory,
   Focus,
-  Globe2,
-  Layers3,
+  GitBranch,
   Minus,
   MousePointer2,
   Plus,
   Search,
   SlidersHorizontal,
+  X,
 } from "lucide-react";
 import { useWorkspace } from "@/lib/store";
-import { layoutGraph, type SupplyNode } from "@/lib/graph-layout";
+import { kindLabels, layoutGraph, nodeColors, type SupplyNode } from "@/lib/graph-layout";
+import { useReducedMotion } from "@/lib/use-reduced-motion";
 import type { Graph } from "@/lib/types";
 
-const kindIcons = {
-  product: Box,
-  component: Layers3,
-  material: Globe2,
-  organization: Factory,
-  facility: Factory,
-  geography: Globe2,
-};
-function SupplyCard({ data, selected }: NodeProps<SupplyNode>) {
-  const Icon = kindIcons[data.kind];
+function SupplyPoint({ data, selected }: NodeProps<SupplyNode>) {
   return (
-    <div className={`supply-node kind-${data.kind} ${selected ? "is-selected" : ""}`}>
-      <Handle type="source" position={Position.Left} isConnectable={false} />
-      <div className="supply-node-top">
-        <span className="supply-node-icon">
-          <Icon size={17} />
-        </span>
-        <span>{data.kind}</span>
-        {data.support === "directly_supported" && (
-          <span className="node-verified" title="Source supported">
-            <Check size={12} />
-          </span>
-        )}
-      </div>
-      <strong>{data.label}</strong>
-      <div className="supply-node-bottom">
-        <span>
-          {data.kind === "product"
-            ? "STARTING POINT"
-            : data.tier === null
-              ? "CONTEXT"
-              : `TIER ${data.tier}`}
-        </span>
-        {data.country && (
-          <span>
-            <Globe2 size={10} />
-            {data.country}
-          </span>
-        )}
-      </div>
-      <Handle type="target" position={Position.Right} isConnectable={false} />
+    <div
+      className={`supply-point ${data.kind === "product" ? "is-root" : ""} ${selected ? "is-selected" : ""}`}
+      style={{ "--node-color": nodeColors[data.kind] } as CSSProperties}
+    >
+      <Handle type="source" position={Position.Top} isConnectable={false} />
+      <span className="supply-point-halo" />
+      <span className="supply-point-core" />
+      <span className="supply-point-label">
+        {data.label}
+        {data.kind === "product" && <small>YOUR PRODUCT</small>}
+      </span>
+      <Handle type="target" position={Position.Bottom} isConnectable={false} />
     </div>
   );
 }
-const nodeTypes = { supply: SupplyCard };
-
+const nodeTypes = { supply: SupplyPoint };
 export function NetworkView() {
   const graph = useWorkspace((state) => state.graph);
-  if (!graph) return null;
-  return (
-    <section className="network-view" aria-labelledby="network-title">
-      <div className="section-heading">
-        <div>
-          <span className="eyebrow">02 / THE CONNECTIONS BETWEEN</span>
-          <h2 id="network-title">The supply network</h2>
-          <p>One product. Connected parts. Evidence you can follow.</p>
-        </div>
-        <span className="canvas-count">
-          {graph.nodes.length} nodes <span>·</span> {graph.edges.length} connections
-        </span>
-      </div>
+  return graph ? (
+    <section className="studio-network" aria-label="The supply network">
       <ReactFlowProvider>
-        <NetworkCanvas key={`${graph.id}:${graph.revision}`} graph={graph} />
+        <NetworkCanvas key={graph.id} graph={graph} />
       </ReactFlowProvider>
-      <div className="network-explainer">
-        <span>
-          <MousePointer2 size={14} />
-          Select a node or connection to inspect its evidence.
-        </span>
-        <span>Arrows follow inputs toward their destination.</span>
-      </div>
     </section>
-  );
+  ) : null;
 }
-
 function NetworkCanvas({ graph }: { graph: Graph }) {
   const flow = useMemo(() => layoutGraph(graph), [graph]);
-  const [nodes, , onNodesChange] = useNodesState<SupplyNode>(flow.nodes);
+  const [nodes, setNodes, onNodesChange] = useNodesState<SupplyNode>(flow.nodes);
   const [filter, setFilter] = useState("all");
   const [query, setQuery] = useState("");
+  const [hovered, setHovered] = useState<string | null>(null);
+  const [neighborsOnly, setNeighborsOnly] = useState(false);
   const selectedNode = useWorkspace((state) => state.selectedNode);
   const selectedEdge = useWorkspace((state) => state.selectedEdge);
   const inspect = useWorkspace((state) => state.inspect);
   const { fitView, zoomIn, zoomOut } = useReactFlow();
   const canvas = useRef<HTMLDivElement>(null);
+  const reduced = useReducedMotion();
 
+  useEffect(() => {
+    const frame = requestAnimationFrame(() =>
+      setNodes((previous) =>
+        flow.nodes.map((node) => {
+          const existing = previous.find((item) => item.id === node.id);
+          return existing ? { ...node, position: existing.position } : node;
+        }),
+      ),
+    );
+    return () => cancelAnimationFrame(frame);
+  }, [flow, setNodes]);
   useEffect(() => {
     if (!canvas.current) return;
     let frame = 0;
     const observer = new ResizeObserver(() => {
       cancelAnimationFrame(frame);
-      frame = requestAnimationFrame(() => {
-        void fitView({ padding: 0.35, maxZoom: 1.05 });
-      });
+      frame = requestAnimationFrame(() => void fitView({ padding: 0.38, maxZoom: 1.3 }));
     });
     observer.observe(canvas.current);
     return () => {
@@ -132,39 +92,75 @@ function NetworkCanvas({ graph }: { graph: Graph }) {
     };
   }, [fitView]);
 
-  function inspectNode(id: string) {
-    const edge = graph.edges.find((edge) => edge.source_node_id === id);
-    inspect(edge?.id ?? null, id);
+  const focus = hovered ?? selectedNode;
+  const connected = new Set<string>(focus ? [focus] : []);
+  const neighborhood = new Set<string>(selectedNode ? [selectedNode] : []);
+  for (const edge of graph.edges) {
+    if (edge.source_node_id === focus) connected.add(edge.target_node_id);
+    if (edge.target_node_id === focus) connected.add(edge.source_node_id);
+    if (edge.source_node_id === selectedNode) neighborhood.add(edge.target_node_id);
+    if (edge.target_node_id === selectedNode) neighborhood.add(edge.source_node_id);
   }
+  const search = query.trim().toLowerCase();
+  const matches = new Set(
+    graph.nodes
+      .filter((node) =>
+        `${node.label} ${node.aliases?.join(" ") ?? ""} ${Object.values(node.external_ids ?? {}).join(" ")}`
+          .toLowerCase()
+          .includes(search),
+      )
+      .map((node) => node.id),
+  );
   const visibleIds = new Set(
     nodes
       .filter(
         (node) =>
           (filter === "all" || node.data.kind === filter || node.id === graph.root_node_id) &&
-          (!query ||
-            node.data.label.toLowerCase().includes(query.toLowerCase()) ||
-            node.id === graph.root_node_id),
+          (!search || matches.has(node.id) || node.id === graph.root_node_id) &&
+          (!neighborsOnly || !selectedNode || neighborhood.has(node.id)),
       )
       .map((node) => node.id),
   );
   const visibleNodes = nodes
     .filter((node) => visibleIds.has(node.id))
-    .map((node) => ({ ...node, selected: node.id === selectedNode }));
+    .map((node) => ({
+      ...node,
+      selected: node.id === selectedNode,
+      style: { opacity: focus && !connected.has(node.id) ? 0.18 : 1 },
+    }));
   const visibleEdges = flow.edges
     .filter((edge) => visibleIds.has(edge.source) && visibleIds.has(edge.target))
-    .map((edge) => ({
-      ...edge,
-      selected: edge.id === selectedEdge,
-      style: { ...edge.style, strokeWidth: edge.id === selectedEdge ? 3 : 1.6 },
-    }));
-
+    .map((edge) => {
+      const highlighted =
+        edge.id === selectedEdge ||
+        Boolean(focus && (edge.source === focus || edge.target === focus));
+      const relation = graph.edges.find((item) => item.id === edge.id)!;
+      return {
+        ...edge,
+        selected: edge.id === selectedEdge,
+        label:
+          edge.id === selectedEdge
+            ? relation.predicate.toLowerCase().replaceAll("_", " ")
+            : undefined,
+        labelStyle: { fill: "#c8d9ee", fontSize: 10 },
+        labelBgStyle: { fill: "#0b1528", fillOpacity: 0.95 },
+        labelBgPadding: [8, 5] as [number, number],
+        labelBgBorderRadius: 5,
+        style: {
+          ...edge.style,
+          stroke: highlighted ? "#b2d7ff" : edge.style?.stroke,
+          strokeWidth: highlighted ? 1.7 : 1,
+          strokeOpacity: focus && !highlighted ? 0.08 : highlighted ? 0.9 : 0.38,
+        },
+      };
+    });
   return (
     <div
       ref={canvas}
-      className="network-canvas"
+      className="studio-network-canvas"
       data-testid="network-canvas"
       onKeyDownCapture={(event) => {
-        if (event.key !== "Enter" && event.key !== " ") return;
+        if (!["Enter", " "].includes(event.key)) return;
         const element = (event.target as HTMLElement).closest(
           ".react-flow__node, .react-flow__edge",
         );
@@ -172,122 +168,116 @@ function NetworkCanvas({ graph }: { graph: Graph }) {
         if (!id) return;
         event.preventDefault();
         event.stopPropagation();
-        if (element?.classList.contains("react-flow__node")) inspectNode(id);
+        if (element?.classList.contains("react-flow__node")) inspect(null, id);
         else {
           const edge = graph.edges.find((edge) => edge.id === id);
-          if (edge) inspect(edge.id, edge.source_node_id);
+          if (edge) inspect(id, edge.source_node_id);
         }
       }}
     >
-      <div className="canvas-toolbar">
-        <label className="canvas-search">
+      <div className="studio-graph-toolbar">
+        <label className="studio-graph-search">
           <Search size={15} />
           <input
             aria-label="Find a network node"
-            placeholder="Find a node…"
+            placeholder="Find in this network…"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
           />
+          {query && (
+            <button aria-label="Clear node search" onClick={() => setQuery("")}>
+              <X size={13} />
+            </button>
+          )}
         </label>
-        <label className="canvas-filter">
+        <label className="studio-graph-filter">
           <SlidersHorizontal size={14} />
-          <span className="sr-only">Node type</span>
           <select
             aria-label="Node type"
             value={filter}
             onChange={(event) => setFilter(event.target.value)}
           >
-            <option value="all">All types</option>
+            <option value="all">All Entities</option>
             {[...new Set(graph.nodes.map((node) => node.kind))]
               .filter((kind) => kind !== "product")
               .map((kind) => (
-                <option value={kind} key={kind}>
-                  {kind.charAt(0).toUpperCase() + kind.slice(1)}s
+                <option key={kind} value={kind}>
+                  {kindLabels[kind]}
                 </option>
               ))}
           </select>
         </label>
-        <span className="canvas-live-label">
-          <span className="status-dot" />
-          EVIDENCE GRAPH
-        </span>
+        <button
+          className={`studio-neighbors ${neighborsOnly ? "is-active" : ""}`}
+          aria-label="Show selected node and neighbors only"
+          aria-pressed={neighborsOnly}
+          disabled={!selectedNode}
+          onClick={() => setNeighborsOnly(!neighborsOnly)}
+          title="Focus on the selected node and its direct connections"
+        >
+          <GitBranch size={15} />
+          <span>Local View</span>
+        </button>
       </div>
       <ReactFlow
         nodes={visibleNodes}
         edges={visibleEdges}
         onNodesChange={onNodesChange}
         nodeTypes={nodeTypes}
-        onNodeClick={(_, node) => inspectNode(node.id)}
+        onNodeClick={(_, node) => inspect(null, node.id)}
         onEdgeClick={(_, edge) => inspect(edge.id, edge.source)}
         onPaneClick={() => inspect(null)}
+        onNodeMouseEnter={(_, node) => setHovered(node.id)}
+        onNodeMouseLeave={() => setHovered(null)}
         nodesConnectable={false}
         edgesReconnectable={false}
         deleteKeyCode={null}
         fitView
-        fitViewOptions={{ padding: 0.35, maxZoom: 1.05 }}
-        minZoom={0.2}
-        maxZoom={1.8}
+        fitViewOptions={{ padding: 0.38, maxZoom: 1.3 }}
+        minZoom={0.15}
+        maxZoom={2.5}
         defaultEdgeOptions={{ focusable: true }}
-        colorMode="light"
+        colorMode="dark"
         aria-label="Supply chain network"
-      >
-        <Background variant={BackgroundVariant.Dots} gap={23} size={1} color="#d7e1d8" />
-        <MiniMap
-          pannable
-          zoomable
-          nodeColor={(node) =>
-            node.data.kind === "product"
-              ? "#254b3d"
-              : node.data.kind === "material"
-                ? "#b69a60"
-                : "#8baa96"
-          }
-          maskColor="rgba(235, 241, 234, 0.75)"
-        />
-      </ReactFlow>
-      <div className="canvas-controls">
-        <button aria-label="Zoom in" onClick={() => zoomIn()}>
-          <Plus size={18} />
+      ></ReactFlow>
+      {search && matches.size === 0 && (
+        <div className="studio-graph-message" role="status">
+          No entities match “{query}”.<button onClick={() => setQuery("")}>Clear Search</button>
+        </div>
+      )}
+      {graph.edges.length === 0 && !search && (
+        <div className="studio-graph-message">
+          No verified connections yet.
+          <span>New findings will appear here as sources are verified.</span>
+        </div>
+      )}
+      <div className="studio-graph-legend">
+        {[...new Set(graph.nodes.map((node) => node.kind))].map((kind) => (
+          <span key={kind}>
+            <i style={{ background: nodeColors[kind] }} />
+            {kindLabels[kind]}
+          </span>
+        ))}
+      </div>
+      <div className="studio-graph-controls">
+        <button aria-label="Zoom in" onClick={() => zoomIn({ duration: reduced ? 0 : 200 })}>
+          <Plus size={17} />
         </button>
-        <button aria-label="Zoom out" onClick={() => zoomOut()}>
-          <Minus size={18} />
+        <button aria-label="Zoom out" onClick={() => zoomOut({ duration: reduced ? 0 : 200 })}>
+          <Minus size={17} />
         </button>
         <span />
         <button
           aria-label="Fit network to view"
-          onClick={() => fitView({ padding: 0.35, maxZoom: 1.05, duration: 200 })}
+          onClick={() => fitView({ padding: 0.38, maxZoom: 1.3, duration: reduced ? 0 : 350 })}
         >
-          <Focus size={18} />
+          <Focus size={17} />
         </button>
       </div>
-      <div className="graph-legend">
-        <span>
-          <i className="legend-product" />
-          Product
-        </span>
-        <span>
-          <i className="legend-component" />
-          Component
-        </span>
-        <span>
-          <i className="legend-material" />
-          Material
-        </span>
-        <span className="legend-separator" />
-        <span>
-          <i className="legend-line" />
-          Sourced
-        </span>
-        <span>
-          <i className="legend-dashed" />
-          Inferred / provided
-        </span>
+      <div className="studio-graph-hint">
+        <MousePointer2 size={12} />
+        <span>Drag to explore · Select a node to look closer</span>
       </div>
-      {graph.edges.length === 0 && (
-        <div className="canvas-empty-note">
-          No verified connections yet. The product remains a starting point for research.
-        </div>
-      )}
     </div>
   );
 }

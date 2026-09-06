@@ -1,14 +1,14 @@
 @import "@fontsource-variable/dm-sans";
 
 :root {
-  --ink: #26392f;
-  --muted: #687362;
-  --green: #294b3a;
-  --green-deep: #1e372b;
-  --lime: #d7ebba;
-  --border: #e1e6dc;
-  --canvas: #fafbf8;
-  --sidebar: #f3f5ef;
+  --ink: #e7eefb;
+  --muted: #8799b6;
+  --green: #a9cfff;
+  --green-deep: #cbe3ff;
+  --lime: #a9cfff;
+  --border: #a3c4ff18;
+  --canvas: #060e1f;
+  --sidebar: #081020;
   --font: "DM Sans Variable", Arial, sans-serif;
 }
 * {
@@ -57,7 +57,7 @@ button:focus-visible,
 a:focus-visible,
 summary:focus-visible,
 select:focus-visible {
-  outline: 3px solid #93b674;
+  outline: 2px solid #a9cfff;
   outline-offset: 4px;
 }
 input:focus-visible {
@@ -1766,11 +1766,11 @@ tbody .selected-row {
 }
 .react-flow__attribution {
   font-size: 10px;
-  background: #ffffff99 !important;
-  color: #a0b18c !important;
+  background: #0a1426aa;
+  color: #7189a8;
 }
 .react-flow__attribution a {
-  color: #a0b18c !important;
+  color: #7189a8;
 }
 .canvas-toolbar {
   position: absolute;

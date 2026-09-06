@@ -30,7 +30,7 @@ export const useWorkspace = create<WorkspaceState>((set) => ({
       run,
       graph: null,
       bom: null,
-      stage: "bom",
+      stage: "network",
       selectedEdge: null,
       selectedNode: null,
       generation: state.generation + 1,

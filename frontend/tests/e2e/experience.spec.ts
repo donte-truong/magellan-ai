@@ -7,7 +7,7 @@ test("iPhone demo reveals assemblies, explores supplier geography, and exports s
   test.setTimeout(90_000);
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
-  await page.goto("/");
+  await page.goto("/demo");
   await expect(page.getByRole("heading", { name: /Every product.*A world within/ })).toBeVisible();
   await page.locator(".product-canvas").waitFor();
   await expect(page.getByLabel("Product name")).toHaveValue("iPhone 17 Pro");
@@ -62,7 +62,7 @@ test("iPhone demo reveals assemblies, explores supplier geography, and exports s
 
 test("demo input, keyboard dialog, and reduced motion remain usable", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
-  await page.goto("/");
+  await page.goto("/demo");
   await page.getByLabel("Product name").fill("Another phone");
   await page.getByRole("button", { name: "Deconstruct product", exact: true }).click();
   await expect(page.locator(".demo-error")).toContainText("iPhone 17 Pro");
@@ -90,7 +90,7 @@ test("globe location cards expose components and support city search", async ({
   const coastline = page.waitForResponse((response) =>
     response.url().endsWith("/assets/models/world-coastlines.json"),
   );
-  await page.goto("/#network");
+  await page.goto("/demo#network");
   expect((await coastline).ok()).toBe(true);
   await expect(page.locator(".globe-location-card:visible")).toHaveCount(3);
   const nxp = page.getByRole("button", { name: "Locate NXP in Netherlands" });

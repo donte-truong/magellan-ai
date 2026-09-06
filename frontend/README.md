@@ -1,6 +1,6 @@
 # Magellan frontend
 
-A dark navy landing page at `/home` and product exploration experience at `/`: **iPhone 17 Pro → animated 3D decomposition → supplier connections on a 3D globe**. The existing API-backed research workspace is available at `/research`. The product name is **Magellan**, with a capital M and no AI suffix.
+A dark navy landing page at `/home`, a curated iPhone experience at `/demo`, and the supply-chain research workspace at `/` (also available at `/research`). The demo follows **iPhone 17 Pro → animated 3D decomposition → supplier connections on a 3D globe**. The product name is **Magellan**, with a capital M and no AI suffix.
 
 ## Run locally
 
@@ -13,9 +13,9 @@ cp .env.example .env.local
 bun run dev
 ```
 
-Open **http://127.0.0.1:3000** and select **Deconstruct product**. The featured iPhone 17 Pro demo is deterministic and does not make model or search requests. It uses a curated selection of Apple specifications and iFixit teardown findings; component and supplier details link to their sources. Globe pins represent approximate company headquarters. Connections illustrate component relationships to Apple, not factories or shipping routes. Quantities and a complete manufacturing BOM remain unresolved.
+Open **http://127.0.0.1:3000/demo** and select **Deconstruct product**. The featured iPhone 17 Pro demo is deterministic and does not make model or search requests. It uses a curated selection of Apple specifications and iFixit teardown findings; component and supplier details link to their sources. Globe pins represent approximate company headquarters. Connections illustrate component relationships to Apple, not factories or shipping routes. Quantities and a complete manufacturing BOM remain unresolved.
 
-Open **http://127.0.0.1:3000/research** for backend-driven exploration, including the Raspberry Pi 5 fixture, saved runs, and the configured live research provider.
+Open **http://127.0.0.1:3000** or **http://127.0.0.1:3000/research** for backend-driven exploration, including the Raspberry Pi 5 fixture, saved runs, and the configured live research provider.
 
 To run the entire MVP in containers, use `docker compose --env-file backend/.env up --build -d` from the repository root, then open http://localhost:3000. Compose builds a standalone Next.js server with Bun and Node.js 22, includes `public/assets`, and connects it to the API over the internal Docker network. Environment files are excluded from the image; the backend workspace token is supplied at runtime. Omit the `--env-file` option for fixture-only defaults. Browser calls use the same-origin Next.js proxy, so a separate backend CORS setting is unnecessary for this frontend.
 
@@ -30,12 +30,15 @@ The reference Next.js backend in `backend-node/` serves the same routes on port 
 - Supplier details, headquarters coordinates/source links, and JSON export with provenance and limitations.
 - Responsive mobile layouts, keyboard navigation, native modal focus handling, reduced motion, an animation pause control in the demo, and WebGL fallback illustrations.
 
-The live research workspace retains:
+The research workspace matches the landing and demo palette, typography, and glows. Enter a product to open its network as research arrives; switch to the bill-of-materials view at any time. Previous `/#network` and `/#bom` demo links forward to `/demo` with the selected stage.
+
+The research workspace includes:
 
 - Product input with an optional company, request validation, idempotent retries, and error recovery.
 - Automatic research updates, clarification choices, cancellation, and visible incomplete results.
 - A searchable BOM with component/material filters, unknown quantities, and evidence support labels.
-- An interactive dependency graph with automatic layout, dragging, zoom, fit, a minimap, and node search/type filters. Evidenced country codes appear when present in the graph's geography layer.
+- An Obsidian-inspired network of glowing circular nodes, a deterministic force-directed layout, drag/pan/pinch/zoom and fit controls, entity search (including aliases and identifiers), type filters, and a local view of the selected node and its neighbors. Updates preserve the positions of existing nodes and the current view.
+- A node inspector covering every incoming and outgoing relationship, supply tier, identifiers, aliases, flags, geography, operational data, and other recorded layers. Follow connected entities or inspect the exact evidence for any relationship.
 - Connection inspection with claims, exact stored excerpts, source links, scope, rationale, review notes, and caveats. Nodes and edges can also be inspected with Enter or Space.
 - Recent explorations, direct `?run=run_…` URLs, and JSON export pinned to the displayed graph revision.
 - Responsive layouts, labeled controls, focus indicators, an Escape-dismissable evidence panel, and reduced-motion support.
@@ -52,7 +55,7 @@ The featured globe uses curated geography; automatic projection of arbitrary res
 | Vite + Vitest + Testing Library  | Component and logic tests, following the [Next.js testing guide](https://nextjs.org/docs/app/guides/testing/vitest) |
 | Zustand                          | Exploration, graph snapshot, view, and selection state                                                              |
 | Three.js                         | Original procedural product model, globe geometry, lighting, and animation                                          |
-| React Flow + Dagre               | Interactive graph and directed layout                                                                               |
+| React Flow + spring layout       | Interactive graph and force-directed layout                                                                         |
 | Playwright                       | Desktop/mobile browser tests against the real FastAPI backend                                                       |
 | ESLint + Prettier                | Static checks and consistent formatting                                                                             |
 
@@ -64,7 +67,7 @@ Project media lives in [public/assets](public/assets/README.md), with separate d
 
 The existing research components remain in `src/components`. `src/lib/api.ts` is the typed browser client; `proxy.ts` implements the server boundary; `store.ts` owns research state; `use-research.ts` synchronizes API snapshots; `graph-layout.ts` keeps API edge direction intact while laying out dependencies.
 
-Research updates use sequential polling with bounded retry delays. Each refresh reads the run and graph, then requests the BOM at that graph revision. Inspections and exports pin the same revision. Navigation aborts outstanding reads; a generation counter prevents late responses from replacing another exploration. A graph revision change applies a fresh layout; manual node positions last for the current view and revision.
+Research updates use sequential polling with bounded retry delays. Each refresh reads the run and graph, then requests the BOM at that graph revision. Inspections and exports pin the same revision. Navigation aborts outstanding reads; a generation counter prevents late responses from replacing another exploration. New graph revisions add nodes without resetting existing node positions, search, or zoom. Node positions last for the current graph view.
 
 The frontend's subset of the API types is in `src/lib/types.ts`; the authoritative contract remains [docs/openapi.yaml](../docs/openapi.yaml).
 
