@@ -237,3 +237,32 @@ async def test_location_verification_does_not_invent_coordinates(llm_provider):
         document = await provider.locate({"label": "Test Plant"}, budget())
     assert document.geography["country_iso2"] == "FR"
     assert document.geography["lat"] is None and document.geography["lon"] is None
+
+
+async def test_rate_limits_are_retried_with_bounded_waits_then_fail_closed(monkeypatch):
+    import app.providers as providers
+
+    monkeypatch.setattr(providers, "RATE_LIMIT_WAIT_SECONDS", 0.0)
+    monkeypatch.setattr(providers, "RATE_LIMIT_MAX_WAIT_SECONDS", 0.0)
+    calls = []
+
+    def handle(request):
+        calls.append(request)
+        if len(calls) < 3:
+            return httpx.Response(429, headers={"Retry-After": "0"}, json={"error": "busy"})
+        return httpx.Response(200, json={"results": []})
+
+    async with httpx.AsyncClient(transport=httpx.MockTransport(handle)) as client:
+        provider = LiveProvider(settings(), client)
+        assert await provider.search_pages("Widget", 3, budget()) == []
+    assert len(calls) == 3
+    calls.clear()
+
+    def always_busy(request):
+        calls.append(request)
+        return httpx.Response(429, headers={"Retry-After": "0"}, json={"error": "busy"})
+
+    async with httpx.AsyncClient(transport=httpx.MockTransport(always_busy)) as client:
+        with pytest.raises(ProviderFailure) as caught:
+            await LiveProvider(settings(), client).search_pages("Widget", 3, budget())
+    assert caught.value.code == "source_unavailable" and len(calls) == 4

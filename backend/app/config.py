@@ -29,6 +29,10 @@ class Settings(BaseSettings):
     openrouter_verifier_model: str = ""
     openrouter_planner_model: str = ""
     openrouter_response_format: Literal["json_schema", "json_object"] = "json_schema"
+    # Reasoning control for models that support OpenRouter's `reasoning` parameter: "" omits it,
+    # "off" disables thinking, or an effort level (minimal/low/medium/high) with reasoning tokens
+    # excluded from the response. Hidden reasoning otherwise competes with the JSON for max_tokens.
+    openrouter_reasoning: Literal["", "off", "minimal", "low", "medium", "high"] = ""
     provider_timeout_seconds: float = Field(default=30, gt=0, le=60)
     worker_slots: int = Field(default=3, ge=1, le=16)
     worker_poll_seconds: float = Field(default=0.5, gt=0, le=30)

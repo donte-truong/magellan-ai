@@ -177,7 +177,7 @@ async def test_invalid_model_output_fails_one_task_visibly_without_ending_the_ru
     events = sse_events(await client.get(run["events_url"]))
     outcomes = [e["payload"]["outcome"] for e in events if e["type"] == "task.finished"]
     assert "failed:model_output_invalid" in outcomes
-    assert any("abandoned" in q for q in run["open_questions"])
+    assert any("unusable" in q and "continued" in q for q in run["open_questions"])
     assert {n["label"] for n in graph["nodes"]} == {"Widget", "tin"}
 
 

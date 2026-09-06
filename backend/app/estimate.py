@@ -21,7 +21,7 @@ from pydantic import Field
 
 from app.db import digest, new_id, now, public
 from app.errors import invalid
-from app.providers import Budget, BudgetExceeded, Page, ProviderFailure, public_url
+from app.providers import SKIP_HOSTS, Budget, BudgetExceeded, Page, ProviderFailure, public_url
 from app.schemas import (
     BomCategory,
     BomEstimate,
@@ -85,16 +85,6 @@ INSTRUCTIONS = {
     "expectation for this product type; low when speculative. Keep the list within max_items, prioritising "
     "the most significant parts. Finish with open_questions a researcher should verify next.",
 }
-SKIP_HOSTS = (
-    "youtube.com",
-    "youtu.be",
-    "facebook.com",
-    "instagram.com",
-    "tiktok.com",
-    "x.com",
-    "twitter.com",
-    "pinterest.com",
-)
 PREFERRED_HOSTS = (
     "ifixit.com",
     "techinsights.com",

@@ -63,6 +63,7 @@ class RunState:
         self.failed = {}  # node id -> queries with no verified finding
         self.trace = []
         self.visited = set()
+        self.invalid_documents = []  # pages whose model output was unusable
 
     def record(self, entry):
         if len(self.trace) >= MAX_TRACE_ENTRIES:
@@ -553,27 +554,24 @@ class Worker:
                 state.queries.setdefault(target["id"], []).append(query)
                 searches_used += 1
                 before = found
-                try:
-                    found_here, docs = await self.run_query(
-                        workspace,
-                        identifier,
-                        run,
-                        target,
-                        query,
-                        plan,
-                        budget,
-                        state,
-                        limits,
-                        documents_used,
-                    )
-                except ProviderFailure as exc:
-                    if exc.code != "model_output_invalid":
-                        raise
-                    failure = exc.code
+                before_invalid = len(state.invalid_documents)
+                found_here, docs = await self.run_query(
+                    workspace,
+                    identifier,
+                    run,
+                    target,
+                    query,
+                    plan,
+                    budget,
+                    state,
+                    limits,
+                    documents_used,
+                )
+                if len(state.invalid_documents) > before_invalid and not found_here:
+                    failure = "model_output_invalid"
                     questions.append(
-                        f"Model output was invalid while researching {target['label']}; the task was abandoned and other branches continued."
+                        f"Model output was unusable for {len(state.invalid_documents) - before_invalid} document(s) while researching {target['label']}; other documents and branches continued."
                     )
-                    break
                 found += found_here
                 documents_used += docs
                 state.spend[branch] = state.spend.get(branch, 0) + docs
@@ -609,10 +607,10 @@ class Worker:
             outcome = (
                 "skipped"
                 if plan["skip"]
-                else f"failed:{failure}"
-                if failure
                 else "findings_committed"
                 if found
+                else f"failed:{failure}"
+                if failure
                 else "unresolved"
             )
             self.emit(repo, current, "task.finished", {**task, "outcome": outcome})
@@ -624,6 +622,7 @@ class Worker:
     ):
         """One search: reuse pages already analyzed for this question, analyze the rest, commit."""
         found = docs = 0
+        invalid = state.invalid_documents
         question = (target["id"], plan["relation_sought"])
         room = min(limits["max_documents_per_task"] - used, 5)
         if hasattr(self.provider, "search_pages") and hasattr(self.provider, "analyze"):
@@ -648,9 +647,23 @@ class Worker:
                 seen.add(question)
                 budget.charge("documents")
                 docs += 1
-                document = await self.provider.analyze(
-                    target, run["product"], run["company"], page.url, page.title, page.body, budget
-                )
+                try:
+                    document = await self.provider.analyze(
+                        target,
+                        run["product"],
+                        run["company"],
+                        page.url,
+                        page.title,
+                        page.body,
+                        budget,
+                    )
+                except ProviderFailure as exc:
+                    # One unusable model output fails this document only; the task continues.
+                    if exc.code != "model_output_invalid":
+                        raise
+                    state.record({"stage": "document", "url": page.url, "failure": exc.code})
+                    invalid.append(page.url)
+                    continue
                 found += len(
                     self.commit_document(workspace, identifier, target, document, budget, state)
                 )

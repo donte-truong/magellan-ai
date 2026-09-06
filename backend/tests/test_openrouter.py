@@ -99,7 +99,11 @@ async def test_openrouter_rejects_invalid_refused_or_truncated_outputs(payload):
 
 
 @pytest.mark.parametrize("status", [401, 404, 429, 503])
-async def test_openrouter_failures_do_not_fall_back_to_paid_models(status):
+async def test_openrouter_failures_do_not_fall_back_to_paid_models(status, monkeypatch):
+    import app.providers as providers
+
+    monkeypatch.setattr(providers, "RATE_LIMIT_WAIT_SECONDS", 0.0)
+    monkeypatch.setattr(providers, "RATE_LIMIT_MAX_WAIT_SECONDS", 0.0)
     calls = []
 
     def handle(request):
@@ -110,7 +114,9 @@ async def test_openrouter_failures_do_not_fall_back_to_paid_models(status):
         provider = LiveProvider(config(), client)
         with pytest.raises(ProviderFailure) as caught:
             await provider.structured(Extraction, "Extract.", {}, budget())
-    assert len(calls) == 1
+    # Only a 429 is retried (bounded, before any generation); nothing ever routes to a paid model.
+    assert len(calls) == (1 + providers.RATE_LIMIT_RETRIES if status == 429 else 1)
+    assert all(json.loads(c.content)["model"] == "openrouter/free" for c in calls)
     assert "private" not in caught.value.message
 
 
@@ -140,3 +146,21 @@ async def test_openrouter_missing_usage_retains_conservative_reservations():
         await LiveProvider(config(), client).structured(Extraction, "Extract.", {}, allowance)
     assert allowance.usage["input_tokens"] > 2048
     assert allowance.usage["output_tokens"] == 4000
+
+
+@pytest.mark.parametrize(
+    "setting, expected",
+    [("", None), ("off", {"enabled": False}), ("low", {"effort": "low", "exclude": True})],
+)
+async def test_reasoning_control_is_sent_only_when_configured(setting, expected):
+    bodies = []
+
+    def handle(request):
+        bodies.append(json.loads(request.content))
+        return httpx.Response(200, json=response_data({"findings": []}, "openrouter"))
+
+    async with httpx.AsyncClient(transport=httpx.MockTransport(handle)) as client:
+        await LiveProvider(config(openrouter_reasoning=setting), client).structured(
+            Extraction, "Extract.", {}, budget()
+        )
+    assert bodies[0].get("reasoning") == expected
