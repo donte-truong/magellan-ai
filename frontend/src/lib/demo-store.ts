@@ -14,6 +14,12 @@ export const useDemo = create<{
   suppliers: (Supplier | DemoSite)[];
   summary: DemoGraphSummary | null;
   graphState: "placeholder" | "loading" | "generated" | "unavailable";
+  /** The network stage shows the globe or the graph (Obsidian-style) view. */
+  view: "globe" | "graph";
+  /** A graph node picked in the graph view; mirrors the pin when the node is a located site. */
+  graphNode: string | null;
+  setView: (view: "globe" | "graph") => void;
+  selectGraphNode: (node: string | null) => void;
   setGraph: (suppliers: DemoSite[], summary: DemoGraphSummary) => void;
   setGraphState: (graphState: "placeholder" | "loading" | "generated" | "unavailable") => void;
   setStage: (stage: DemoStage) => void;
@@ -32,6 +38,10 @@ export const useDemo = create<{
   suppliers: curatedSuppliers,
   summary: null,
   graphState: "placeholder",
+  view: "globe",
+  graphNode: null,
+  setView: (view) => set({ view }),
+  selectGraphNode: (graphNode) => set({ graphNode }),
   setGraph: (suppliers, summary) => set({ suppliers, summary, graphState: "generated" }),
   setGraphState: (graphState) => set({ graphState }),
   setStage: (stage) => set((s) => ({ stage, started: s.started || stage !== "input" })),
@@ -47,5 +57,7 @@ export const useDemo = create<{
       supplier: null,
       exploded: true,
       paused: false,
+      view: "globe",
+      graphNode: null,
     }),
 }));

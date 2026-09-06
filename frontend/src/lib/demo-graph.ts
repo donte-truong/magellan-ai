@@ -6,7 +6,7 @@
  */
 import type { PartId, Supplier } from "./demo-data";
 import { parts as curatedParts } from "./demo-data";
-import type { Site, SiteMake, Sites } from "./types";
+import type { Graph, Site, SiteMake, Sites } from "./types";
 
 export const DEMO_SLUG = "iphone-17-pro";
 export const DEMO_DATA_PATH = `/assets/data/${DEMO_SLUG}`;
@@ -269,6 +269,19 @@ export function loadDemoGraph() {
     }
   })();
   return cache;
+}
+
+let fullGraph: Promise<Graph | null> | null = null;
+
+/** The full graph export (nodes, edges, claims), fetched once for the graph view. */
+export function loadFullDemoGraph() {
+  fullGraph ??= fetch(`${DEMO_DATA_PATH}/graph.json`)
+    .then((r) => (r.ok ? (r.json() as Promise<Graph>) : null))
+    .catch(() => {
+      fullGraph = null;
+      return null;
+    });
+  return fullGraph;
 }
 
 export async function downloadDemoGraph() {

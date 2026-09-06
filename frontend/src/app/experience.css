@@ -2101,3 +2101,79 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* Network stage: globe or graph view */
+.demo-graph-view {
+  position: absolute;
+  left: 23%;
+  right: 5%;
+  top: 96px;
+  bottom: 9%;
+  display: flex;
+}
+.network-stage.view-graph .network-floating-caption {
+  display: none;
+}
+.network-stage.view-graph .supplier-inspector {
+  z-index: 5;
+}
+.demo-graph-view .studio-network {
+  display: flex;
+  min-height: 0;
+}
+.demo-graph-view .studio-network-canvas {
+  flex: 1;
+  min-height: 0;
+  border-color: #a3c4ff22;
+  background: radial-gradient(ellipse at 45% 43%, #13223c88, transparent 70%), #07101f;
+}
+.demo-graph-view .scene-loading {
+  margin: auto;
+}
+.view-toggle {
+  position: absolute;
+  right: 5%;
+  top: 38px;
+  z-index: 4;
+  display: inline-flex;
+  padding: 3px;
+  gap: 2px;
+  border: 1px solid #a3c4ff2a;
+  border-radius: 999px;
+  background: #0a1426cc;
+  backdrop-filter: blur(10px);
+}
+.view-toggle button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 13px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: #9fb3cf;
+  font: inherit;
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+}
+.view-toggle button[aria-pressed="true"] {
+  background: #a3c4ff22;
+  color: #eaf2ff;
+}
+.network-stage.view-graph .supplier-panel {
+  z-index: 3;
+}
+@media (max-width: 900px) {
+  .demo-graph-view {
+    position: relative;
+    left: 0;
+    right: 0;
+    height: 420px;
+    margin-top: 20px;
+  }
+  .view-toggle {
+    position: static;
+    margin: 14px 0 0;
+  }
+}

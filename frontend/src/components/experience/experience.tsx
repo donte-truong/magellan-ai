@@ -16,6 +16,7 @@ import {
   CircleHelp,
   Cpu,
   Fingerprint,
+  GitFork,
   Globe2,
   Layers3,
   Maximize2,
@@ -31,10 +32,13 @@ import { demoExport, parts, suppliers as curatedSuppliers } from "@/lib/demo-dat
 import {
   downloadDemoGraph,
   loadDemoGraph,
+  loadFullDemoGraph,
   sitesToSuppliers,
   summarize,
   type DemoSite,
 } from "@/lib/demo-graph";
+import { kindLabels, nodeColors } from "@/lib/graph-layout";
+import type { Graph } from "@/lib/types";
 import { useDemo, type DemoStage } from "@/lib/demo-store";
 import { useReducedMotion } from "@/lib/use-reduced-motion";
 
@@ -47,6 +51,18 @@ const ProductScene = dynamic(() => import("./product-scene"), {
     </div>
   ),
 });
+const NetworkGraph = dynamic(
+  () => import("@/components/network-view").then((module) => module.NetworkGraph),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="scene-loading">
+        <span />
+        Laying out the graph
+      </div>
+    ),
+  },
+);
 const GlobeScene = dynamic(() => import("./globe-scene"), {
   ssr: false,
   loading: () => (
@@ -481,6 +497,26 @@ function DecompositionStage({ headingRef }: HeadingProps) {
   );
 }
 
+/** Read a relation from the picked node's side: "part of X" going out, "contains X" coming in. */
+function relationText(predicate: string, outgoing: boolean) {
+  const words: Record<string, [string, string]> = {
+    PART_OF: ["part of", "contains"],
+    INPUT_TO: ["input to", "uses"],
+    MANUFACTURES: ["manufactures", "made by"],
+    PRODUCES: ["produces", "produced by"],
+    SUPPLIES: ["supplies", "supplied by"],
+    OPERATES: ["operates", "operated by"],
+    LOCATED_IN: ["located in", "site of"],
+    OWNED_BY: ["owned by", "owns"],
+    PROCESSED_BY: ["processed by", "processes"],
+  };
+  const pair = words[predicate] ?? [
+    predicate.toLowerCase().replace(/_/g, " "),
+    predicate.toLowerCase().replace(/_/g, " "),
+  ];
+  return outgoing ? pair[0] : pair[1];
+}
+
 function NetworkStage({ headingRef }: HeadingProps) {
   const {
     supplier: selected,
@@ -489,11 +525,46 @@ function NetworkStage({ headingRef }: HeadingProps) {
     suppliers,
     summary,
     graphState,
+    view,
+    setView,
+    graphNode,
+    selectGraphNode,
   } = useDemo();
   const [query, setQuery] = useState("");
   const [exported, setExported] = useState(false);
+  const [fullGraph, setFullGraph] = useState<Graph | null>(null);
+  const [graphFailed, setGraphFailed] = useState(false);
   const supplier = suppliers.find((s) => s.id === selected);
   const site = supplier && "role" in supplier ? (supplier as DemoSite) : null;
+  const generatedGraph = graphState === "generated";
+  useEffect(() => {
+    // The full export (nodes, edges, claims) is fetched only when the graph view is opened.
+    if (view !== "graph" || fullGraph || !generatedGraph) return;
+    let mounted = true;
+    void loadFullDemoGraph().then((graph) => {
+      if (!mounted) return;
+      if (graph) setFullGraph(graph);
+      else setGraphFailed(true);
+    });
+    return () => {
+      mounted = false;
+    };
+  }, [view, fullGraph, generatedGraph]);
+  const pickNode = (edge: string | null, node?: string | null) => {
+    const id = node ?? null;
+    selectGraphNode(id);
+    // A located site is the same entity on both views: picking it opens the pin's inspector.
+    selectSupplier(id && suppliers.some((s) => s.id === id) ? id : null);
+  };
+  const pickedNode =
+    view === "graph" && fullGraph && graphNode && !supplier
+      ? (fullGraph.nodes.find((n) => n.id === graphNode) ?? null)
+      : null;
+  const pickedRelations = pickedNode
+    ? fullGraph!.edges.filter(
+        (e) => e.source_node_id === pickedNode.id || e.target_node_id === pickedNode.id,
+      )
+    : [];
   const visible = suppliers.filter((s) =>
     `${s.name} ${s.city} ${s.country} ${s.component} ${s.category}`
       .toLowerCase()
@@ -529,8 +600,36 @@ function NetworkStage({ headingRef }: HeadingProps) {
     setExported(true);
   };
   return (
-    <section className="network-stage stage-enter" aria-labelledby="network-title">
-      <GlobeScene />
+    <section className={`network-stage stage-enter view-${view}`} aria-labelledby="network-title">
+      {view === "globe" ? (
+        <GlobeScene />
+      ) : (
+        <div className="demo-graph-view">
+          {fullGraph ? (
+            <NetworkGraph
+              graph={fullGraph}
+              selectedNode={graphNode}
+              selectedEdge={null}
+              inspect={pickNode}
+            />
+          ) : (
+            <div className="scene-loading">
+              <span />
+              {graphFailed ? "The graph export is unavailable" : "Loading the graph"}
+            </div>
+          )}
+        </div>
+      )}
+      {generatedGraph && (
+        <div className="view-toggle" role="group" aria-label="Network view">
+          <button aria-pressed={view === "globe"} onClick={() => setView("globe")}>
+            <Globe2 size={14} /> Globe
+          </button>
+          <button aria-pressed={view === "graph"} onClick={() => setView("graph")}>
+            <GitFork size={14} /> Graph
+          </button>
+        </div>
+      )}
       <div className="stage-heading">
         <button className="back-link" onClick={() => setStage("bom")}>
           <ArrowLeft size={13} />
@@ -688,6 +787,65 @@ function NetworkStage({ headingRef }: HeadingProps) {
               </>
             )}
           </div>
+        </aside>
+      ) : pickedNode ? (
+        <aside className="supplier-inspector" aria-label="Entity details" key={pickedNode.id}>
+          <div className="inspector-heading">
+            <span className="eyebrow">{kindLabels[pickedNode.kind].toUpperCase()}</span>
+            <button
+              className="icon-button"
+              aria-label="Close entity details"
+              onClick={() => pickNode(null, null)}
+            >
+              <X size={16} />
+            </button>
+          </div>
+          <h2>{pickedNode.label}</h2>
+          <p className="inspector-location">
+            <span style={{ background: nodeColors[pickedNode.kind] }} />
+            {pickedNode.tier === null
+              ? "Outside the tiered bill of materials"
+              : `Tier ${pickedNode.tier}`}
+          </p>
+          <dl className="location-facts">
+            <div>
+              <dt>Support</dt>
+              <dd>{pickedNode.status.replace(/_/g, " ")}</dd>
+            </div>
+            {pickedNode.external_ids?.mpn && (
+              <div>
+                <dt>Part number</dt>
+                <dd>{pickedNode.external_ids.mpn}</dd>
+              </div>
+            )}
+            {pickedNode.external_ids?.manufacturer && (
+              <div>
+                <dt>Maker</dt>
+                <dd>{pickedNode.external_ids.manufacturer}</dd>
+              </div>
+            )}
+          </dl>
+          <div className="inspector-component">
+            <GitFork size={18} />
+            <div>
+              {pickedRelations.length} verified{" "}
+              {pickedRelations.length === 1 ? "relation" : "relations"}
+              <small>
+                {pickedRelations
+                  .slice(0, 4)
+                  .map((e) => {
+                    const outgoing = e.source_node_id === pickedNode.id;
+                    const other = outgoing ? e.target_node_id : e.source_node_id;
+                    const label = fullGraph!.nodes.find((n) => n.id === other)?.label ?? "";
+                    return `${relationText(e.predicate, outgoing)} ${label}`;
+                  })
+                  .join(" · ")}
+              </small>
+            </div>
+          </div>
+          {pickedNode.aliases && pickedNode.aliases.length > 0 && (
+            <p>Also named {pickedNode.aliases.slice(0, 4).join(", ")}.</p>
+          )}
         </aside>
       ) : (
         <div className="network-floating-caption">

@@ -43,26 +43,51 @@ function SupplyPoint({ data, selected }: NodeProps<SupplyNode>) {
   );
 }
 const nodeTypes = { supply: SupplyPoint };
+export interface NetworkSelection {
+  selectedNode: string | null;
+  selectedEdge: string | null;
+  /** Inspect an edge (with its source node) or a node; null clears the selection. */
+  inspect: (edge: string | null, node?: string | null) => void;
+}
+
+/** The workspace's graph view, bound to the workspace store. */
 export function NetworkView() {
   const graph = useWorkspace(visibleGraph);
+  const selectedNode = useWorkspace((state) => state.selectedNode);
+  const selectedEdge = useWorkspace((state) => state.selectedEdge);
+  const inspect = useWorkspace((state) => state.inspect);
   return graph ? (
-    <section className="studio-network" aria-label="The supply network">
-      <ReactFlowProvider>
-        <NetworkCanvas key={graph.id} graph={graph} />
-      </ReactFlowProvider>
-    </section>
+    <NetworkGraph
+      graph={graph}
+      selectedNode={selectedNode}
+      selectedEdge={selectedEdge}
+      inspect={inspect}
+    />
   ) : null;
 }
-function NetworkCanvas({ graph }: { graph: Graph }) {
+
+/** The same graph view for any graph and any selection owner (the demo page uses it too). */
+export function NetworkGraph({ graph, ...selection }: { graph: Graph } & NetworkSelection) {
+  return (
+    <section className="studio-network" aria-label="The supply network">
+      <ReactFlowProvider>
+        <NetworkCanvas key={graph.id} graph={graph} {...selection} />
+      </ReactFlowProvider>
+    </section>
+  );
+}
+function NetworkCanvas({
+  graph,
+  selectedNode,
+  selectedEdge,
+  inspect,
+}: { graph: Graph } & NetworkSelection) {
   const flow = useMemo(() => layoutGraph(graph), [graph]);
   const [nodes, setNodes, onNodesChange] = useNodesState<SupplyNode>(flow.nodes);
   const [filter, setFilter] = useState("all");
   const [query, setQuery] = useState("");
   const [hovered, setHovered] = useState<string | null>(null);
   const [neighborsOnly, setNeighborsOnly] = useState(false);
-  const selectedNode = useWorkspace((state) => state.selectedNode);
-  const selectedEdge = useWorkspace((state) => state.selectedEdge);
-  const inspect = useWorkspace((state) => state.inspect);
   const { fitView, zoomIn, zoomOut } = useReactFlow();
   const canvas = useRef<HTMLDivElement>(null);
   const reduced = useReducedMotion();
