@@ -261,6 +261,23 @@ def cancel_run(request: Request, ws: Workspace, run_id: str):
 
 
 @router.get(
+    "/runs/{run_id}/history",
+    tags=["runs"],
+    operation_id="getRunHistory",
+    summary="Private model-call history for a run",
+    description="Bounded trace of model calls with verbatim output before validation and classified failures. Debugging only; never shown to end users wholesale.",
+)
+def run_history(request: Request, ws: Workspace, run_id: str):
+    with request.app.state.db.transaction(ws) as repo:
+        repo.get(run_id, "run")
+        try:
+            trace = repo.get(f"{run_id}:trace", "trace")
+        except APIError:
+            trace = {"run_id": run_id, "entries": []}
+        return {"run_id": run_id, "entries": trace["entries"]}
+
+
+@router.get(
     "/runs/{run_id}/bom",
     response_model=schemas.BOM,
     tags=["bom"],

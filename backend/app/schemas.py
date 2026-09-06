@@ -385,6 +385,9 @@ class RunLimits(Model):
     max_input_tokens: int = Field(default=400000, ge=0, le=2000000)
     max_output_tokens: int = Field(default=30000, ge=0, le=200000)
     max_seconds: int = Field(default=480, ge=1, le=900)
+    # Per-task caps (new): searches and documents one research task may consume.
+    max_searches_per_task: int = Field(default=3, ge=1, le=10)
+    max_documents_per_task: int = Field(default=4, ge=1, le=20)
 
 
 class RunCreate(Model):
@@ -443,6 +446,8 @@ class Run(Model):
     limits: RunLimits
     usage: RunUsage
     progress: dict[str, int]
+    # Pending research tasks per tier (new field; progress stays a flat int map).
+    frontier: dict[str, int] = Field(default_factory=dict)
     pending_questions: list[RunQuestion]
     stop_reason: str | None = None
     open_questions: list[str]

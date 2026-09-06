@@ -6,22 +6,28 @@ import logging
 import math
 import signal
 import time
-from collections import deque
 from copy import deepcopy
 from urllib.parse import urlsplit
 
 from app.config import Settings
-from app.db import Database, new_id, now, public
+from app.db import Database, digest, new_id, now, public
 from app.errors import APIError
 from app.geography import GeographyService
 from app.graphs import (
-    DEPENDENCY_PREDICATES,
     add_claim_edge,
     make_node,
     make_source,
     refresh,
 )
 from app.providers import Budget, BudgetExceeded, ProviderFailure, build_provider
+from app.resolution import (
+    NON_DEPENDENCY_KINDS,
+    RELATION_TYPES,
+    normalize_label,
+    record_identity,
+    resolve_entity,
+    valid_relation,
+)
 from app.schemas import RunLimits
 
 logger = logging.getLogger(__name__)
@@ -29,6 +35,129 @@ logger = logging.getLogger(__name__)
 
 class RunStopped(Exception):
     pass
+
+
+MAX_TRACE_ENTRIES = 200
+MAX_TRACE_TEXT = 8000
+PLANNER_CONTEXT_CHARS = 6000
+RELATIONS_BY_KIND = {
+    "product": ["upstream_inputs", "manufacturer_or_facility"],
+    "component": ["upstream_inputs", "manufacturer_or_facility"],
+    "material": ["material_origin", "supplier"],
+    "organization": ["supplier"],
+    "facility": ["supplier"],
+}
+PRIORITY_RANK = {"high": 0, "medium": 1, "low": 2}
+
+
+class RunState:
+    """Per-run scheduling and reuse memory. Lives only for the duration of process_run()."""
+
+    def __init__(self):
+        self.sources = {}  # content hash -> stored source record
+        self.analyzed = {}  # content hash -> set of (target id, relation sought)
+        self.spend = {}  # branch id -> documents consumed
+        self.done = {}  # branch id -> tasks completed
+        self.branch_of = {}  # node id -> branch id
+        self.queries = {}  # node id -> queries tried
+        self.failed = {}  # node id -> queries with no verified finding
+        self.trace = []
+        self.visited = set()
+
+    def record(self, entry):
+        if len(self.trace) >= MAX_TRACE_ENTRIES:
+            self.trace.pop(0)
+        self.trace.append(
+            {
+                "at": now(),
+                **{k: (v[:MAX_TRACE_TEXT] if isinstance(v, str) else v) for k, v in entry.items()},
+            }
+        )
+
+    def branch(self, node, graph):
+        if node["id"] == graph["root_node_id"]:
+            return "root"
+        return self.branch_of.get(node["id"], node["id"])
+
+
+def unanswered_relations(graph, node):
+    """Relation types with no directly supported inbound edge for this node."""
+    supported = {
+        e["predicate"]
+        for e in graph["edges"]
+        if e["target_node_id"] == node["id"] and e["support_label"] == "directly_supported"
+    }
+    return [
+        relation
+        for relation in RELATIONS_BY_KIND.get(node["kind"], [])
+        if not supported & RELATION_TYPES[relation]
+    ]
+
+
+def template_queries(product, company, node, hints):
+    label, kind = node["label"], node["kind"]
+    company = company or ""
+    if node.get("tier") == 0:
+        return [
+            f"{product} {company} teardown components",
+            f"{product} specifications datasheet bill of materials",
+        ]
+    if kind == "component":
+        return [f"{label} {hints} datasheet manufacturer", f"{product} {label} supplier"]
+    if kind == "material":
+        return [f"{label} refiner smelter supplier {product}", f"{label} production country"]
+    return [f"{label} manufacturing plant location", f"{label} supplies {product}"]
+
+
+def planner_context(run, graph, node, state, budget, questions):
+    """Bounded graph context: newest triples first, oldest dropped past the character budget."""
+    names = {n["id"]: n["label"] for n in graph["nodes"]}
+    triples = [
+        {
+            "subject": names.get(e["source_node_id"]),
+            "predicate": e["predicate"],
+            "object": names.get(e["target_node_id"]),
+            "scope": e["scope"]["type"],
+            "support": e["support_label"],
+        }
+        for e in graph["edges"]
+    ]
+    kept, size = [], 0
+    for triple in reversed(triples):
+        size += len(json.dumps(triple))
+        if size > PLANNER_CONTEXT_CHARS:
+            break
+        kept.append(triple)
+    imported = [
+        {k: item.get(k) for k in ("part_number", "manufacturer", "material")}
+        for item in ((node.get("data") or {}).get("custom") or {}).get("bom_items", [])
+        if isinstance(item, dict)
+    ][:5]
+    return {
+        "product": run["product"],
+        "company": run["company"],
+        "target": {
+            "label": node["label"],
+            "kind": node["kind"],
+            "tier": node.get("tier"),
+            "external_ids": node.get("external_ids") or {},
+            "aliases": node.get("aliases") or [],
+            "imported_hints": imported,
+        },
+        "triples": list(reversed(kept)),
+        "triples_omitted": max(0, len(triples) - len(kept)),
+        "unanswered": unanswered_relations(graph, node),
+        "previous_queries": state.queries.get(node["id"], [])[-6:],
+        "failed_queries": state.failed.get(node["id"], [])[-6:],
+        "open_questions": questions[-8:],
+        "remaining": {
+            "searches": budget.remaining("searches"),
+            "documents": budget.remaining("documents"),
+            "seconds": max(
+                0, round(run["limits"]["max_seconds"] - budget.usage.get("elapsed_seconds", 0))
+            ),
+        },
+    }
 
 
 class Worker:
@@ -198,6 +327,7 @@ class Worker:
                 repo.put("run", run)
             return
         usage = deepcopy(run["usage"])
+        state = RunState()
 
         def checkpoint():
             with self.db.transaction(workspace, write=True) as repo:
@@ -205,7 +335,7 @@ class Worker:
                 current["usage"] = deepcopy(usage)
                 repo.put("run", current)
 
-        budget = Budget(run["limits"], usage, checkpoint)
+        budget = Budget(run["limits"], usage, checkpoint, state.record)
         reason, questions = "research_exhausted", []
         try:
             async with asyncio.timeout(run["limits"]["max_seconds"]):
@@ -214,55 +344,14 @@ class Worker:
                 if run.get("_bom_estimate"):
                     self.ingest_estimate(workspace, identifier, budget)
                 if run.get("_seed_urls") and hasattr(self.provider, "fetch_page"):
-                    await self.research_seeds(workspace, identifier, run, budget, questions)
-                with self.db.transaction(workspace) as repo:
-                    graph = repo.graph(run["graph_id"])
-                    queue = deque(n for n in graph["nodes"] if n["tier"] is not None)
-                visited = set()
-                while queue:
-                    target = queue.popleft()
-                    if target["id"] in visited or target["tier"] >= run["limits"]["max_hops"]:
-                        continue
-                    visited.add(target["id"])
-                    budget.check()
-                    task = {
-                        "task_id": new_id("task"),
-                        "target_node_id": target["id"],
-                        "relation_sought": "upstream_dependencies",
-                        "depth": target["tier"],
-                    }
-                    with self.db.transaction(workspace, write=True) as repo:
-                        current = self.owned(repo, identifier)
-                        self.emit(repo, current, "task.started", task)
-                        repo.put("run", current)
-                    found = 0
-                    async for document in self.provider.research(
-                        target, run["product"], run["company"], budget
-                    ):
-                        budget.check()
-                        added = self.commit_document(
-                            workspace, identifier, target, document, budget
-                        )
-                        found += len(added)
-                        queue.extend(added)
-                        await asyncio.sleep(0)
-                    if not found:
-                        questions.append(
-                            f"No further verified upstream inputs for {target['label']}."
-                        )
-                    with self.db.transaction(workspace, write=True) as repo:
-                        current = self.owned(repo, identifier)
-                        current["progress"] = {
-                            "tasks_done": len(visited),
-                            "tasks_total": len(visited) + len(queue),
-                        }
-                        self.emit(
-                            repo,
-                            current,
-                            "task.finished",
-                            {**task, "outcome": "findings_committed" if found else "unresolved"},
-                        )
-                        repo.put("run", current)
+                    await self.research_seeds(workspace, identifier, run, budget, questions, state)
+                while True:
+                    task_node = self.next_task(workspace, identifier, run, state)
+                    if task_node is None:
+                        break
+                    await self.research_task(
+                        workspace, identifier, run, task_node, budget, questions, state
+                    )
                 if self.provider.name == "curated_fixture":
                     entry = self.provider.lookup(run["product"], run["company"])
                     questions.extend(
@@ -310,6 +399,7 @@ class Worker:
         with self.db.transaction(workspace, write=True) as repo:
             current = repo.get(identifier, "run")
             current["usage"] = usage
+            self.save_trace(repo, identifier, state)
             if current["status"] == "cancelled":
                 repo.put("run", current)
                 return
@@ -333,6 +423,250 @@ class Worker:
                 },
             )
             repo.put("run", current)
+
+    def save_trace(self, repo, identifier, state):
+        """Bounded private model-call history; read only through GET /runs/{id}/history."""
+        repo.put(
+            "trace",
+            {
+                "id": f"{identifier}:trace",
+                "run_id": identifier,
+                "entries": list(state.trace),
+                "created_at": now(),
+            },
+            identifier,
+        )
+
+    def pending_tasks(self, graph, run, state):
+        return [
+            n
+            for n in graph["nodes"]
+            if n["tier"] is not None
+            and n["tier"] < run["limits"]["max_hops"]
+            and n["id"] not in state.visited
+        ]
+
+    def frontier_counts(self, graph, run, state):
+        counts = {}
+        for node in self.pending_tasks(graph, run, state):
+            counts[str(node["tier"])] = counts.get(str(node["tier"]), 0) + 1
+        return counts
+
+    def next_task(self, workspace, identifier, run, state):
+        """Fair opportunity: the branch that has consumed the fewest documents per completed task
+        goes first; ties go to the lower tier, then to targets with more unanswered relation types."""
+        with self.db.transaction(workspace) as repo:
+            graph = repo.graph(run["graph_id"])
+        pending = self.pending_tasks(graph, run, state)
+        if not pending:
+            return None
+        for node in pending:
+            if node["id"] not in state.branch_of and node["tier"] == 1:
+                state.branch_of[node["id"]] = node["id"]
+
+        def key(node):
+            branch = state.branch(node, graph)
+            fairness = state.spend.get(branch, 0) / (1 + state.done.get(branch, 0))
+            return (fairness, node["tier"], -len(unanswered_relations(graph, node)), node["label"])
+
+        return min(pending, key=key)
+
+    async def plan_task(self, run, graph, node, budget, questions, state, failed=None):
+        hints = self.provider.query_hints(node) if hasattr(self.provider, "query_hints") else ""
+        fallback = {
+            "relation_sought": (unanswered_relations(graph, node) or ["upstream_inputs"])[0],
+            "queries": template_queries(run["product"], run["company"], node, hints),
+            "skip": False,
+            "skip_reason": None,
+            "priority": "medium",
+            "source": "template",
+        }
+        if not hasattr(self.provider, "plan"):
+            return fallback
+        context = planner_context(run, graph, node, state, budget, questions)
+        if failed:
+            context["failed_queries"] = list(dict.fromkeys(context["failed_queries"] + failed))
+        try:
+            plan = await self.provider.plan(context, budget)
+        except ProviderFailure as exc:
+            if exc.code != "model_output_invalid":
+                raise
+            questions.append(
+                f"Planner output was invalid for {node['label']}; used template queries."
+            )
+            return fallback
+        queries = [q.query for q in plan.queries if q.query.strip()]
+        return {
+            "relation_sought": plan.relation_sought,
+            "queries": queries or fallback["queries"],
+            "skip": plan.skip,
+            "skip_reason": plan.skip_reason,
+            "priority": plan.priority,
+            "source": "planner",
+        }
+
+    async def research_task(self, workspace, identifier, run, target, budget, questions, state):
+        state.visited.add(target["id"])
+        with self.db.transaction(workspace) as repo:
+            graph = repo.graph(run["graph_id"])
+        branch = state.branch(target, graph)
+        budget.check()
+        plan = await self.plan_task(run, graph, target, budget, questions, state)
+        task = {
+            "task_id": new_id("task"),
+            "target_node_id": target["id"],
+            "relation_sought": plan["relation_sought"],
+            "depth": target["tier"],
+        }
+        with self.db.transaction(workspace, write=True) as repo:
+            current = self.owned(repo, identifier)
+            self.emit(
+                repo,
+                current,
+                "task.planned",
+                {
+                    **task,
+                    "queries": plan["queries"],
+                    "skip": plan["skip"],
+                    "skip_reason": plan["skip_reason"],
+                    "priority": plan["priority"],
+                    "planner": plan["source"],
+                },
+            )
+            if plan["skip"]:
+                questions.append(
+                    f"Skipped research for {target['label']}: {plan['skip_reason'] or 'no likely public source'}."
+                )
+            else:
+                self.emit(repo, current, "task.started", task)
+            repo.put("run", current)
+        found, failure = 0, None
+        if not plan["skip"]:
+            limits = run["limits"]
+            searches_used = documents_used = 0
+            queries = list(plan["queries"])
+            replanned = False
+            while queries and searches_used < limits["max_searches_per_task"]:
+                query = queries.pop(0)
+                if documents_used >= limits["max_documents_per_task"]:
+                    break
+                state.queries.setdefault(target["id"], []).append(query)
+                searches_used += 1
+                before = found
+                try:
+                    found_here, docs = await self.run_query(
+                        workspace,
+                        identifier,
+                        run,
+                        target,
+                        query,
+                        plan,
+                        budget,
+                        state,
+                        limits,
+                        documents_used,
+                    )
+                except ProviderFailure as exc:
+                    if exc.code != "model_output_invalid":
+                        raise
+                    failure = exc.code
+                    questions.append(
+                        f"Model output was invalid while researching {target['label']}; the task was abandoned and other branches continued."
+                    )
+                    break
+                found += found_here
+                documents_used += docs
+                state.spend[branch] = state.spend.get(branch, 0) + docs
+                if found == before:
+                    state.failed.setdefault(target["id"], []).append(query)
+                    # Replan once with the failed query on record; per-task planning is the experiment.
+                    if (
+                        not replanned
+                        and not queries
+                        and budget.remaining("searches")
+                        and plan["source"] == "planner"
+                    ):
+                        replanned = True
+                        again = await self.plan_task(
+                            run, graph, target, budget, questions, state, failed=[query]
+                        )
+                        tried = set(state.queries.get(target["id"], []))
+                        queries = [q for q in again["queries"] if q not in tried]
+                        if again["skip"]:
+                            queries = []
+        state.done[branch] = state.done.get(branch, 0) + 1
+        if not found and not plan["skip"] and not failure:
+            questions.append(f"No further verified upstream inputs for {target['label']}.")
+        with self.db.transaction(workspace, write=True) as repo:
+            current = self.owned(repo, identifier)
+            graph = repo.graph(run["graph_id"])
+            pending = self.pending_tasks(graph, run, state)
+            current["progress"] = {
+                "tasks_done": len(state.visited),
+                "tasks_total": len(state.visited) + len(pending),
+            }
+            current["frontier"] = self.frontier_counts(graph, run, state)
+            outcome = (
+                "skipped"
+                if plan["skip"]
+                else f"failed:{failure}"
+                if failure
+                else "findings_committed"
+                if found
+                else "unresolved"
+            )
+            self.emit(repo, current, "task.finished", {**task, "outcome": outcome})
+            self.save_trace(repo, identifier, state)
+            repo.put("run", current)
+
+    async def run_query(
+        self, workspace, identifier, run, target, query, plan, budget, state, limits, used
+    ):
+        """One search: reuse pages already analyzed for this question, analyze the rest, commit."""
+        found = docs = 0
+        question = (target["id"], plan["relation_sought"])
+        room = min(limits["max_documents_per_task"] - used, 5)
+        if hasattr(self.provider, "search_pages") and hasattr(self.provider, "analyze"):
+            pages = await self.provider.search_pages(query, room, budget)
+            for page in pages:
+                if docs >= room:
+                    break
+                budget.check()
+                if not page.body:
+                    continue
+                content_hash = digest(page.body.encode())
+                seen = state.analyzed.setdefault(content_hash, set())
+                if question in seen:
+                    state.record(
+                        {
+                            "stage": "reuse",
+                            "url": page.url,
+                            "skipped": "already analyzed for this question",
+                        }
+                    )
+                    continue
+                seen.add(question)
+                budget.charge("documents")
+                docs += 1
+                document = await self.provider.analyze(
+                    target, run["product"], run["company"], page.url, page.title, page.body, budget
+                )
+                found += len(
+                    self.commit_document(workspace, identifier, target, document, budget, state)
+                )
+                await asyncio.sleep(0)
+            return found, docs
+        # Legacy providers expose only research(); no reuse is possible for them.
+        async for document in self.provider.research(
+            target, run["product"], run["company"], budget
+        ):
+            budget.check()
+            docs += 1
+            found += len(
+                self.commit_document(workspace, identifier, target, document, budget, state)
+            )
+            await asyncio.sleep(0)
+        return found, docs
 
     def ingest_upload(self, workspace, identifier, budget):
         with self.db.transaction(workspace) as repo:
@@ -506,8 +840,9 @@ class Worker:
             "provenance": "imported_not_independently_verified",
         }
 
-    async def research_seeds(self, workspace, identifier, run, budget, questions):
+    async def research_seeds(self, workspace, identifier, run, budget, questions, state=None):
         """Re-read pages the estimate cited, targeting the product; findings are verified afresh."""
+        state = state or RunState()
         with self.db.transaction(workspace) as repo:
             graph = repo.graph(run["graph_id"])
         root = next(n for n in graph["nodes"] if n["id"] == graph["root_node_id"])
@@ -526,7 +861,11 @@ class Worker:
             except ProviderFailure as exc:
                 questions.append(f"BOM estimate source could not be re-read: {url} ({exc.message})")
                 continue
-            self.commit_document(workspace, identifier, root, document, budget)
+            state.spend["root"] = state.spend.get("root", 0) + 1
+            state.analyzed.setdefault(digest(page.body.encode()), set()).add(
+                (root["id"], "upstream_inputs")
+            )
+            self.commit_document(workspace, identifier, root, document, budget, state)
             await asyncio.sleep(0)
 
     @staticmethod
@@ -536,141 +875,227 @@ class Worker:
         if len(graph["_claims"]) >= run["limits"]["max_claims"]:
             raise BudgetExceeded("max_claims")
 
-    def commit_document(self, workspace, identifier, target, document, budget):
+    def commit_document(self, workspace, identifier, target, document, budget, state=None):
+        """Commit every verified relationship a document supports, in order-independent passes.
+
+        Findings may connect any two entities: at least one endpoint must already be in the graph
+        (the "disconnected" gate); the other is created within the hop limit. Each document is
+        committed atomically, so budget exhaustion never leaves orphan claims.
+        """
         added = []
-        # Each document is committed atomically. Budget exhaustion never leaves orphan claims.
         with self.db.transaction(workspace, write=True) as repo:
             run = self.owned(repo, identifier)
             graph = repo.graph(run["graph_id"])
             if not any(n["id"] == target["id"] for n in graph["nodes"]):
                 return []
-            source = make_source(
-                repo,
-                document.url,
-                document.title,
-                document.body,
-                document.kind,
-                document.publisher,
-                source_family_id=urlsplit(document.url).hostname or document.publisher,
-                license_notes="Curated cached excerpt; content hash covers excerpt only."
-                if document.cached
-                else "Retrieved public text; evidence excerpts only are exposed.",
-            )
-            self.emit(
-                repo,
-                run,
-                "source.retrieved",
-                {
-                    "source_id": source["id"],
-                    **{k: source[k] for k in ("url", "title", "publisher", "published_at")},
-                },
-            )
-            changed = False
-            deferred_limit = None
+            content_hash = digest(document.body.encode())
+            source = state.sources.get(content_hash) if state else None
+            if source is None:
+                source = make_source(
+                    repo,
+                    document.url,
+                    document.title,
+                    document.body,
+                    document.kind,
+                    document.publisher,
+                    source_family_id=urlsplit(document.url).hostname or document.publisher,
+                    license_notes="Curated cached excerpt; content hash covers excerpt only."
+                    if document.cached
+                    else "Retrieved public text; evidence excerpts only are exposed.",
+                )
+                if state is not None:
+                    state.sources[content_hash] = source
+                self.emit(
+                    repo,
+                    run,
+                    "source.retrieved",
+                    {
+                        "source_id": source["id"],
+                        **{k: source[k] for k in ("url", "title", "publisher", "published_at")},
+                    },
+                )
+            root = next(n for n in graph["nodes"] if n["id"] == graph["root_node_id"])
+            target_node = next(n for n in graph["nodes"] if n["id"] == target["id"])
+
+            def reject(finding, reason):
+                self.emit(
+                    repo,
+                    run,
+                    "claim.rejected",
+                    {"claim_id": new_id("clm"), "reason": reason, "detail": finding.rationale},
+                )
+
+            eligible = []
             for finding in document.findings:
+                object_label = finding.object_label or target_node["label"]
+                object_kind = finding.object_kind or target_node["kind"]
                 rejected = finding.rejection
                 if finding.span not in document.body:
                     rejected = "span_not_found"
-                if finding.predicate not in DEPENDENCY_PREDICATES or finding.kind not in {
-                    "component",
-                    "material",
-                    "organization",
-                    "facility",
-                }:
+                elif not valid_relation(finding.predicate, finding.kind, object_kind):
                     rejected = "predicate_invalid"
-                if finding.scope_type == "company":
-                    rejected = (
-                        "scope_mismatch"  # No resolved organization scope anchor in this task.
-                    )
-                if finding.label.casefold() == target["label"].casefold():
-                    rejected = "duplicate"
+                elif normalize_label(finding.label) == normalize_label(object_label):
+                    rejected = "predicate_invalid"
+                elif any(
+                    kind == "product" and normalize_label(label) != normalize_label(root["label"])
+                    for kind, label in ((finding.kind, finding.label), (object_kind, object_label))
+                ):
+                    rejected = "scope_mismatch"
+                elif finding.scope_type == "product" and finding.predicate == "LOCATED_IN":
+                    rejected = "scope_mismatch"
+                elif finding.scope_type != "product" and "product" in (finding.kind, object_kind):
+                    rejected = "scope_mismatch"
+                elif finding.scope_type == "company" and "organization" not in (
+                    finding.kind,
+                    object_kind,
+                ):
+                    rejected = "scope_mismatch"
                 if rejected:
+                    reject(finding, rejected)
+                    continue
+                eligible.append((finding, object_label, object_kind))
+            changed = False
+            deferred_limit = None
+            progress = True
+            while eligible and progress and deferred_limit is None:
+                progress = False
+                for item in list(eligible):
+                    finding, object_label, object_kind = item
+                    subject, s_review = resolve_entity(
+                        graph,
+                        finding.kind,
+                        finding.label,
+                        finding.part_number,
+                        finding.manufacturer,
+                    )
+                    if finding.object_label is None:
+                        obj, o_review = target_node, None
+                    else:
+                        obj, o_review = resolve_entity(graph, object_kind, object_label)
+                    review = s_review or o_review
+                    if review:
+                        self.emit(
+                            repo,
+                            run,
+                            "entity.review_needed",
+                            {
+                                "candidate_ids": [n["id"] for n in (subject, obj) if n],
+                                "reason": f"{review}: {finding.label} {finding.predicate} {object_label}",
+                            },
+                        )
+                        reject(finding, review)
+                        eligible.remove(item)
+                        progress = True
+                        continue
+                    if subject is None and obj is None:
+                        continue  # Wait for a later pass once another finding places an endpoint.
+                    anchor = subject or obj
+                    missing_kind = (
+                        object_kind if obj is None else finding.kind if subject is None else None
+                    )
+                    if missing_kind and missing_kind not in NON_DEPENDENCY_KINDS:
+                        if anchor["tier"] is None or anchor["tier"] + 1 > run["limits"]["max_hops"]:
+                            reject(finding, "max_hops")
+                            eligible.remove(item)
+                            progress = True
+                            continue
+                    scope = {"type": finding.scope_type}
+                    if finding.scope_type == "product":
+                        scope["product_node_id"] = graph["root_node_id"]
+                    elif finding.scope_type == "company":
+                        organization = next(
+                            (n for n in (subject, obj) if n and n["kind"] == "organization"), None
+                        )
+                        if organization is None:
+                            reject(finding, "scope_mismatch")
+                            eligible.remove(item)
+                            progress = True
+                            continue
+                        scope["organization_node_id"] = organization["id"]
+                    if (
+                        subject
+                        and obj
+                        and any(
+                            c["subject_id"] == subject["id"]
+                            and c["object_id"] == obj["id"]
+                            and c["predicate"] == finding.predicate
+                            and c["scope"]["type"] == finding.scope_type
+                            and any(
+                                e["span"] == finding.span
+                                and e.get("source", {}).get("url") == document.url
+                                for e in c["evidence"]
+                            )
+                            for c in graph["_claims"].values()
+                        )
+                    ):
+                        eligible.remove(item)
+                        progress = True
+                        continue
+                    try:
+                        self.check_graph_budget(graph, run, new_node=missing_kind is not None)
+                    except BudgetExceeded as exc:
+                        deferred_limit = exc
+                        break
+                    previous_nodes = {n["id"]: deepcopy(n) for n in graph["nodes"]}
+                    previous_edges = {e["id"] for e in graph["edges"]}
+                    if subject is None:
+                        subject = make_node(
+                            finding.kind, finding.label, status=finding.support_label
+                        )
+                        graph["nodes"].append(subject)
+                        added.append(subject)
+                    if obj is None:
+                        obj = make_node(object_kind, object_label, status=finding.support_label)
+                        graph["nodes"].append(obj)
+                        added.append(obj)
+                    if state is not None:
+                        for node in added:
+                            state.branch_of.setdefault(node["id"], state.branch(target_node, graph))
+                    record_identity(
+                        subject, finding.label, finding.part_number, finding.manufacturer
+                    )
+                    if finding.object_label:
+                        record_identity(obj, finding.object_label)
+                    edge, claim = add_claim_edge(
+                        repo,
+                        graph,
+                        subject["id"],
+                        obj["id"],
+                        finding.predicate,
+                        scope,
+                        source,
+                        finding.span,
+                        finding.support_label,
+                        finding.rationale,
+                        f"{document.locator}; chars {document.body.find(finding.span)}:{document.body.find(finding.span) + len(finding.span)}",
+                        {"operational": {"quantity": finding.quantity, "unit": finding.unit}},
+                    )
+                    # Save before events so the event revision is the committed snapshot revision.
+                    graph["revision"] += 1
+                    refresh(graph)
+                    repo.save_graph(graph)
+                    for node in graph["nodes"]:
+                        if node["id"] not in previous_nodes:
+                            self.emit(repo, run, "node.added", {"node": node})
+                        elif node != previous_nodes[node["id"]]:
+                            self.emit(repo, run, "node.updated", {"node": node})
                     self.emit(
                         repo,
                         run,
-                        "claim.rejected",
-                        {
-                            "claim_id": new_id("clm"),
-                            "reason": rejected,
-                            "detail": finding.rationale,
-                        },
+                        "claim.committed",
+                        {"claim_id": claim["id"], "support_label": finding.support_label},
                     )
-                    continue
-                existing = next(
-                    (
-                        n
-                        for n in graph["nodes"]
-                        if n["kind"] == finding.kind
-                        and n["label"].casefold() == finding.label.casefold()
-                    ),
-                    None,
-                )
-                if existing and any(
-                    c["subject_id"] == existing["id"]
-                    and c["object_id"] == target["id"]
-                    and c["predicate"] == finding.predicate
-                    and c["scope"]["type"] == finding.scope_type
-                    and any(
-                        e["span"] == finding.span and e.get("source", {}).get("url") == document.url
-                        for e in c["evidence"]
+                    self.emit(
+                        repo,
+                        run,
+                        "edge.updated" if edge["id"] in previous_edges else "edge.added",
+                        {"edge": edge},
                     )
-                    for c in graph["_claims"].values()
-                ):
-                    continue
-                try:
-                    self.check_graph_budget(graph, run, new_node=existing is None)
-                except BudgetExceeded as exc:
-                    deferred_limit = exc
-                    break
-                node = existing or make_node(
-                    finding.kind, finding.label, status=finding.support_label
-                )
-                if not existing:
-                    graph["nodes"].append(node)
-                    added.append(node)
-                scope = {"type": finding.scope_type}
-                if finding.scope_type == "product":
-                    scope["product_node_id"] = graph["root_node_id"]
-                previous_nodes = {
-                    n["id"]: deepcopy(n) for n in graph["nodes"] if n is not node or existing
-                }
-                previous_edges = {e["id"] for e in graph["edges"]}
-                edge, claim = add_claim_edge(
-                    repo,
-                    graph,
-                    node["id"],
-                    target["id"],
-                    finding.predicate,
-                    scope,
-                    source,
-                    finding.span,
-                    finding.support_label,
-                    finding.rationale,
-                    f"{document.locator}; chars {document.body.find(finding.span)}:{document.body.find(finding.span) + len(finding.span)}",
-                    {"operational": {"quantity": finding.quantity, "unit": finding.unit}},
-                )
-                # Save before events so the event revision is the committed snapshot revision.
-                graph["revision"] += 1
-                refresh(graph)
-                repo.save_graph(graph)
-                if not existing:
-                    self.emit(repo, run, "node.added", {"node": node})
-                for updated in graph["nodes"]:
-                    if updated["id"] in previous_nodes and updated != previous_nodes[updated["id"]]:
-                        self.emit(repo, run, "node.updated", {"node": updated})
-                self.emit(
-                    repo,
-                    run,
-                    "claim.committed",
-                    {"claim_id": claim["id"], "support_label": finding.support_label},
-                )
-                self.emit(
-                    repo,
-                    run,
-                    "edge.updated" if edge["id"] in previous_edges else "edge.added",
-                    {"edge": edge},
-                )
-                changed = True
+                    changed = True
+                    progress = True
+                    eligible.remove(item)
+            for finding, _, _ in eligible:
+                reject(finding, "disconnected")
             run["usage"] = deepcopy(budget.usage)
             self.emit(repo, run, "budget.updated", run["usage"])
             repo.put("run", run)

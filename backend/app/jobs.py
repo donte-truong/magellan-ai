@@ -64,6 +64,7 @@ def create_run(repo, request, provider):
         "limits": request.limits.model_dump(),
         "usage": usage,
         "progress": {"tasks_done": 0, "tasks_total": 1},
+        "frontier": {"0": 1},
         "pending_questions": [],
         "stop_reason": None,
         "open_questions": [

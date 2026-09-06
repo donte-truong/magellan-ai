@@ -106,6 +106,8 @@ export interface Run {
   provider: string;
   created_at: string;
   progress: { tasks_done: number; tasks_total: number };
+  /** Pending research tasks per tier (tier 0 is the product root); absent on older runs. */
+  frontier?: Record<string, number>;
   usage: { documents: number; searches: number };
   pending_questions: RunQuestion[];
   open_questions: string[];

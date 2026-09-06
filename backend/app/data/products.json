@@ -1,9 +1,16 @@
 [
   {
     "product": "Raspberry Pi 5",
-    "aliases": ["raspberry pi 5", "rpi 5", "rpi5"],
+    "aliases": [
+      "raspberry pi 5",
+      "rpi 5",
+      "rpi5"
+    ],
     "company": "Raspberry Pi",
-    "notes": ["Curated public-source example, not an exhaustive manufacturer BOM.", "Memory capacity, component quantities, factories, suppliers and raw-material provenance remain unknown unless explicitly evidenced."],
+    "notes": [
+      "Curated public-source example, not an exhaustive manufacturer BOM.",
+      "Memory capacity, component quantities, factories, suppliers and raw-material provenance remain unknown unless explicitly evidenced."
+    ],
     "components": [
       {
         "label": "Broadcom BCM2712",
@@ -14,7 +21,9 @@
         "publisher": "Raspberry Pi",
         "span": "Broadcom BCM2712 is the 16nm application processor used in Raspberry Pi 5",
         "locator": "BCM2712 section; curated excerpt",
-        "rationale": "The manufacturer identifies the processor used in Raspberry Pi 5. This does not identify its fabrication facility."
+        "rationale": "The manufacturer identifies the processor used in Raspberry Pi 5. This does not identify its fabrication facility.",
+        "part_number": "BCM2712",
+        "manufacturer": "Broadcom"
       },
       {
         "label": "RP1 I/O controller",
@@ -23,7 +32,7 @@
         "url": "https://www.raspberrypi.com/products/raspberry-pi-5/",
         "title": "Raspberry Pi 5 product page",
         "publisher": "Raspberry Pi",
-        "span": "Raspberry Pi 5 is built using the RP1 I/O controller",
+        "span": "Raspberry Pi 5 is built using the RP1 I/O controller",
         "locator": "RP1 section; curated excerpt",
         "rationale": "The product page directly names the I/O controller."
       },
@@ -37,6 +46,55 @@
         "span": "LPDDR4X-4267 SDRAM",
         "locator": "Specification, page 3; curated excerpt",
         "rationale": "The product specification names the memory technology; capacity and manufacturer depend on the board variant."
+      }
+    ],
+    "deep_documents": [
+      {
+        "target": "Broadcom BCM2712",
+        "url": "https://www.raspberrypi.com/documentation/computers/processors.html#bcm2712",
+        "title": "Raspberry Pi processor documentation (BCM2712 section)",
+        "publisher": "Raspberry Pi",
+        "body": "The BCM2712 application processor used in Raspberry Pi 5 contains a quad-core Arm Cortex-A76 CPU clocked at 2.4GHz and a VideoCore VII GPU. Unrelated note: the RP1 I/O controller connects to the BCM2712 over PCIe.",
+        "findings": [
+          {
+            "subject": "Arm Cortex-A76 CPU",
+            "subject_kind": "component",
+            "predicate": "PART_OF",
+            "object": "Broadcom BCM2712",
+            "object_kind": "component",
+            "span": "contains a quad-core Arm Cortex-A76 CPU clocked at 2.4GHz",
+            "rationale": "The documentation names the CPU cores inside the BCM2712."
+          },
+          {
+            "subject": "VideoCore VII GPU",
+            "subject_kind": "component",
+            "predicate": "PART_OF",
+            "object": "BCM2712",
+            "object_kind": "component",
+            "span": "and a VideoCore VII GPU",
+            "rationale": "Names the GPU inside the BCM2712 using the bare part number; resolves only after the alias is recorded by a later finding in the same document."
+          },
+          {
+            "subject": "Raspberry Pi 5",
+            "subject_kind": "product",
+            "predicate": "PART_OF",
+            "object": "Broadcom BCM2712",
+            "object_kind": "component",
+            "span": "The BCM2712 application processor used in Raspberry Pi 5",
+            "rationale": "Reversed direction: a product cannot be part of its own component. Must be rejected as predicate_invalid."
+          },
+          {
+            "subject": "BCM2712",
+            "subject_kind": "component",
+            "predicate": "PART_OF",
+            "object": "Raspberry Pi 5",
+            "object_kind": "product",
+            "part_number": "BCM2712",
+            "manufacturer": "Broadcom",
+            "span": "application processor used in Raspberry Pi 5 contains",
+            "rationale": "Bare part number with maker: resolves to the existing Broadcom BCM2712 node by identifier, records the alias, and corroborates the tier-1 edge."
+          }
+        ]
       }
     ]
   }

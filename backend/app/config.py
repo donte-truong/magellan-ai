@@ -13,13 +13,21 @@ class Settings(BaseSettings):
     workspace_tokens: dict[str, str] = Field(default_factory=lambda: {"dev-token": "demo"})
     cors_origins: list[str] = Field(default_factory=lambda: ["http://localhost:5173"])
     research_provider: Literal["fixture", "live"] = "fixture"
+    # Curated fixture depth: 1 reproduces the original three-component example; 2 adds the
+    # BCM2712's parts so multi-hop chains and harvesting can be exercised without keys.
+    fixture_depth: int = Field(default=1, ge=1, le=2)
     tavily_api_key: SecretStr = SecretStr("")
     llm_provider: Literal["openai", "openrouter"] = "openai"
     openai_api_key: SecretStr = SecretStr("")
     openai_model: str = ""
+    # Model roles: extraction (volume), verifier and planner (judgment). A missing planner
+    # model falls back to the verifier model, which falls back to the extraction model.
+    openai_verifier_model: str = ""
+    openai_planner_model: str = ""
     openrouter_api_key: SecretStr = SecretStr("")
     openrouter_model: str = "openrouter/free"
     openrouter_verifier_model: str = ""
+    openrouter_planner_model: str = ""
     openrouter_response_format: Literal["json_schema", "json_object"] = "json_schema"
     provider_timeout_seconds: float = Field(default=30, gt=0, le=60)
     worker_slots: int = Field(default=3, ge=1, le=16)
@@ -63,6 +71,12 @@ class Settings(BaseSettings):
                         "OPENROUTER_VERIFIER_MODEL",
                         self.openrouter_verifier_model or self.openrouter_model,
                     ),
+                    (
+                        "OPENROUTER_PLANNER_MODEL",
+                        self.openrouter_planner_model
+                        or self.openrouter_verifier_model
+                        or self.openrouter_model,
+                    ),
                 ]:
                     free = model == "openrouter/free" or ("/" in model and model.endswith(":free"))
                     # Paid vendor/model IDs are allowed only with explicit billing ceilings, which
@@ -79,6 +93,23 @@ class Settings(BaseSettings):
                             "and OUTPUT_TOKEN_COST_PER_MILLION_MINOR"
                         )
         return self
+
+    def model_for(self, role):
+        """Resolve the configured model ID for a role on the active model provider."""
+        if self.llm_provider == "openrouter":
+            base, verifier, planner = (
+                self.openrouter_model,
+                self.openrouter_verifier_model,
+                self.openrouter_planner_model,
+            )
+        else:
+            base, verifier, planner = (
+                self.openai_model,
+                self.openai_verifier_model,
+                self.openai_planner_model,
+            )
+        verifier = verifier or base
+        return {"extraction": base, "verifier": verifier, "planner": planner or verifier}[role]
 
     @property
     def openrouter_paid_allowed(self):
