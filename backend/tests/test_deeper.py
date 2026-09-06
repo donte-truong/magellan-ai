@@ -5,7 +5,13 @@ from pydantic import ValidationError
 
 from app.config import Settings
 from app.providers import Document, Finding, FixtureProvider, Page, Plan, ProviderFailure
-from app.resolution import normalize_label, record_identity, resolve_entity, select_passages
+from app.resolution import (
+    near_duplicates,
+    normalize_label,
+    record_identity,
+    resolve_entity,
+    select_passages,
+)
 from tests.conftest import researched, sse_events
 
 
@@ -1023,3 +1029,21 @@ async def test_a_whole_is_never_created_from_a_claim_about_its_part(api, connect
         assert rejected == ["disconnected"]
         kinds = [e["type"] for e in events]
         assert kinds.index("claim.rejected") > len(kinds) - 1 - kinds[::-1].index("task.finished")
+
+
+def test_spec_tokens_and_slug_labels():
+    from app.resolution import part_tokens, tidy_label
+
+    assert part_tokens("12mp ultrawide snapper") == set()
+    assert part_tokens("kioxia 256gb nand") == set()
+    assert part_tokens("bcm2712 a76") == {"bcm2712", "a76"}
+    assert (
+        near_duplicates(
+            {"nodes": [{"id": "a", "kind": "component", "label": "12MP telephoto shooter"}]},
+            "component",
+            "12MP ultrawide snapper",
+        )
+        == []
+    )
+    assert tidy_label("kioxia-256gb-nand-flash-memory") == "kioxia 256gb nand flash memory"
+    assert tidy_label("Ti-6Al-4V") == "Ti-6Al-4V" and tidy_label("Cortex-A76") == "Cortex-A76"

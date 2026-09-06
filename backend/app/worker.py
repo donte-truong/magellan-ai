@@ -87,6 +87,9 @@ def materialize(document, target):
     """A copy of an analyzed document whose findings name their object explicitly, so the
     findings can be committed later for a different target."""
     copy = deepcopy(document)
+    # Findings the verifier or the static gates already rejected can never commit; dropping them
+    # keeps a reuse from re-emitting the same rejections for every later target.
+    copy.findings = [f for f in copy.findings if not f.rejection]
     for finding in copy.findings:
         if finding.object_label is None:
             finding.object_label, finding.object_kind = target["label"], target["kind"]

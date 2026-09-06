@@ -14,7 +14,7 @@ import httpx
 from pydantic import Field
 
 from app.config import Settings
-from app.resolution import normalized_predicate, select_passages, static_rejection
+from app.resolution import normalized_predicate, select_passages, static_rejection, tidy_label
 from app.schemas import GeographyLayer, Model, NodeKind, Predicate
 
 # Conservative flat reservation per image; observed usage is reconciled after the response.
@@ -33,6 +33,7 @@ SKIP_HOSTS = (
     "reddit.com",
     "news.ycombinator.com",
     "quora.com",
+    "linkedin.com",
 )
 
 
@@ -61,6 +62,7 @@ LOW_VALUE_HINTS = (
     "blog",
     "refurbished",
     "/product/",
+    "forum",
 )
 
 
@@ -523,7 +525,7 @@ class ExtractedFinding(Model):
 
 
 class Extraction(Model):
-    findings: list[ExtractedFinding] = Field(max_length=20)
+    findings: list[ExtractedFinding] = Field(max_length=30)
 
 
 class PlannedQuery(Model):
@@ -958,8 +960,9 @@ class LiveProvider:
             "target, but also report relationships between other entities the document explicitly states, "
             "such as a part inside a named component or a facility that makes a named part. When a "
             "document about the researched product ties a part or material to one of its sub-assemblies "
-            "(a battery, a logic board, a camera module), also report that sub-assembly PART_OF the "
-            "product, quoting a span that supports it. For each "
+            "(a battery, a logic board, a camera module), report both relationships: the part or "
+            "material into the sub-assembly, and the sub-assembly PART_OF the product, each with a "
+            "span that supports it. For each "
             "relationship quote a verbatim span (at most 600 characters); the span must establish the "
             "relationship, both identities and scope. Use PART_OF for components and INPUT_TO for material "
             "inputs; MANUFACTURES/PRODUCES/SUPPLIES only when explicitly established. Record part_number "
@@ -984,7 +987,7 @@ class LiveProvider:
         for entry in extraction.findings:
             findings.append(
                 Finding(
-                    entry.label,
+                    tidy_label(entry.label),
                     entry.kind,
                     normalized_predicate(
                         entry.predicate, entry.kind, entry.object_kind or target.get("kind")
@@ -995,7 +998,7 @@ class LiveProvider:
                     entry.quantity,
                     entry.unit,
                     rejection=None if entry.quote in body else "span_not_found",
-                    object_label=entry.object_label,
+                    object_label=tidy_label(entry.object_label) if entry.object_label else None,
                     object_kind=entry.object_kind,
                     part_number=entry.part_number,
                     manufacturer=entry.manufacturer,
@@ -1059,8 +1062,9 @@ class LiveProvider:
                     findings[i].rejection = "entailment_failed"
                 elif not judgment.scope_matches:
                     findings[i].rejection = "scope_mismatch"
-                if findings[i].rejection and judgment and judgment.reason:
-                    findings[i].rationale = f"{findings[i].rationale} | verifier: {judgment.reason}"
+                if findings[i].rejection:
+                    reason = judgment.reason if judgment else "no judgment returned for this claim"
+                    findings[i].rationale = f"{findings[i].rationale} | verifier: {reason}"
                 if not judgment or not judgment.quantity_supported:
                     findings[i].quantity = findings[i].unit = None
         return Document(url, title or url, urlsplit(url).hostname or "", body, findings=findings)

@@ -950,8 +950,8 @@ components:
         max_hops: { type: integer, default: 3, minimum: 1, maximum: 4 }
         max_nodes: { type: integer, default: 50, maximum: 150 }
         max_claims: { type: integer, default: 80, maximum: 300 }
-        max_searches: { type: integer, default: 25, maximum: 60 }
-        max_documents: { type: integer, default: 40, maximum: 100 }
+        max_searches: { type: integer, default: 25, maximum: 120 }
+        max_documents: { type: integer, default: 40, maximum: 200 }
         max_input_tokens: { type: integer, default: 400000 }
         max_output_tokens: { type: integer, default: 30000 }
         max_seconds: { type: integer, default: 480, maximum: 900 }

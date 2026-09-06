@@ -170,11 +170,29 @@ def resolve_entity(graph, kind, label, part_number=None, manufacturer=None):
 
 
 PART_TOKEN = re.compile(r"\b[a-z0-9]{3,}\b")
+# Quantities with units look like part numbers but describe a spec, not an identity.
+SPEC_TOKEN = re.compile(
+    r"^\d+(mp|gb|mb|tb|kb|mah|wh|mhz|ghz|khz|hz|nm|mm|cm|inch|in|w|v|a|k|bit|core|x|nit|nits|ppi)$"
+)
 
 
 def part_tokens(key):
-    """Part-number-like tokens: three or more alphanumerics including a digit (rp1, a76, bcm2712)."""
-    return {t for t in PART_TOKEN.findall(key) if any(c.isdigit() for c in t)}
+    """Part-number-like tokens: three or more alphanumerics including a digit (rp1, a76, bcm2712),
+    excluding quantities such as 12mp or 8gb."""
+    return {
+        t
+        for t in PART_TOKEN.findall(key)
+        if any(c.isdigit() for c in t) and not SPEC_TOKEN.match(t)
+    }
+
+
+def tidy_label(label):
+    """Slug-like labels lifted from URLs or alt text ("kioxia-256gb-nand-flash-memory") become
+    words; everything else is returned untouched."""
+    text = (label or "").strip()
+    if " " not in text and text.count("-") >= 2 and text == text.lower():
+        return text.replace("-", " ")
+    return text
 
 
 def near_duplicates(graph, kind, label, exclude_id=None):
