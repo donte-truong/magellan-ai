@@ -26,8 +26,16 @@ The caps are run parameters, not properties of the loop; a run that wants 150 no
 - **Multi-agent debate or a separate critic per claim.** Verification already is an independent second call over the quote window. A third opinion on the same window costs as much as the second and catches little; the evidence rules (verbatim span, scope, independent verification) are the guarantee, not agent count.
 - **Sharding the graph across worker processes.** The single-writer ledger is the correctness boundary. In-process concurrency reaches the same overlap without cross-process merges.
 
+## Built since, from the live runs
+
+- **Cross-target reuse of stored analyses.** Harvested findings are target-independent, so a page analyzed once is committed for any later target from its stored, materialized findings (rejected findings dropped) without another model call. In a pooled Pi run 28 of 51 analyses had been repeats; iPhone runs reused 17 to 32 analyses each.
+- **Static gates before verification**, a four-source cap per relation, one edge per relation across scopes, and orphan retry for claims whose whole is not yet connected.
+- **Tolerant span location**: quotes that differ from the page only in whitespace, citation markers, or typographic punctuation resolve to the page's own verbatim text (span misses fell from 80 to 24 in one run).
+- **Adaptive allowances**: the product task gets twice the per-task allowance and a replan when thin; tier-2 and deeper tasks get one search fewer.
+
 ## Left to do
 
 - **A whole-graph audit at the end of a run:** one judgment call over the final triple list asking for edges that look reversed, mis-kinded, or not supply-chain relations, emitting review flags. Cheap, and the only place a model sees the graph as a whole.
 - **Per-branch planner memory** (what a branch has already learned) so that deep tasks do not re-ask the product-level questions.
-- **Adaptive per-task caps:** fewer queries for targets the planner marks low priority.
+- **Priority-aware caps:** fewer queries for targets the planner marks low priority, and none for targets it would skip at the current budget.
+- **Quote quality from tables:** DeepSeek's quotes from specification tables still fail exact location; a table-aware passage selector (rows as lines) would help the extraction model quote verbatim.
