@@ -31,6 +31,42 @@ The response is `202 Run`, with `graph_id`, `events_url`, and `bom_url`. Poll th
 
 The included Raspberry Pi 5 example contains three manufacturer-evidenced components. It reports `provider: curated_fixture`, `status: partial`, and explicit research gaps. An unknown product produces an unresolved root and open questions. Quantities, factories and suppliers are never filled from plausibility. Generic/company-scope relationships stay in the graph and are excluded from the product BOM view. BOM coverage measures the supported fraction of **returned rows**, not physical product completeness.
 
+## Estimate a bill of materials from text, a link, or a photo
+
+`POST /v1/bom` is a separate, deliberately looser estimator: the model may fill gaps with informed guesses, but code, not the model, assigns provenance. It runs synchronously (one to three minutes with live providers) and returns the persisted estimate, which is also readable at `GET /v1/bom/{bom_id}`.
+
+```bash
+curl -X POST http://localhost:8000/v1/bom \
+  -H 'Authorization: Bearer dev-token' -H 'Content-Type: application/json' \
+  -d '{"description":"Raspberry Pi 5 8GB","url":"https://www.raspberrypi.com/documentation/computers/processors.html"}'
+
+# Photo upload (multipart). Fields: description, url, image_url, company, limits (JSON string), image (file)
+curl -X POST http://localhost:8000/v1/bom -H 'Authorization: Bearer dev-token' \
+  -F description="board found in a drawer" -F image=@photo.jpg
+```
+
+JSON bodies may carry the photo inline as `{"image":{"data":"<base64>","media_type":"image/jpeg"}}` (JPEG, PNG, WebP, or GIF; at most 5 MB; bytes must match the declared type) or as a public `image_url`. At least one of `description`, `url`, `image`, `image_url` is required. Optional `limits`: `max_searches` 5, `max_documents` 6, `max_items` 60, `max_seconds` 180, plus token ceilings. At most three estimates run at once; there is no idempotency key on this route.
+
+Pipeline: fetch the product link (Tavily extract) → vision pass on the photo → identify the product and plan searches → Tavily search → read the best pages (at most two per host) → per-page extraction with verbatim quote checks → final composition. Every item carries a `basis`:
+
+| `basis` | Meaning |
+| --- | --- |
+| `evidenced` | At least one source is a fetched page whose quote was found verbatim in the stored copy (`web_page`, with a character locator and the page's content hash). |
+| `inferred` | Supported only by weaker provenance: a page quote that could not be located (`web_page_unverified`), a search snippet, the photo (`image_analysis`), or the user's own text (`user_input`). |
+| `guessed` | No retrieved source; the model added it from general knowledge (`model_knowledge`). Confidence is capped at `medium`. |
+
+`manufacturer` on an item is who makes the part; `sources` is where the agent found it. `confidence` is a label, never a percentage. The composer can only cite evidence IDs the code issued; unknown IDs are dropped and logged. `evidence[]` lists every candidate it could cite and `sources[]` reuses the graph's `Source` shape (page bodies stay private; a photo is stored only as a hash). With the fixture provider only the curated Raspberry Pi 5 pages are known, photos are not analyzed, and unknown products return an honest empty list with open questions.
+
+To turn an estimate into graph research, post it back as `bom_estimate`:
+
+```bash
+curl -X POST http://localhost:8000/v1/runs -H 'Authorization: Bearer dev-token' \
+  -H 'Content-Type: application/json' \
+  -d "{\"product\":\"Raspberry Pi 5\",\"bom_estimate\":$(curl -s http://localhost:8000/v1/bom/BOM_ID -H 'Authorization: Bearer dev-token')}"
+```
+
+The product must match the estimate's product name; `upload_id` and `bom_estimate` are mutually exclusive; duplicate item or source IDs, parent cycles, dangling citations, and non-public citation URLs are rejected. Each item becomes a `user_asserted` `PART_OF` row (materials: `INPUT_TO`) whose evidence is the canonical imported row, with the original basis, confidence, part number, maker, hierarchy, and citations kept under `data.custom.bom_estimate` on the edge and `data.custom.bom_items` on the node, marked `imported_not_independently_verified`. An imported `evidenced/high` label never grants graph `directly_supported` status: up to ten cited pages are re-read as seeds and verified afresh, corroborating claims land on the same edge, and imported part numbers and makers sharpen later live search queries. Extra snapshot fields on the estimate are preserved as metadata, never treated as facts.
+
 Live arbitrary-product research uses Tavily plus your choice of model provider. For OpenAI, configure `backend/.env`:
 
 ```dotenv
@@ -54,6 +90,8 @@ OPENROUTER_RESPONSE_FORMAT=json_schema
 ```
 
 `OPENROUTER_MODEL` accepts `openrouter/free` or a specific `:free` model ID. `OPENROUTER_VERIFIER_MODEL` optionally selects a separate free model for the independent relationship and geography verification passes; an empty value uses the extraction model. The [free-model router](https://openrouter.ai/docs/cookbook/get-started/free-models-router-playground) selects an available compatible model. All requests require supported parameters and set zero prompt, completion, and per-request price ceilings using [provider routing](https://openrouter.ai/docs/guides/routing/provider-selection#max-price). There is no fallback to paid models or OpenAI. Tavily search remains a separate service with its own usage limits.
+
+Paid OpenRouter models are allowed only when both operator billing rates are configured: set `INPUT_TOKEN_COST_PER_MILLION_MINOR` and `OUTPUT_TOKEN_COST_PER_MILLION_MINOR` (USD cents per million tokens) to conservative ceilings covering both selected models, then use explicit `vendor/model` IDs such as `openai/gpt-4o-mini`. The rates become the router's prompt and completion `max_price` (USD per million tokens), so a route above your ceiling fails rather than silently costing more. Automatic `openrouter/*` routers remain free-only. Photo inputs for the BOM estimate additionally require a vision-capable model on either provider; images are sent as inline data URLs and reserved at a flat 4,000 input tokens each before the provider's reported usage replaces the reservation.
 
 The default `json_schema` mode uses [strict structured output](https://openrouter.ai/docs/guides/features/structured-outputs). For a free model that supports JSON mode but not JSON-schema enforcement, set `OPENROUTER_RESPONSE_FORMAT=json_object`; the schema is included in the instructions and Pydantic validates the complete response locally. Malformed, refused, truncated, or schema-invalid output is rejected. The configured `minimax/minimax-m3:free` model was verified with JSON-object mode during implementation. Model availability and [free-tier limits](https://openrouter.ai/docs/faq) can change; rate limits and unavailable routes end research with visible gaps rather than switching providers.
 

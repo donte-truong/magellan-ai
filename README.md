@@ -8,7 +8,7 @@ Evidence-backed supply chain research: start with a product name and build a sou
 - [Frontend setup, user flow, and tests](frontend/README.md)
 - [Reference Next.js backend](backend-node/README.md) (kept for reference; not the primary backend)
 
-The FastAPI backend implements API sections 2.1–2.6 plus `POST /v1/bom/decompose`. Run the entire MVP with PostgreSQL, migrations, API, worker, and frontend:
+The FastAPI backend implements API sections 2.1–2.6 plus `POST /v1/bom/decompose`, a text/link/photo `POST /v1/bom` estimate whose every item is labelled with where the agent got it, `bom_estimate` import into research runs, and OpenAI or OpenRouter (free, or paid with billing ceilings) model providers. Run the entire MVP with PostgreSQL, migrations, API, worker, and frontend:
 
 ```bash
 docker compose --env-file backend/.env up --build -d
@@ -20,4 +20,4 @@ Stop the stack with `docker compose --env-file backend/.env down`; the database 
 
 The **Next.js frontend** (`frontend/`) provides the MVP flow: **enter a product → review its sourced bill of materials → explore the supply network**. Without containers, start the backend on port 8000, then run `bun install` and `bun run dev` in `frontend/`. Open http://127.0.0.1:3000 and try the Raspberry Pi 5 example.
 
-The **Next.js backend** (`backend-node/`) is an earlier implementation of research runs, the evidence graph, a standalone photo/link/description `POST /v1/bom` estimate, OpenRouter support, and BOM import. It still serves the frontend's routes on port 3001 (`MAGELLAN_API_URL=http://127.0.0.1:3001`) and is kept for reference.
+The **Next.js backend** (`backend-node/`) is the earlier implementation. Its BOM estimate, OpenRouter support, and BOM import have been ported to the FastAPI backend; it still serves the frontend's routes on port 3001 (`MAGELLAN_API_URL=http://127.0.0.1:3001`) and is kept for reference only.

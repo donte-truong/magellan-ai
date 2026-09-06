@@ -64,10 +64,25 @@ class Settings(BaseSettings):
                         self.openrouter_verifier_model or self.openrouter_model,
                     ),
                 ]:
-                    if model != "openrouter/free" and not (
-                        "/" in model and model.endswith(":free")
-                    ):
+                    free = model == "openrouter/free" or ("/" in model and model.endswith(":free"))
+                    # Paid vendor/model IDs are allowed only with explicit billing ceilings, which
+                    # become the router's max_price; automatic openrouter/* routers stay free-only.
+                    paid = (
+                        self.openrouter_paid_allowed
+                        and "/" in model
+                        and not model.startswith("openrouter/")
+                    )
+                    if not (free or paid):
                         raise ValueError(
-                            f"{name} must be openrouter/free or a model ID ending in :free"
+                            f"{name} must be openrouter/free or a model ID ending in :free; a paid "
+                            "vendor/model ID additionally requires INPUT_TOKEN_COST_PER_MILLION_MINOR "
+                            "and OUTPUT_TOKEN_COST_PER_MILLION_MINOR"
                         )
         return self
+
+    @property
+    def openrouter_paid_allowed(self):
+        return (
+            self.input_token_cost_per_million_minor is not None
+            and self.output_token_cost_per_million_minor is not None
+        )

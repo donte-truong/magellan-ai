@@ -68,6 +68,7 @@ def create_app(settings=None, provider=None):
         geography,
     )
     app.state.worker = Worker(db, settings, provider, geography)
+    app.state.estimate_active = 0
 
     @app.middleware("http")
     async def request_context(request: Request, call_next):
@@ -75,7 +76,10 @@ def create_app(settings=None, provider=None):
         try:
             if request.method in {"POST", "PUT", "PATCH"}:
                 # Enforced on actual received bytes as well as Content-Length, including chunked requests.
+                # The BOM estimate accepts a photo (5 MB raw, larger as base64 JSON).
                 maximum = 1024 * 1024 + 65536
+                if request.url.path == "/v1/bom":
+                    maximum = 8 * 1024 * 1024 + 65536
                 declared = request.headers.get("content-length")
                 if declared and (not declared.isdecimal() or int(declared) > maximum):
                     raise APIError(413, "invalid_input", "Request body exceeds the size limit")

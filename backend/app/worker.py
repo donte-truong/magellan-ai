@@ -1,6 +1,7 @@
 """Durable asyncio worker. Run one process with bounded research slots."""
 
 import asyncio
+import json
 import logging
 import math
 import signal
@@ -210,6 +211,10 @@ class Worker:
             async with asyncio.timeout(run["limits"]["max_seconds"]):
                 if run["upload_id"]:
                     self.ingest_upload(workspace, identifier, budget)
+                if run.get("_bom_estimate"):
+                    self.ingest_estimate(workspace, identifier, budget)
+                if run.get("_seed_urls") and hasattr(self.provider, "fetch_page"):
+                    await self.research_seeds(workspace, identifier, run, budget, questions)
                 with self.db.transaction(workspace) as repo:
                     graph = repo.graph(run["graph_id"])
                     queue = deque(n for n in graph["nodes"] if n["tier"] is not None)
@@ -380,6 +385,149 @@ class Worker:
                 ]:
                     self.emit(repo, run, kind, payload)
                 repo.put("run", run)
+
+    def ingest_estimate(self, workspace, identifier, budget):
+        """Seed the graph from an imported BOM estimate. Rows are user_asserted; citations stay unverified."""
+        with self.db.transaction(workspace) as repo:
+            run = self.owned(repo, identifier)
+        estimate = run["_bom_estimate"]
+        for item in estimate["items"]:
+            budget.check()
+            with self.db.transaction(workspace, write=True) as repo:
+                run = self.owned(repo, identifier)
+                graph = repo.graph(run["graph_id"])
+                root = next(n for n in graph["nodes"] if n["id"] == graph["root_node_id"])
+                if item["name"].casefold() == root["label"].casefold():
+                    # The assembly row is the product itself; keep it as metadata, not a self-edge.
+                    root["data"].setdefault("custom", {}).setdefault("bom_items", []).append(
+                        self.estimate_provenance(estimate, item)
+                    )
+                    graph["revision"] += 1
+                    refresh(graph)
+                    repo.save_graph(graph)
+                    self.emit(repo, run, "node.updated", {"node": root})
+                    repo.put("run", run)
+                    continue
+                kind = "material" if item["category"] == "material" else "component"
+                existing = next(
+                    (
+                        n
+                        for n in graph["nodes"]
+                        if n["kind"] == kind and n["label"].casefold() == item["name"].casefold()
+                    ),
+                    None,
+                )
+                if existing is None:
+                    self.check_graph_budget(graph, run)
+                else:
+                    self.check_graph_budget(graph, run, new_node=False)
+                node = existing or make_node(kind, item["name"], status="user_asserted")
+                if existing is None:
+                    graph["nodes"].append(node)
+                provenance = self.estimate_provenance(estimate, item)
+                node["data"].setdefault("custom", {}).setdefault("bom_items", []).append(provenance)
+                span = json.dumps(
+                    {
+                        "component": item["name"],
+                        "kind": kind,
+                        "quantity": item["quantity"],
+                        "unit": item["unit"],
+                        "bom_item_id": item["id"],
+                    },
+                    ensure_ascii=False,
+                    separators=(",", ":"),
+                )
+                source = make_source(
+                    repo,
+                    f"urn:magellan:bom-estimate:{estimate['id']}",
+                    f"BOM estimate {estimate['id']}",
+                    span,
+                    kind="upload",
+                    source_family_id=estimate["id"],
+                    license_notes="Imported BOM estimate row; not independently verified.",
+                )
+                edge, claim = add_claim_edge(
+                    repo,
+                    graph,
+                    node["id"],
+                    graph["root_node_id"],
+                    "INPUT_TO" if kind == "material" else "PART_OF",
+                    {"type": "product", "product_node_id": graph["root_node_id"]},
+                    source,
+                    span,
+                    locator=f"BOM estimate item {item['id']}",
+                    rationale=f"Imported from BOM estimate {estimate['id']} (basis {item['basis']}, confidence {item['confidence']}); web citations are unverified provenance.",
+                    data={
+                        "operational": {"quantity": item["quantity"], "unit": item["unit"]},
+                        "custom": {
+                            "operational_provenance": {"support_label": "user_asserted"},
+                            "bom_estimate": provenance,
+                        },
+                    },
+                )
+                graph["revision"] += 1
+                refresh(graph)
+                repo.save_graph(graph)
+                events = [("source.retrieved", {"source_id": source["id"], **source})]
+                if existing is None:
+                    events.append(("node.added", {"node": node}))
+                else:
+                    events.append(("node.updated", {"node": node}))
+                events.extend(
+                    [
+                        (
+                            "claim.committed",
+                            {"claim_id": claim["id"], "support_label": "user_asserted"},
+                        ),
+                        (
+                            "edge.added" if len(edge["claim_ids"]) == 1 else "edge.updated",
+                            {"edge": edge},
+                        ),
+                    ]
+                )
+                for kind_name, payload in events:
+                    self.emit(repo, run, kind_name, payload)
+                repo.put("run", run)
+
+    @staticmethod
+    def estimate_provenance(estimate, item):
+        return {
+            "estimate_id": estimate["id"],
+            "item_id": item["id"],
+            "parent_item_id": item["parent_item_id"],
+            "category": item["category"],
+            "part_number": item["part_number"],
+            "manufacturer": item["manufacturer"],
+            "material": item["material"],
+            "notes": item["notes"],
+            "basis": item["basis"],
+            "confidence": item["confidence"],
+            "sources": item["sources"],
+            "provenance": "imported_not_independently_verified",
+        }
+
+    async def research_seeds(self, workspace, identifier, run, budget, questions):
+        """Re-read pages the estimate cited, targeting the product; findings are verified afresh."""
+        with self.db.transaction(workspace) as repo:
+            graph = repo.graph(run["graph_id"])
+        root = next(n for n in graph["nodes"] if n["id"] == graph["root_node_id"])
+        for url in run["_seed_urls"]:
+            budget.check()
+            if not budget.remaining("documents"):
+                questions.append(
+                    "Document budget exhausted before every BOM estimate source was re-read."
+                )
+                break
+            try:
+                page = await self.provider.fetch_page(url, budget)
+                document = await self.provider.analyze(
+                    root, run["product"], run["company"], page.url, page.title, page.body, budget
+                )
+            except ProviderFailure as exc:
+                questions.append(f"BOM estimate source could not be re-read: {url} ({exc.message})")
+                continue
+            self.commit_document(workspace, identifier, root, document, budget)
+            await asyncio.sleep(0)
 
     @staticmethod
     def check_graph_budget(graph, run, new_node=True):

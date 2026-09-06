@@ -10,7 +10,7 @@ from fastapi.responses import JSONResponse, StreamingResponse
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from starlette.concurrency import run_in_threadpool
 
-from app import graphs, jobs, schemas
+from app import estimate, graphs, jobs, schemas
 from app.db import new_id, now, public
 from app.errors import APIError, invalid, not_found
 from app.uploads import MAX_UPLOAD_BYTES, parse_upload
@@ -141,6 +141,69 @@ def decompose(
     idempotency_key: IdempotencyKey = None,
 ):
     return create_run(request, response, ws, body, idempotency_key)
+
+
+@router.post(
+    "/bom",
+    response_model=schemas.BomEstimate,
+    tags=["bom"],
+    operation_id="estimateBillOfMaterials",
+    summary="Estimate a bill of materials from a description, link, and/or photo",
+    description=(
+        "Synchronous (one to three minutes). Accepts JSON with an optional base64 `image`, or "
+        "multipart/form-data with an `image` file. Every item records where the agent got it "
+        "(`sources`) and a code-assigned `basis`: evidenced, inferred, or guessed. The result is "
+        "persisted and readable at GET /v1/bom/{bom_id}; pass it as `bom_estimate` to POST /v1/runs "
+        "to seed graph research."
+    ),
+    openapi_extra={
+        "requestBody": {
+            "required": True,
+            "content": {
+                "application/json": {"schema": {"$ref": "#/components/schemas/BomEstimateRequest"}},
+                "multipart/form-data": {
+                    "schema": {
+                        "type": "object",
+                        "properties": {
+                            "description": {"type": "string"},
+                            "url": {"type": "string"},
+                            "image_url": {"type": "string"},
+                            "company": {"type": "string"},
+                            "limits": {"type": "string", "description": "JSON object"},
+                            "image": {"type": "string", "format": "binary"},
+                        },
+                    }
+                },
+            },
+        }
+    },
+)
+async def estimate_bom(request: Request, ws: Workspace):
+    payload = await estimate.read_request(request)
+    state = request.app.state
+    if state.estimate_active >= 3:
+        raise APIError(
+            429,
+            "rate_limited",
+            "At most three BOM estimates may be active",
+            headers={"Retry-After": "5"},
+        )
+    state.estimate_active += 1
+    try:
+        return await estimate.generate(state.db, state.settings, state.provider, ws, payload)
+    finally:
+        state.estimate_active -= 1
+
+
+@router.get(
+    "/bom/{bom_id}",
+    response_model=schemas.BomEstimate,
+    tags=["bom"],
+    operation_id="getBillOfMaterialsEstimate",
+)
+def get_estimate(request: Request, ws: Workspace, bom_id: str):
+    with request.app.state.db.transaction(ws) as repo:
+        return public(repo.get(bom_id, "bom"))
 
 
 @router.get(

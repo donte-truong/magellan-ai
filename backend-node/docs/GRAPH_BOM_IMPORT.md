@@ -33,7 +33,7 @@ The CLI's `--input` accepts the same shape without `mode` (use `--mode live`). T
 
 The POST body is bounded to 2 MB. The import contract allows at most 200 items and 100 registered sources; normal graph node/claim/task/time/cost limits still apply and can yield a partial graph. Duplicate item/source IDs, dangling source/parent IDs, and cyclic parent links are rejected. Citation/seed URLs pass the existing public-URL checks before any retrieval. The existing API authentication boundary applies.
 
-The structural JSON Schema is [bom-estimate.schema.json](bom-estimate.schema.json), generated from `src/research/bom-import.ts`; `docs/openapi.yaml` references it. Cross-record constraints (cycles, ID uniqueness, references, product agreement and mutually exclusive BOM forms) are runtime validations. Tests in `tests/bom-import.test.ts` cover preservation, planning context, validation, and separation of imported confidence from verified graph support.
+The structural JSON Schema is [bom-estimate.schema.json](../../docs/bom-estimate.schema.json), generated from `src/research/bom-import.ts`; `docs/openapi.yaml` references it. Cross-record constraints (cycles, ID uniqueness, references, product agreement and mutually exclusive BOM forms) are runtime validations. Tests in `tests/bom-import.test.ts` cover preservation, planning context, validation, and separation of imported confidence from verified graph support.
 
 ## Reproduce the live test
 

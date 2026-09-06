@@ -12,6 +12,21 @@ TERMINAL_JOB = {"completed", "partial", "failed"}
 def create_run(repo, request, provider):
     if request.upload_id:
         repo.get(request.upload_id, "upload")
+    estimate, seeds = None, []
+    if request.bom_estimate:
+        from app.providers import public_url
+
+        estimate = request.bom_estimate.model_dump()
+        for item in estimate["items"]:
+            for ref in item["sources"]:
+                if ref.get("url") and not public_url(ref["url"]):
+                    raise invalid("BOM estimate citations must use public HTTP(S) URLs")
+        # Up to ten cited pages are re-read and verified afresh; imported quotes are never evidence.
+        for source in estimate["sources"]:
+            if public_url(source["url"]) and source["url"] not in seeds:
+                seeds.append(source["url"])
+            if len(seeds) >= 10:
+                break
     original = None
     if request.replay_of_run_id:
         original = repo.get(request.replay_of_run_id, "run")
@@ -51,7 +66,14 @@ def create_run(repo, request, provider):
         "progress": {"tasks_done": 0, "tasks_total": 1},
         "pending_questions": [],
         "stop_reason": None,
-        "open_questions": [],
+        "open_questions": [
+            f"Seeded from BOM estimate {estimate['id']}: {len(estimate['items'])} item(s) imported as "
+            "user_asserted rows; their citations are retained as unverified provenance and re-read as seeds."
+        ]
+        if estimate
+        else [],
+        "_bom_estimate": estimate,
+        "_seed_urls": seeds,
         "events_url": f"/v1/runs/{identifier}/events",
         "bom_url": f"/v1/runs/{identifier}/bom",
         "provider": provider.name,

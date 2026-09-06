@@ -360,6 +360,19 @@ class RunCreate(Model):
     upload_id: str | None = None
     limits: RunLimits = Field(default_factory=RunLimits)
     replay_of_run_id: str | None = None
+    # A persisted /v1/bom response. Rows seed the graph as user_asserted; citations stay unverified.
+    bom_estimate: "BomEstimateImport | None" = None
+
+    @model_validator(mode="after")
+    def estimate_matches_product(self):
+        if self.bom_estimate is None:
+            return self
+        if self.upload_id:
+            raise ValueError("Supply upload_id or bom_estimate, not both")
+        normalize = lambda value: " ".join(value.casefold().split())  # noqa: E731
+        if normalize(self.product) != normalize(self.bom_estimate.product.name):
+            raise ValueError("product must match bom_estimate.product.name")
+        return self
 
 
 class RunUsage(Model):
@@ -502,3 +515,251 @@ class BOM(Model):
 class Page[T](Model):
     items: list[T]
     next_cursor: str | None
+
+
+# ---------------- BOM estimate (text/link/photo → labelled bill of materials)
+BomCategory = Literal[
+    "component", "subassembly", "material", "packaging", "consumable", "software", "other"
+]
+Basis = Literal["evidenced", "inferred", "guessed"]
+Confidence = Literal["high", "medium", "low"]
+ImageMediaType = Literal["image/jpeg", "image/png", "image/webp", "image/gif"]
+
+
+class BomEstimateLimits(Model):
+    max_searches: int = Field(default=5, ge=0, le=20)
+    max_documents: int = Field(default=6, ge=0, le=20)
+    max_items: int = Field(default=60, ge=1, le=200)
+    max_seconds: int = Field(default=180, ge=1, le=600)
+    max_input_tokens: int = Field(default=400000, ge=1000, le=2000000)
+    max_output_tokens: int = Field(default=60000, ge=500, le=200000)
+
+
+class InlineImage(Model):
+    data: str = Field(min_length=1, max_length=7_000_000)
+    media_type: ImageMediaType
+
+
+class BomEstimateRequest(Model):
+    description: str | None = Field(default=None, min_length=1, max_length=4000)
+    url: str | None = Field(default=None, min_length=1, max_length=2000)
+    image: InlineImage | None = None
+    image_url: str | None = Field(default=None, min_length=1, max_length=2000)
+    company: Name | None = None
+    limits: BomEstimateLimits = Field(default_factory=BomEstimateLimits)
+
+    @model_validator(mode="after")
+    def at_least_one_input(self):
+        if not (self.description or self.url or self.image or self.image_url):
+            raise ValueError("Provide at least one of description, url, image, or image_url")
+        return self
+
+
+class WebPageRef(Model):
+    type: Literal["web_page"]
+    source_id: str
+    url: str
+    title: str | None = None
+    quote: str
+    locator: str
+
+
+class WebPageUnverifiedRef(Model):
+    type: Literal["web_page_unverified"]
+    source_id: str
+    url: str
+    title: str | None = None
+    claimed_quote: str
+    note: str
+
+
+class SearchSnippetRef(Model):
+    type: Literal["search_snippet"]
+    url: str
+    title: str
+    snippet: str
+    query: str
+
+
+class ImageAnalysisRef(Model):
+    type: Literal["image_analysis"]
+    source_id: str
+    note: str
+
+
+class UserInputRef(Model):
+    type: Literal["user_input"]
+    field: Literal["description", "url", "image_url", "company"]
+    note: str
+
+
+class ModelKnowledgeRef(Model):
+    type: Literal["model_knowledge"]
+    note: str
+
+
+BomSourceRef = Annotated[
+    WebPageRef
+    | WebPageUnverifiedRef
+    | SearchSnippetRef
+    | ImageAnalysisRef
+    | UserInputRef
+    | ModelKnowledgeRef,
+    Field(discriminator="type"),
+]
+
+
+class BomEstimateItem(Model):
+    """`sources` records where the agent got the item; `manufacturer` is the part maker."""
+
+    id: str
+    name: str
+    category: BomCategory
+    quantity: float | None = None
+    unit: str | None = None
+    material: str | None = None
+    manufacturer: str | None = None
+    part_number: str | None = None
+    parent_item_id: str | None = None
+    notes: str | None = None
+    basis: Basis
+    confidence: Confidence
+    sources: list[BomSourceRef]
+
+
+class BomEstimateEvidence(Model):
+    id: str
+    origin: str
+    name: str | None = None
+    category: BomCategory | None = None
+    quantity: float | None = None
+    unit: str | None = None
+    material: str | None = None
+    manufacturer: str | None = None
+    part_number: str | None = None
+    notes: str | None = None
+    url: str | None = None
+    title: str | None = None
+    quote: str | None = None
+    ref: BomSourceRef
+
+
+class BomEstimateProduct(Model):
+    name: str | None = None
+    brand: str | None = None
+    category: str | None = None
+    identifiers: list[str] = Field(default_factory=list)
+    summary: str | None = None
+    identified_from: list[str] = Field(default_factory=list)
+    ambiguity: str | None = None
+
+
+class BomEstimateImage(Model):
+    media_type: ImageMediaType
+    bytes: int
+    sha256: str
+
+
+class BomEstimateInputs(Model):
+    description: str | None = None
+    url: str | None = None
+    image: BomEstimateImage | None = None
+    image_url: str | None = None
+    company: str | None = None
+
+
+class BomEstimateUsage(Model):
+    searches: int = 0
+    documents: int = 0
+    model_calls: int = 0
+    input_tokens: int = 0
+    output_tokens: int = 0
+    elapsed_seconds: float = 0
+    binding_limit: str | None = None
+    cost_minor: int | None = None
+    currency: str = "USD"
+
+
+class BomEstimate(Model):
+    id: str
+    status: Literal["running", "completed", "partial", "failed", "cancelled"]
+    mode: Literal["live"] = "live"
+    provider: str
+    stop_reason: str | None = None
+    product: BomEstimateProduct
+    inputs: BomEstimateInputs
+    items: list[BomEstimateItem]
+    evidence: list[BomEstimateEvidence]
+    sources: list[Source]
+    open_questions: list[str]
+    usage: BomEstimateUsage
+    limits: BomEstimateLimits
+    disclaimer: str
+    created_at: str
+    completed_at: str | None = None
+
+
+# ---------------- BOM estimate import into a research run
+class Lenient(BaseModel):
+    """Import contract for a persisted estimate: extra snapshot fields are kept, never trusted."""
+
+    model_config = ConfigDict(extra="allow", allow_inf_nan=False)
+
+
+class ImportedBomItem(Lenient):
+    id: str = Field(min_length=1, max_length=200)
+    name: str = Field(min_length=1, max_length=200)
+    category: BomCategory
+    quantity: float | None = None
+    unit: str | None = Field(default=None, max_length=40)
+    material: str | None = Field(default=None, max_length=100)
+    manufacturer: str | None = Field(default=None, max_length=100)
+    part_number: str | None = Field(default=None, max_length=100)
+    parent_item_id: str | None = Field(default=None, max_length=200)
+    notes: str | None = Field(default=None, max_length=300)
+    basis: Basis
+    confidence: Confidence
+    sources: list[BomSourceRef] = Field(default_factory=list, max_length=100)
+
+
+class ImportedBomProduct(Lenient):
+    name: str = Field(min_length=1, max_length=200)
+    brand: str | None = Field(default=None, max_length=100)
+
+
+class ImportedBomSource(Lenient):
+    id: str = Field(min_length=1, max_length=200)
+    url: str = Field(min_length=1, max_length=2000)
+
+
+class BomEstimateImport(Lenient):
+    id: str = Field(min_length=1, max_length=200)
+    status: Literal["completed", "partial"]
+    product: ImportedBomProduct
+    items: list[ImportedBomItem] = Field(max_length=200)
+    sources: list[ImportedBomSource] = Field(max_length=100)
+
+    @model_validator(mode="after")
+    def consistent_references(self):
+        items = {item.id: item for item in self.items}
+        if len(items) != len(self.items):
+            raise ValueError("Duplicate BOM item IDs")
+        sources = {source.id for source in self.sources}
+        if len(sources) != len(self.sources):
+            raise ValueError("Duplicate BOM source IDs")
+        for item in self.items:
+            seen, parent = {item.id}, item.parent_item_id
+            while parent:
+                if parent not in items or parent in seen:
+                    raise ValueError(
+                        f"BOM item {item.id}: parent must reference another item without cycles"
+                    )
+                seen.add(parent)
+                parent = items[parent].parent_item_id
+            for ref in item.sources:
+                if getattr(ref, "source_id", None) and ref.source_id not in sources:
+                    raise ValueError(f"BOM item {item.id}: citation references a missing source")
+        return self
+
+
+RunCreate.model_rebuild()
